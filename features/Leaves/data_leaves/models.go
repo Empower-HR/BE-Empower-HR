@@ -1,9 +1,13 @@
-package leaves
+package dataleaves
 
-import "time"
+import (
+	"time"
 
-type LeavesDataEntity struct {
-	LeavesID       uint
+	"gorm.io/gorm"
+)
+
+type LeavesData struct {
+	gorm.Model
 	StartDate      time.Time
 	EndDate        time.Time
 	Reason         string

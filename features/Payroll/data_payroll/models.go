@@ -1,7 +1,9 @@
-package payroll
+package datapayroll
 
-type PayrollDataEntity struct {
-	PayrollID        uint
+import "gorm.io/gorm"
+
+type PayrollData struct {
+	gorm.Model
 	EmploymentDataID uint
 	Salary           float64
 	BankName         string
