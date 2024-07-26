@@ -18,6 +18,7 @@ type MiddlewaresInterface interface {
 	ExtractTokenUserId(e echo.Context) int
 	InvalidateToken(token string) error
 	IsTokenInvalidated(token string) bool
+	ExtractTokenUserRole(e echo.Context) string
 }
 
 type middlewares struct {
@@ -88,4 +89,27 @@ func (m *middlewares) IsTokenInvalidated(token string) bool {
 
 	_, exists := m.blacklist[token]
 	return exists
+}
+
+func (m *middlewares) ExtractTokenUserRole(e echo.Context) string {
+	header := e.Request().Header.Get("Authorization")
+	headerToken := strings.Split(header, " ")
+	if len(headerToken) != 2 {
+		return ""
+	}
+	token := headerToken[1]
+	tokenJWT, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return []byte(config.JWT_SECRET), nil
+	})
+
+	if err != nil || !tokenJWT.Valid {
+		return ""
+	}
+
+	claims := tokenJWT.Claims.(jwt.MapClaims)
+	role, isValidRole := claims["role"].(string)
+	if !isValidRole {
+		return ""
+	}
+	return role
 }

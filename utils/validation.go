@@ -2,13 +2,17 @@ package utils
 
 import (
 	"errors"
+	"math/rand"
 	"regexp"
+	"time"
 )
 
 type AccountUtilityInterface interface {
 	EmailValidator(inputEmail string) error
 	PasswordValidator(inputPassword string) error
 	PhoneNumberValidator(inputHP string) error
+	GeneratePassword(length int) (string, error)
+	NumberLoop(n int) ([]int, error)
 }
 
 type accountUtility struct{}
@@ -61,4 +65,40 @@ func (ac *accountUtility) PhoneNumberValidator(inputHP string) error {
 		return errors.New("nomor telepon harus terdiri dari maksimal 12 angka")
 	}
 	return nil
+}
+
+// GeneratePassword implements AccountUtilityInterface.
+func (*accountUtility) GeneratePassword(length int) (string, error) {
+	if length < 8 {
+		return "", errors.New("password harus terdiri dari minimal 8 karakter")
+	}
+
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()"
+	var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	password := make([]byte, length)
+	for i := range password {
+		password[i] = charset[seededRand.Intn(len(charset))]
+	}
+
+	// Ensure the password meets the validation criteria
+	passwordStr := string(password)
+	if err := (&accountUtility{}).PasswordValidator(passwordStr); err != nil {
+		return "", err
+	}
+
+	return passwordStr, nil
+}
+
+// NumberLoop implements AccountUtilityInterface.
+func (ac *accountUtility) NumberLoop(n int) ([]int, error) {
+	if n <= 0 {
+		return nil, errors.New("input harus lebih besar dari 0")
+	}
+
+	var result []int
+	for i := 1; i <= n; i++ {
+		result = append(result, i)
+	}
+	return result, nil
 }
