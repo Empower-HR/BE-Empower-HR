@@ -7,9 +7,19 @@ import (
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
-)
+);
 
-func UploadCloudinary(file io.Reader, filename string) (string, error){
+type CloudinaryUtilityInterface interface{
+	UploadCloudinary(file io.Reader, filename string) (string, error)
+}
+
+type CloudinaryUtility struct {}
+
+func NewCloudinaryUtility() CloudinaryUtilityInterface{
+	return &CloudinaryUtility{}
+}
+
+func (cu CloudinaryUtility) UploadCloudinary(file io.Reader, filename string) (string, error){
 
 	keyCld := os.Getenv("CLOUDINARY_URL");
 

@@ -13,12 +13,14 @@ import (
 
 type CompanyHandlers struct {
 	srv companies.Service
+	cld cloudinary.CloudinaryUtilityInterface
 };
 
 
-func NewCompanyHandler(s companies.Service) companies.Handler {
+func NewCompanyHandler(s companies.Service, c cloudinary.CloudinaryUtilityInterface) companies.Handler {
 	return &CompanyHandlers{
 		srv: s,
+		cld: c,
 	}
 };
 
@@ -68,7 +70,7 @@ func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 			}
 			defer src.Close()
 
-			urlImage, err := cloudinary.UploadCloudinary(src, file.Filename);
+			urlImage, err := ch.cld.UploadCloudinary(src, file.Filename);
 			if err != nil {
 				log.Print("Error", err.Error())
 				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))

@@ -14,6 +14,7 @@ import (
 	// _scheduleHandler "be-empower-hr/features/Schedule/handler"
 
 	"be-empower-hr/utils"
+	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
 
 	"github.com/labstack/echo/v4"
@@ -36,9 +37,8 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	// api company
 	cm := _datacompanies.NewCompanyModels(db)
 	cs := _companyService.NewCompanyServices(cm)
-	ch := _companyHandler.NewCompanyHandler(cs)
-
-	// ha
+	cl := cloudinary.NewCloudinaryUtility()
+	ch := _companyHandler.NewCompanyHandler(cs, cl)
 
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
