@@ -30,23 +30,13 @@ func (xu *excelUntility) DownloadExcel(data []struct{}) ([]byte, error) {
 	f.SetActiveSheet(index)
 
 	// header 
-	headers := []string{"id", "UserID", "Name", "Category", "Description", "Price", "Stock", "ImageUrl"};
+	headers := []string{}; // string untuk header data di excel
 
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1);
 		f.SetCellValue(sheet, cell, header)
 	};
 
-	// for i, data := range data{
-	// 	// f.SetCellValue(sheet, "A"+strconv.Itoa(i+2), product.ID)
-	// 	// f.SetCellValue(sheet, "B"+strconv.Itoa(i+2), product.UserID)
-	// 	// f.SetCellValue(sheet, "C"+strconv.Itoa(i+2), product.Name)
-	// 	// f.SetCellValue(sheet, "D"+strconv.Itoa(i+2), product.Category)
-	// 	// f.SetCellValue(sheet, "E"+strconv.Itoa(i+2), product.Description)
-	// 	// f.SetCellValue(sheet, "F"+strconv.Itoa(i+2), product.Price)
-	// 	// f.SetCellValue(sheet, "G"+strconv.Itoa(i+2), product.Stock)
-	// 	// f.SetCellValue(sheet, "H"+strconv.Itoa(i+2), product.ImageUrl)
-	// };
 
 	var buf bytes.Buffer;
 
