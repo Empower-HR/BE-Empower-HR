@@ -2,6 +2,9 @@ package routes
 
 import (
 	"be-empower-hr/app/middlewares"
+	_datacompanies "be-empower-hr/features/Companies/data_companies"
+	_companyHandler "be-empower-hr/features/Companies/handler"
+	_companyService "be-empower-hr/features/Companies/service"
 	_userData "be-empower-hr/features/Users/data_users"
 	_userHandler "be-empower-hr/features/Users/handler"
 	_userService "be-empower-hr/features/Users/service"
@@ -30,6 +33,13 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	// scheduleService := _schduleService.New(scheduleData, accountUtility)
 	// scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 
+	// api company
+	cm := _datacompanies.NewCompanyModels(db)
+	cs := _companyService.NewCompanyServices(cm)
+	ch := _companyHandler.NewCompanyHandler(cs)
+
+	// ha
+
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
 	e.POST("/login", userHandlerAPI.Login)
@@ -37,4 +47,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/admin", userHandlerAPI.DeleteAccountAdmin, middlewares.JWTMiddleware())
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
 
+	// handler company
+	e.POST("/companies", ch.UpdateCompany())
+	e.GET("/companies", ch.GetCompany())
 }
