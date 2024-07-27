@@ -28,11 +28,11 @@ type Handler interface {
 };
 
 type Query interface {
-	GetCompany(ID uint) (CompanyDataEntity, error)
-	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
+	GetCompany() (CompanyDataEntity, error)
+	UpdateCompany(updateCompany CompanyDataEntity) error
 };
 
 type Service interface {
-	GetCompany(ID uint) (CompanyDataEntity, error)
-	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
+	GetCompany() (CompanyDataEntity, error)
+	UpdateCompany(updateCompany CompanyDataEntity) error
 }

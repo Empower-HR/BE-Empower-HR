@@ -20,6 +20,7 @@ type PersonalData struct {
 	PlaceBirth     string
 	BirthDate      string
 	Gender         string
+	Status		   string
 	Religion       string
 	NIK            string
 	Address        string
@@ -84,5 +85,48 @@ func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData 
 		Schedule         : input.Schedule,
 		ApprovalLine     : input.ApprovalLine,
 		Manager          : input.Manager,
+	}
+}
+
+func ToPersonalDataQuery(input users.PersonalDataEntity) PersonalData {
+	return PersonalData{
+	CompanyID      : input.CompanyID,
+	ProfilePicture : input.ProfilePicture,
+	Name           : input.Name,
+	Email          : input.Email,
+	Password       : input.BirthDate,
+	PhoneNumber    : input.PhoneNumber,
+	PlaceBirth     : input.PlaceBirth,
+	BirthDate      : input.BirthDate,
+	Gender         : input.Gender,
+	Status 		   : input.Status,
+	Religion       : input.Religion,
+	NIK            : input.NIK,
+	Address        : input.Address,
+	Role           : input.Role,
+	}
+}
+
+func ToEmploymentQuery(input users.EmploymentDataEntity) EmploymentData{
+	return EmploymentData{
+		PersonalDataID   :input.PersonalDataID,
+		EmploymentStatus :input.EmploymentStatus,
+		JoinDate         :input.JoinDate,
+		Department       :input.Department,
+		JobPosition      :input.JobPosition,
+		JobLevel         :input.JobLevel,
+		Schedule         :input.Schedule,
+		ApprovalLine     :input.ApprovalLine,
+		Manager          :input.Manager,
+	}
+};
+
+
+func ToPayrollQuery(input users.PayrollDataEntity) PayrollData {
+	return PayrollData{
+		EmploymentDataID : input.EmploymentDataID,
+		Salary           : input.Salary,
+		BankName         : input.BankName,
+		AccountNumber    : input.AccountNumber,
 	}
 }

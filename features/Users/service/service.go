@@ -2,6 +2,7 @@ package service
 
 import (
 	"be-empower-hr/app/middlewares"
+	companies "be-empower-hr/features/Companies"
 	users "be-empower-hr/features/Users"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/encrypts"
@@ -14,16 +15,17 @@ type userService struct {
 	hashService       encrypts.HashInterface
 	middlewareservice middlewares.MiddlewaresInterface
 	accountUtility    utils.AccountUtilityInterface
+	company 		  companies.Query
 }
 
-func New(ud users.DataUserInterface, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface) users.ServiceUserInterface {
+func New(ud users.DataUserInterface, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface, cm companies.Query) users.ServiceUserInterface {
 	return &userService{
 		userData:          ud,
 		hashService:       hash,
 		middlewareservice: mi,
 		accountUtility:    au,
+		company: 		   cm,
 	}
-
 }
 
 // DeleteAccountAdmin implements users.ServiceUserInterface.
@@ -276,9 +278,38 @@ func (us *userService) UpdateEmploymentEmployee(ID uint, employeID uint, updateE
 	err := us.userData.UpdateEmploymentEmployee(ID, employeID, updateEmploymentEmployee);
 
 	if err != nil {
-		log.Println("Error retrieving all account:", err)
+		log.Println("Error update employment account:", err)
 		return err
 	};
 
 	return nil;
+};
+
+
+// Create Employment
+func (us *userService) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity) error {
+	// get company ID
+	result, err :=us.company.GetCompany()
+	if err != nil {
+		log.Println("Error get company account:", err)
+	};
+
+	addPersonal.Role = "employees"
+	personalID, err := us.userData.CreatePersonal(result.ID, addPersonal);
+	if err != nil {
+		log.Println("Error add personal account:", err)
+	};
+	
+	addEmployment.Manager = "HR"
+	employmentID, err := us.userData.CreateEmployment(personalID, addEmployment);
+	if err != nil {
+		log.Println("Error add employment account:", err)
+	};
+
+	err = us.userData.CreatePayroll(employmentID, addPayroll);
+	if err != nil {
+		log.Println("Error add payroll account:", err)
+	};
+
+	return err;
 }

@@ -463,4 +463,27 @@ func (uh *UserHandler) UpdateEmploymentEmployee(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil));
+};
+
+
+func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
+
+	var newEmployeeRequeste NewEmployeeRequest;
+	if errNewEmployeReq := c.Bind(&newEmployeeRequeste); errNewEmployeReq != nil {
+		log.Printf("update profile employees: Error binding data: %v", errNewEmployeReq)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errNewEmployeReq.Error(), nil))
+	};
+
+	err := uh.userService.CreateNewEmployee(
+		ToModelPersonalData(newEmployeeRequeste.PersonalData), 
+		ToModelEmploymentData(newEmployeeRequeste.EmploymentData), 
+		ToModelPayroll(newEmployeeRequeste.Payroll),
+		);
+
+	if err != nil {
+		log.Printf("update profile employees: Error create employee data: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error create employee data: "+err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Create new employee successfully", nil));
 }

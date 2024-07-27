@@ -6,7 +6,6 @@ import (
 	"be-empower-hr/utils/responses"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,13 +26,7 @@ func NewCompanyHandler(s companies.Service, c cloudinary.CloudinaryUtilityInterf
 func (ch *CompanyHandlers) GetCompany() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		CompanyID, err := strconv.Atoi(c.Param("id"));
-		if err != nil {
-			log.Print("Error", err.Error())
-			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error company_id data: "+err.Error(), nil))
-		}
-
-		data, err := ch.srv.GetCompany(uint(CompanyID));
+		data, err := ch.srv.GetCompany();
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Internal server error: "+err.Error(), nil))
@@ -46,15 +39,9 @@ func (ch *CompanyHandlers) GetCompany() echo.HandlerFunc {
 
 func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		CompanyID, err := strconv.Atoi(c.Param("id"));
-		if err != nil {
-			log.Print("Error", err.Error())
-			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error company_id data: "+err.Error(), nil))
-		};
-
 		var input CompanyInput;
 
-		err = c.Bind(&input);
+		err := c.Bind(&input);
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
@@ -79,7 +66,7 @@ func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 			input.CompanyPicture = urlImage;
 		};
 
-		err = ch.srv.UpdateCompany(uint(CompanyID), ToModelCompany(input));
+		err = ch.srv.UpdateCompany(ToModelCompany(input));
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Internal server error: "+err.Error(), nil))

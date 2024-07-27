@@ -17,10 +17,10 @@ func NewCompanyModels(connect *gorm.DB) companies.Query{
 };
 
 
-func (cm *CompanyModels) GetCompany(ID uint) (companies.CompanyDataEntity, error){
+func (cm *CompanyModels) GetCompany() (companies.CompanyDataEntity, error){
 	var result CompanyData;
 
-	err := cm.db.Where("id = ?", ID).First(&result).Error
+	err := cm.db.Find(&result).Error
 
 	if err != nil {
 		return companies.CompanyDataEntity{}, err
@@ -29,10 +29,10 @@ func (cm *CompanyModels) GetCompany(ID uint) (companies.CompanyDataEntity, error
 	return result.ToCompanyEntity(), nil;
 };
 
-func (cm *CompanyModels) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) (error){
+func (cm *CompanyModels) UpdateCompany(updateCompany companies.CompanyDataEntity) (error){
 	cnvCompany := ToCompanyQuery(updateCompany);
 
-	qry := cm.db.Where("id = ?", ID).Updates(&cnvCompany);
+	qry := cm.db.Updates(&cnvCompany);
 
 	if qry.Error != nil {
 		return qry.Error
