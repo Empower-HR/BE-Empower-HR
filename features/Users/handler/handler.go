@@ -28,7 +28,7 @@ func New(us users.ServiceUserInterface, cu cloudinary.CloudinaryUtilityInterface
 func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 	newUser := UserRequest{}
 	if errBind := c.Bind(&newUser); errBind != nil {
-		log.Printf("Register: Error binding data: %v", errBind)
+		log.Printf("register: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
@@ -47,7 +47,7 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 
 	_, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
 	if errInsert != nil {
-		log.Printf("Register: Error registering user: %v", errInsert)
+		log.Printf("register: error registering user: %v", errInsert)
 		if strings.Contains(errInsert.Error(), "validation") {
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "user registration failed: "+errInsert.Error(), nil))
 		}
@@ -73,13 +73,13 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 func (uh *UserHandler) Login(c echo.Context) error {
 	loginReq := LoginRequest{}
 	if errBind := c.Bind(&loginReq); errBind != nil {
-		log.Printf("Login: Error binding data: %v", errBind)
+		log.Printf("login: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "error binding data: "+errBind.Error(), nil))
 	}
 
 	data, token, err := uh.userService.LoginAccount(loginReq.Email, loginReq.Password)
 	if err != nil {
-		log.Printf("Login: User login failed: %v", err)
+		log.Printf("login: User login failed: %v", err)
 		if strings.Contains(err.Error(), "email atau password tidak sesuai") {
 			return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "user login failed: "+err.Error(), nil))
 		}
@@ -104,13 +104,13 @@ func (uh *UserHandler) Login(c echo.Context) error {
 func (uh *UserHandler) GetProfile(c echo.Context) error {
 	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if userID == 0 {
-		log.Println("Invalid user ID from token")
+		log.Println("invalid user ID from token")
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
 	}
 
 	profile, err := uh.userService.GetProfile(uint(userID))
 	if err != nil {
-		log.Printf("Error getting user profile: %v", err)
+		log.Printf("error getting user profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error getting user profile", nil))
 	}
 
@@ -149,19 +149,43 @@ func (uh *UserHandler) GetProfileById(c echo.Context) error {
 	id := c.Param("id")
 	idConv, errConv := strconv.Atoi(id)
 	if errConv != nil {
-		return c.JSON(http.StatusBadRequest, map[string]any{
-			"status":  "failed",
-			"message": "error convert id: " + errConv.Error(),
-		})
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "error converting id: "+errConv.Error(), nil))
 	}
 
-	data, err := uh.userService.GetProfileById(uint(idConv))
+	profile, err := uh.userService.GetProfileById(uint(idConv))
 	if err != nil {
-		log.Printf("Error getting user profile: %v", err)
+		log.Printf("error getting user profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error getting user profile", nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile retrieved successfully", data))
+	profileResponse := ProfileResponse{
+		ProfilePicture: profile.ProfilePicture,
+		Name:           profile.Name,
+		Email:          profile.Email,
+		PhoneNumber:    profile.PhoneNumber,
+		PlaceBirthDate: profile.PlaceBirth,
+		BirthDate:      profile.BirthDate,
+		Gender:         profile.Gender,
+		Religion:       profile.Religion,
+		NIK:            profile.NIK,
+		Address:        profile.Address,
+		EmploymentData: make([]EmploymentDataResponse, len(profile.EmploymentData)),
+	}
+
+	for i, emp := range profile.EmploymentData {
+		profileResponse.EmploymentData[i] = EmploymentDataResponse{
+			EmploymentStatus: emp.EmploymentStatus,
+			JoinDate:         emp.JoinDate,
+			Department:       emp.Department,
+			JobPosition:      emp.JobPosition,
+			JobLevel:         emp.JobLevel,
+			Schedule:         emp.Schedule,
+			ApprovalLine:     emp.ApprovalLine,
+			Manager:          emp.Manager,
+		}
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile retrieved successfully", profileResponse))
 }
 
 func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
@@ -172,7 +196,7 @@ func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
 
 	updatedUser := UpdateAdminRequest{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
-		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
+		log.Printf("update profile admin: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
@@ -181,14 +205,14 @@ func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
 	if err == nil {
 		src, err := profilePictureFile.Open()
 		if err != nil {
-			log.Printf("UpdateProfileAdmins: Error opening file: %v", err)
+			log.Printf("update profile admins: Error opening file: %v", err)
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
 		}
 		defer src.Close()
 
 		profilePictureURL, err := uh.cloudinaryUtility.UploadCloudinary(src, profilePictureFile.Filename)
 		if err != nil {
-			log.Printf("UpdateProfileAdmins: Error uploading to Cloudinary: %v", err)
+			log.Printf("update profile admin: Error uploading to Cloudinary: %v", err)
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
 		}
 		updatedUser.ProfilePicture = profilePictureURL
@@ -210,7 +234,7 @@ func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
 
 	err = uh.userService.UpdateProfileAdmins(uint(userID), dataUser)
 	if err != nil {
-		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
+		log.Printf("update profile admin: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
@@ -225,7 +249,7 @@ func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
 
 	updatedUser := EmploymentData{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
-		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
+		log.Printf("update profile admin: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
@@ -242,7 +266,7 @@ func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
 
 	err := uh.userService.UpdateProfileEmployments(uint(userID), dataUser)
 	if err != nil {
-		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
+		log.Printf("update profile admin: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
@@ -261,7 +285,7 @@ func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
 
 	updatedUser := EmploymentData{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
-		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
+		log.Printf("update profile admin: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
@@ -278,7 +302,7 @@ func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
 
 	err := uh.userService.UpdateProfileEmployments(uint(idConv), dataUser)
 	if err != nil {
-		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
+		log.Printf("update profile admin: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
@@ -288,13 +312,13 @@ func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
 func (uh *UserHandler) DeleteAccountAdmin(c echo.Context) error {
 	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if userID == 0 {
-		log.Println("Invalid user ID from token")
+		log.Println("invalid user ID from token")
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
 	}
 
 	err := uh.userService.DeleteAccountAdmin(uint(userID))
 	if err != nil {
-		log.Printf("Error deleting admin account: %v", err)
+		log.Printf("error deleting admin account: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error deleting admin account", nil))
 	}
 
@@ -366,7 +390,7 @@ func (uh *UserHandler) DeleteAccountEmployees(c echo.Context) error {
 
 	err := uh.userService.DeleteAccountEmployeeByAdmin(uint(idConv))
 	if err != nil {
-		log.Printf("Error deleting employees account: %v", err)
+		log.Printf("error deleting employees account: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error deleting employees account", nil))
 	}
 
@@ -392,7 +416,7 @@ func (uh *UserHandler) GetAllAccount(c echo.Context) error {
 
 	allAccount, err := uh.userService.GetAllAccount(name, department, page, pageSize)
 	if err != nil {
-		log.Println("Error fetching accounts:", err)
+		log.Println("error fetching accounts:", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to fetch accounts", nil))
 	}
 
