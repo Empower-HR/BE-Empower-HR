@@ -91,3 +91,12 @@ func (am *AttandanceModel) GetTotalAttendancesCount() (int64, error) {
     }
     return count, nil
 }
+
+func (am *AttandanceModel) GetAllAttDownload() ([]attendance.Attandance, error) {
+	var attendances []attendance.Attandance
+	err := am.db.Where("deleted_at IS NULL").Find(&attendances).Error
+	if err != nil {
+		return nil, err
+	}
+	return attendances, nil
+}

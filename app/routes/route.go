@@ -23,6 +23,7 @@ import (
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
+	"be-empower-hr/utils/pdf"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -32,11 +33,12 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	middlewares := middlewares.NewMiddlewares()
 	hashService := encrypts.NewHashService()
 	accountUtility := utils.NewAccountUtility()
+	pdfUtility := pdf.NewPdfUtility()
 	cloudinaryUtility := cloudinary.NewCloudinaryUtility()
 	userData := _userData.New(db)
 	userService := _userService.New(userData, hashService, middlewares, accountUtility)
 	attData := _attData.NewAttandancesModel(db)
-	attService := _attService.New(attData, hashService, middlewares, accountUtility)
+	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
 	attHandler := _attHandler.New(attService)
 
 	scheduleData := _scheduleData.New(db)
@@ -72,6 +74,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/attendance/:attendance_id", attHandler.DeleteAttendance, middlewares.JWTMiddleware())
 	e.GET("/attendance", attHandler.GetAllAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/download", attHandler.DownloadPdf)
   
 	// handler company
 	e.POST("/companies", ch.UpdateCompany())

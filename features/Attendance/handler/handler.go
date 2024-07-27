@@ -221,3 +221,16 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 
 }
 
+func (ah *AttHandler) DownloadPdf(c echo.Context) error{
+	// personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	// if personalID == 0 {
+	// 	return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	// }
+	err := ah.srv.DownloadAllAtt()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Download failed", nil))
+	}
+   // return c.File(pdfFileName)
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Download successfully", nil))
+}
