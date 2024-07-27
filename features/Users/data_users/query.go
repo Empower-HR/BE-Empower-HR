@@ -313,6 +313,22 @@ func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.Employ
 	return nil
 }
 
+// update employment employee
+func (uq *userQuery) UpdateEmploymentEmployee( ID, employeID uint, updateEmploymentEmployee users.EmploymentDataEntity) error {
+	cnvQueryModel := ToQueryEmploymentEmployee(updateEmploymentEmployee)
+	qry := uq.db.Where("id = ? AND personal_data_id = ?  AND role = 'admin' AND deleted_at IS NULL", ID, employeID).Updates(&cnvQueryModel);
+
+	if qry.Error != nil {
+		return qry.Error
+	};
+
+	if qry.RowsAffected < 1 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil;
+}
+
 // GetAccountByName implements users.DataUserInterface.
 func (uq *userQuery) GetAccountByName(accountName string) ([]users.PersonalDataEntity, error) {
 	var personalDataList []PersonalData

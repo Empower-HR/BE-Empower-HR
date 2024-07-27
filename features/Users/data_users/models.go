@@ -3,6 +3,7 @@ package datausers
 import (
 	dataleaves "be-empower-hr/features/Leaves/data_leaves"
 	datapayroll "be-empower-hr/features/Payroll/data_payroll"
+	users "be-empower-hr/features/Users"
 	"time"
 
 	"gorm.io/gorm"
@@ -69,4 +70,19 @@ type LeavesData struct {
 	Status         string
 	TotalLeave     int
 	PersonalDataID uint
+}
+
+
+func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData {
+	return EmploymentData{
+		PersonalDataID 	 : input.PersonalDataID,
+		EmploymentStatus : input.EmploymentStatus,
+		JoinDate         : input.JoinDate,
+		Department       : input.Department,
+		JobPosition      : input.JobPosition,
+		JobLevel         : input.JobLevel,
+		Schedule         : input.Schedule,
+		ApprovalLine     : input.ApprovalLine,
+		Manager          : input.Manager,
+	}
 }

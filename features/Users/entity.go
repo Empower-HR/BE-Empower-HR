@@ -53,6 +53,7 @@ type DataUserInterface interface {
 	UpdateProfileEmployments(userid uint, accounts EmploymentDataEntity) error
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint) error
+	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
 }
 
 type ServiceUserInterface interface {
@@ -67,4 +68,5 @@ type ServiceUserInterface interface {
 	UpdateProfileEmployments(userid uint, accounts EmploymentDataEntity) error
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint) error
+	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
 }

@@ -435,3 +435,32 @@ func (uh *UserHandler) GetAllAccount(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "All accounts fetched successfully", allUserResponse))
 }
+
+// handler update employment employee
+func (uh *UserHandler) UpdateEmploymentEmployee(c echo.Context) error {
+	id := c.Param("id")
+	idConv, errConv := strconv.Atoi(id)
+	if errConv != nil {
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "error converting id: "+errConv.Error(), nil))
+	}
+
+	employeeID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if employeeID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
+
+	var input EmploymentData;
+
+	if errBind := c.Bind(&input); errBind != nil {
+		log.Printf("update profile employees: Error binding data: %v", errBind)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
+	};
+
+	err := uh.userService.UpdateEmploymentEmployee(uint(idConv), uint(employeeID), ToModelEmploymentData(input));
+	if err != nil {
+		log.Printf("update profile employees: Error updating profile: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil));
+}
