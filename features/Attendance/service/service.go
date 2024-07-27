@@ -1,0 +1,75 @@
+package service
+
+import (
+	"be-empower-hr/app/middlewares"
+	att "be-empower-hr/features/Attendance"
+	"be-empower-hr/utils"
+	"be-empower-hr/utils/encrypts"
+	"errors"
+)
+
+type attendanceService struct {
+	qry    			  att.AQuery
+	hashService       encrypts.HashInterface
+	middlewareservice middlewares.MiddlewaresInterface
+	accountUtility    utils.AccountUtilityInterface
+}
+
+func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface) att.AServices {
+	return &attendanceService{
+		qry:    			ad,
+		hashService:       hash,
+		middlewareservice: mi,
+		accountUtility:    au,
+	}
+
+}
+
+func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
+	// Check if a record already exists for the given personalID and date
+    exists, err := as.qry.IsDateExists(newAtt.PersonalDataID, newAtt.Date)
+    if err != nil {
+        return err
+    }
+    if exists {
+        return errors.New("attendance record already exists for this date")
+    }
+
+	err = as.qry.Create(newAtt)
+	if err != nil {
+		return errors.New("terjadi kesalahan pada server saat Clock In")
+	}
+	return nil
+}
+func (as *attendanceService) UpdateAtt(id uint,updateAtt att.Attandance) error {
+	err := as.qry.Update(id, updateAtt)
+	if err != nil {
+		return errors.New("terjadi kesalahan pada server saat Clock Out")
+	}
+	return nil
+}
+
+func (as *attendanceService) DeleteAttByID(attID uint) error {
+	err := as.qry.DeleteAttbyId(attID)
+	if err != nil {
+		return errors.New("error deleting attendance record")
+	}
+	return nil
+}
+
+func (as *attendanceService) GetAttByPersonalID(personalID uint) ([]att.Attandance, error) {
+	attendances, err := as.qry.GetAttByPersonalID(personalID)
+	if err != nil {
+		return nil, errors.New("error retrieving attendance records")
+	}
+	return attendances, nil
+}
+
+func (as *attendanceService) GetAllAtt() ([]att.Attandance, error) {
+
+    attendance, err := as.qry.GetAllAtt()
+	if err != nil {
+		return nil, errors.New("error retrieving attendance records")
+	}
+	return attendance, nil
+}
