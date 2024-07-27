@@ -2,6 +2,7 @@ package datausers
 
 import (
 	users "be-empower-hr/features/Users"
+	"be-empower-hr/utils"
 	"log"
 
 	"gorm.io/gorm"
@@ -56,6 +57,7 @@ func (uq *userQuery) AccountById(userid uint) (*users.PersonalDataEntity, error)
 	personalDataEntity := &users.PersonalDataEntity{
 		PersonalDataID: personalData.ID,
 		CompanyID:      personalData.CompanyID,
+		ProfilePicture: personalData.ProfilePicture,
 		Name:           personalData.Name,
 		Email:          personalData.Email,
 		PhoneNumber:    personalData.PhoneNumber,
@@ -219,7 +221,7 @@ func (uq *userQuery) DeleteAccountAdmin(userid uint) error {
 }
 
 // DeleteAccountEmployee implements users.DataUserInterface.
-func (uq *userQuery) DeleteAccountEmployee(userid uint) error {
+func (uq *userQuery) DeleteAccountEmployeeByAdmin(userid uint) error {
 	err := uq.db.Transaction(func(tx *gorm.DB) error {
 		// Delete PayrollData first to avoid foreign key constraint issues
 		if err := tx.Where("employment_data_id IN (SELECT id FROM employment_data WHERE personal_data_id = ?)", userid).Delete(&PayrollData{}).Error; err != nil {
@@ -287,22 +289,25 @@ func (uq *userQuery) UpdateAccountAdmins(userid uint, account users.PersonalData
 		return err
 	}
 
-	// Update the employment data if provided
-	for _, employment := range account.EmploymentData {
-		employmentUpdates := map[string]interface{}{
-			"EmploymentStatus": employment.EmploymentStatus,
-			"JoinDate":         employment.JoinDate,
-			"Department":       employment.Department,
-			"JobPosition":      employment.JobPosition,
-			"JobLevel":         employment.JobLevel,
-			"Schedule":         employment.Schedule,
-			"ApprovalLine":     employment.ApprovalLine,
-			"Manager":          employment.Manager,
-		}
+	return nil
+}
 
-		if err := uq.db.Model(&EmploymentData{}).Where("personal_data_id = ? AND id = ?", userid, employment.EmploymentDataID).Updates(employmentUpdates).Error; err != nil {
-			return err
-		}
+// UpdateProfileEmployments implements users.DataUserInterface.
+func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.EmploymentDataEntity) error {
+	updates := map[string]interface{}{
+		"EmploymentStatus": accounts.EmploymentStatus,
+		"JoinDate":         accounts.JoinDate,
+		"Department":       accounts.Department,
+		"JobPosition":      accounts.JobPosition,
+		"JobLevel":         accounts.JobLevel,
+		"Schedule":         accounts.Schedule,
+		"ApprovalLine":     accounts.ApprovalLine,
+		"Manager":          accounts.Manager,
+	}
+
+	// Update the employment data fields
+	if err := uq.db.Model(&EmploymentData{}).Where("personal_data_id = ?", userid).Updates(updates).Error; err != nil {
+		return err
 	}
 
 	return nil
@@ -343,19 +348,29 @@ func (uq *userQuery) GetAll(page int, pageSize int) ([]users.PersonalDataEntity,
 	if err := uq.db.Preload("EmploymentData").Find(&personalDataList).Error; err != nil {
 		return nil, err
 	}
+	pagination := utils.NewPagination(page, pageSize)
+
+	tx := uq.db.Limit(pagination.PageSize).Offset(pagination.Offset()).Preload("EmploymentData").Find(&personalDataList)
+	if tx.Error != nil {
+		log.Printf("Error fetching all accounts: %v", tx.Error)
+		return nil, tx.Error
+	}
 
 	var result []users.PersonalDataEntity
 	for _, personalData := range personalDataList {
 		personalDataEntity := users.PersonalDataEntity{
 			PersonalDataID: personalData.ID,
 			Name:           personalData.Name,
+			EmploymentData: []users.EmploymentDataEntity{},
 		}
 
 		for _, employment := range personalData.EmploymentData {
 			employmentEntity := users.EmploymentDataEntity{
 				EmploymentDataID: employment.ID,
 				JobPosition:      employment.JobPosition,
+				JobLevel:         employment.JobLevel,
 				EmploymentStatus: employment.EmploymentStatus,
+				JoinDate:         employment.JoinDate,
 			}
 			personalDataEntity.EmploymentData = append(personalDataEntity.EmploymentData, employmentEntity)
 		}
@@ -366,10 +381,12 @@ func (uq *userQuery) GetAll(page int, pageSize int) ([]users.PersonalDataEntity,
 	return result, nil
 }
 
-func (uq *userQuery) GetAccountByDepartment(department string) ([]users.PersonalDataEntity, error) {
+func (uq *userQuery) GetAccountByJobLevel(jobLevel string) ([]users.PersonalDataEntity, error) {
 	var personalDataList []PersonalData
-	if err := uq.db.Preload("EmploymentData").Where("employment_data.department = ?", department).
-		Joins("JOIN employment_data ON employment_data.personal_data_id = personal_data.id").Find(&personalDataList).Error; err != nil {
+	if err := uq.db.Preload("EmploymentData").
+		Joins("JOIN employment_data ON employment_data.personal_data_id = personal_data.id").
+		Where("employment_data.job_level = ?", jobLevel).
+		Find(&personalDataList).Error; err != nil {
 		return nil, err
 	}
 
@@ -381,11 +398,12 @@ func (uq *userQuery) GetAccountByDepartment(department string) ([]users.Personal
 		}
 
 		for _, employment := range personalData.EmploymentData {
-			if employment.Department == department {
+			if employment.JobLevel == jobLevel {
 				employmentEntity := users.EmploymentDataEntity{
 					EmploymentDataID: employment.ID,
 					JobPosition:      employment.JobPosition,
 					EmploymentStatus: employment.EmploymentStatus,
+					JoinDate:         employment.JoinDate,
 				}
 				personalDataEntity.EmploymentData = append(personalDataEntity.EmploymentData, employmentEntity)
 			}

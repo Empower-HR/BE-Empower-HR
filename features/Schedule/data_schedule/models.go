@@ -1,6 +1,8 @@
 package dataschedule
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -8,7 +10,7 @@ type ScheduleData struct {
 	gorm.Model
 	CompanyID     uint
 	Name          string
-	EffectiveDate string
+	EffectiveDate time.Time
 	ScheduleIn    string
 	ScheduleOut   string
 	BreakStart    string

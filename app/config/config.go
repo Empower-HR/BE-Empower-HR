@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -21,6 +23,10 @@ type AppConfig struct {
 
 func ReadEnv() *AppConfig {
 	var app = AppConfig{}
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("error get env")
+	}
 	app.USER = os.Getenv("DBUSER")
 	app.PASSWORD = os.Getenv("DBPASS")
 	app.HOST = os.Getenv("DBHOST")
