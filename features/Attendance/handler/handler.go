@@ -154,11 +154,10 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
-
+	var responseDetail []AttDetailResponse
 	totalItems, _:= ah.srv.CountAllAtt()
-	var response []AttResponse
 	for _, att := range attendances {
-		response = append(response, ToGetAttendanceResponse(att))
+		responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(att))
 	}
 
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
@@ -170,7 +169,7 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 			"totalPages":   totalPages,
 		}
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response,meta))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", responseDetail,meta))
 }
 
 func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
@@ -178,7 +177,6 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	if personalID == 0 {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
-	fmt.Println("user_id:", personalID)
 
 	// Membaca parameter dari query string
 	pageStr := c.QueryParam("page")
@@ -191,7 +189,7 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	if err != nil || pageSize < 1 {
 		pageSize = 10
 	}
-	var attendances []attendance.Attandance
+	var attDetail []attendance.AttendanceDetail
 	// Create Pagination object
 	pagination := utils.NewPagination(page, pageSize)
 
@@ -201,22 +199,33 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	
 	// filter by date
 	filterDate := c.QueryParam("date")
+	var responseDetail []AttDetailResponse
+    var totalItems int64
+	var result interface{}
+
 	if filterDate != "" {
-		attendances, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
+		attDetail, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
+		for _, att := range attDetail {
+            responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(att))
+        }
+		result = responseDetail
+        totalItems, _= ah.srv.CountAllAttbyDate(filterDate) // Adjust this method to count filtered records
 	} else{
-		attendances, err = ah.srv.GetAllAtt(limit, offset)
+		attDetail, err = ah.srv.GetAllAtt(limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
+		for _, detail := range attDetail {
+			responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(detail))
+		}
+		result = responseDetail
+		totalItems, _= ah.srv.CountAllAtt()
 	}
-	totalItems, _:= ah.srv.CountAllAtt()
-	var response []AttAllResponse
-	for _, att := range attendances {
-		response = append(response, ToGetAllAttendance(att))
-	}
+	
+		
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
 		meta := map[string]interface{}{
@@ -225,8 +234,9 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 			"currentPage":  page,
 			"totalPages":   totalPages,
 		}
+		
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response, meta))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", result, meta))
 
 }
 

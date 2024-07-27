@@ -60,7 +60,7 @@ func (as *attendanceService) DeleteAttByID(attID uint) error {
 	return nil
 }
 
-func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offset int) ([]att.Attandance, error) {
+func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offset int) ([]att.AttendanceDetail, error) {
 	attendances, err := as.qry.GetAttByPersonalID(personalID, limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
@@ -68,15 +68,16 @@ func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offs
 	return attendances, nil
 }
 
-func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.Attandance, error) {
+func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.AttendanceDetail, error) {
 
-    attendance, err := as.qry.GetAllAtt(limit, offset)
+    // attendance, err := as.qry.GetAllAtt(limit, offset)
+    attendance, err := as.qry.GetAttendanceDetails(limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
 	return attendance, nil
 }
-func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.Attandance, error) {
+func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.AttendanceDetail, error) {
 
     attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
 	if err != nil {
@@ -86,6 +87,13 @@ func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int)
 }
 func (ah *attendanceService) CountAllAtt() (int64, error) {
 	count, err := ah.qry.GetTotalAttendancesCount()
+	if err != nil {
+		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
+	}
+	return count, nil
+}
+func (ah *attendanceService) CountAllAttbyDate(date string) (int64, error) {
+	count, err := ah.qry.GetTotalAttendancesCountbyDate(date)
 	if err != nil {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
