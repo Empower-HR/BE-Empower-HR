@@ -25,10 +25,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	middlewares := middlewares.NewMiddlewares()
 	hashService := encrypts.NewHashService()
 	accountUtility := utils.NewAccountUtility()
-
+	cloudinaryUtility := cloudinary.NewCloudinaryUtility()
 	userData := _userData.New(db)
 	userService := _userService.New(userData, hashService, middlewares, accountUtility)
-	userHandlerAPI := _userHandler.New(userService)
+	userHandlerAPI := _userHandler.New(userService, cloudinaryUtility)
 
 	// scheduleData := _scheduleData.New(db)
 	// scheduleService := _schduleService.New(scheduleData, accountUtility)
@@ -46,6 +46,14 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/admin", userHandlerAPI.GetProfile, middlewares.JWTMiddleware())
 	e.DELETE("/admin", userHandlerAPI.DeleteAccountAdmin, middlewares.JWTMiddleware())
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
+	e.PUT("/employment", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
+	//e.PUT("/employment/:id", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
+
+	//handler memployees
+	e.GET("/employee", userHandlerAPI.GetAllAccount, middlewares.JWTMiddleware())
+	e.GET("/employee/:id", userHandlerAPI.GetProfileById, middlewares.JWTMiddleware())
+	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
+	e.DELETE("/employee/:id", userHandlerAPI.DeleteAccountEmployees, middlewares.JWTMiddleware())
 
 	// handler company
 	e.POST("/companies", ch.UpdateCompany())

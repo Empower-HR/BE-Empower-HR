@@ -44,24 +44,27 @@ type DataUserInterface interface {
 	CreateAccountAdmin(account PersonalDataEntity, companyName, department, jobPosition string) (uint, error)
 	GetAll(page, pageSize int) ([]PersonalDataEntity, error)
 	GetAccountByName(accountName string) ([]PersonalDataEntity, error)
-	GetAccountByDepartment(Department string) ([]PersonalDataEntity, error)
+	GetAccountByJobLevel(jobLevel string) ([]PersonalDataEntity, error)
 	CreateAccountEmployee(account PersonalDataEntity) (uint, error)
 	AccountByEmail(email string) (*PersonalDataEntity, error)
 	AccountById(userid uint) (*PersonalDataEntity, error)
 	UpdateAccountEmployees(userid uint, account PersonalDataEntity) error
 	UpdateAccountAdmins(userid uint, account PersonalDataEntity) error
+	UpdateProfileEmployments(userid uint, accounts EmploymentDataEntity) error
 	DeleteAccountAdmin(userid uint) error
-	DeleteAccountEmployee(userid uint) error
+	DeleteAccountEmployeeByAdmin(userid uint) error
 }
 
 type ServiceUserInterface interface {
 	RegistrasiAccountAdmin(accounts PersonalDataEntity, companyName, department, jobPosition string) (uint, error)
-	GetAllAccount(name, department string, page, pageSize int) ([]PersonalDataEntity, error)
+	GetAllAccount(name, jobLevel string, page, pageSize int) ([]PersonalDataEntity, error)
 	RegistrasiAccountEmployee(personalData PersonalDataEntity) (uint, error)
 	LoginAccount(email string, password string) (data *PersonalDataEntity, token string, err error)
 	GetProfile(userid uint) (data *PersonalDataEntity, err error)
+	GetProfileById(userid uint) (data *PersonalDataEntity, err error)
 	UpdateProfileEmployees(userid uint, accounts PersonalDataEntity) error
 	UpdateProfileAdmins(userid uint, accounts PersonalDataEntity) error
+	UpdateProfileEmployments(userid uint, accounts EmploymentDataEntity) error
 	DeleteAccountAdmin(userid uint) error
-	DeleteAccountEmployee(userid uint) error
+	DeleteAccountEmployeeByAdmin(userid uint) error
 }
