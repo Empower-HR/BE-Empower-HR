@@ -68,7 +68,6 @@ func (ah *AttHandler) UpdateAttendance(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
 
-	fmt.Println("user-id :", userID)
 	AttRequest := AttUpdateReq{}
 	if errBind := c.Bind(&AttRequest); errBind != nil {
 		log.Printf("Add Attendances: Error binding data: %v", errBind)
@@ -128,7 +127,6 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	}
 
 	// Call the service to retrieve the records
-	fmt.Println("user_id:", attID)
 	attendances, err := ah.srv.GetAttByPersonalID(uint(attId))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})

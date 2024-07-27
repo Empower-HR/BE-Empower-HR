@@ -13,7 +13,6 @@ import (
 
 func RunMigrations(db *gorm.DB) {
 	db.AutoMigrate(&datausers.EmploymentData{})
-	db.AutoMigrate(&datausers.EmploymentData{})
 	db.AutoMigrate(&datausers.PersonalData{})
 	db.AutoMigrate(&datacompanies.CompanyData{})
 	db.AutoMigrate(&dataleaves.LeavesData{})
