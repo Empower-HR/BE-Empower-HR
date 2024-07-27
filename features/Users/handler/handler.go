@@ -3,21 +3,25 @@ package handler
 import (
 	"be-empower-hr/app/middlewares"
 	users "be-empower-hr/features/Users"
+	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/responses"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 type UserHandler struct {
-	userService users.ServiceUserInterface
+	userService       users.ServiceUserInterface
+	cloudinaryUtility cloudinary.CloudinaryUtilityInterface
 }
 
-func New(us users.ServiceUserInterface) *UserHandler {
+func New(us users.ServiceUserInterface, cu cloudinary.CloudinaryUtilityInterface) *UserHandler {
 	return &UserHandler{
-		userService: us,
+		userService:       us,
+		cloudinaryUtility: cu,
 	}
 }
 
@@ -29,16 +33,19 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 	}
 
 	dataUser := users.PersonalDataEntity{
-		Name:        newUser.PersonalData.Name,
-		Email:       newUser.PersonalData.Email,
-		Password:    newUser.PersonalData.Password,
-		PhoneNumber: newUser.PersonalData.PhoneNumber,
+		Name:        newUser.Name,
+		Email:       newUser.WorkEmail,
+		Password:    newUser.Password,
+		PhoneNumber: newUser.PhoneNumber,
 		Role:        "admin",
 	}
 
-	// Menggunakan data dari EmploymentData yang pertama, jika ada
-	empData := newUser.PersonalData.EmploymentData[0]
-	_, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.CompanyData.CompanyName, empData.Department, empData.JobPosition)
+	empData := users.EmploymentDataEntity{
+		Department:  newUser.Department,
+		JobPosition: newUser.JobPosition,
+	}
+
+	_, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
 	if errInsert != nil {
 		log.Printf("Register: Error registering user: %v", errInsert)
 		if strings.Contains(errInsert.Error(), "validation") {
@@ -48,8 +55,12 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 	}
 
 	userResponse := UserResponse{
-		PersonalData: newUser.PersonalData,
-		CompanyName:  newUser.CompanyData.CompanyName,
+		Name:        newUser.Name,
+		WorkEmail:   newUser.WorkEmail,
+		PhoneNumber: newUser.PhoneNumber,
+		Department:  newUser.Department,
+		JobPosition: newUser.JobPosition,
+		CompanyName: newUser.Company,
 	}
 
 	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "user registration successful", userResponse))
@@ -97,7 +108,54 @@ func (uh *UserHandler) GetProfile(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
 	}
 
-	data, err := uh.userService.GetProfile(uint(userID))
+	profile, err := uh.userService.GetProfile(uint(userID))
+	if err != nil {
+		log.Printf("Error getting user profile: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error getting user profile", nil))
+	}
+
+	profileResponse := ProfileResponse{
+		ProfilePicture: profile.ProfilePicture,
+		Name:           profile.Name,
+		Email:          profile.Email,
+		PhoneNumber:    profile.PhoneNumber,
+		PlaceBirthDate: profile.PlaceBirth,
+		BirthDate:      profile.BirthDate,
+		Gender:         profile.Gender,
+		Religion:       profile.Religion,
+		NIK:            profile.NIK,
+		Address:        profile.Address,
+		EmploymentData: make([]EmploymentDataResponse, len(profile.EmploymentData)),
+	}
+
+	for i, emp := range profile.EmploymentData {
+		profileResponse.EmploymentData[i] = EmploymentDataResponse{
+			EmploymentStatus: emp.EmploymentStatus,
+			JoinDate:         emp.JoinDate,
+			Department:       emp.Department,
+			JobPosition:      emp.JobPosition,
+			JobLevel:         emp.JobLevel,
+			Schedule:         emp.Schedule,
+			ApprovalLine:     emp.ApprovalLine,
+			Manager:          emp.Manager,
+		}
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile retrieved successfully", profileResponse))
+}
+
+// lihat detail profile employee
+func (uh *UserHandler) GetProfileById(c echo.Context) error {
+	id := c.Param("id")
+	idConv, errConv := strconv.Atoi(id)
+	if errConv != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{
+			"status":  "failed",
+			"message": "error convert id: " + errConv.Error(),
+		})
+	}
+
+	data, err := uh.userService.GetProfileById(uint(idConv))
 	if err != nil {
 		log.Printf("Error getting user profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error getting user profile", nil))
@@ -112,39 +170,113 @@ func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
 
-	updatedUser := UserRequest{}
+	updatedUser := UpdateAdminRequest{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
 		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
-	dataUser := users.PersonalDataEntity{
-		ProfilePicture: updatedUser.PersonalData.ProfilePicture,
-		Name:           updatedUser.PersonalData.Name,
-		Email:          updatedUser.PersonalData.Email,
-		Password:       updatedUser.PersonalData.Password,
-		PhoneNumber:    updatedUser.PersonalData.PhoneNumber,
-		PlaceBirth:     updatedUser.PersonalData.PlaceBirth,
-		BirthDate:      updatedUser.PersonalData.BirthDate,
-		Gender:         updatedUser.PersonalData.Gender,
-		Religion:       updatedUser.PersonalData.Religion,
-		NIK:            updatedUser.PersonalData.NIK,
-		Address:        updatedUser.PersonalData.Address,
-		EmploymentData: []users.EmploymentDataEntity{
-			{
-				EmploymentStatus: updatedUser.PersonalData.EmploymentData[0].EmploymentStatus,
-				JoinDate:         updatedUser.PersonalData.EmploymentData[0].JoinDate,
-				Department:       updatedUser.PersonalData.EmploymentData[0].Department,
-				JobPosition:      updatedUser.PersonalData.EmploymentData[0].JobPosition,
-				JobLevel:         updatedUser.PersonalData.EmploymentData[0].JobLevel,
-				Schedule:         updatedUser.PersonalData.EmploymentData[0].Schedule,
-				ApprovalLine:     updatedUser.PersonalData.EmploymentData[0].ApprovalLine,
-				Manager:          updatedUser.PersonalData.EmploymentData[0].Manager,
-			},
-		},
+	// Handle profile picture upload to Cloudinary
+	profilePictureFile, err := c.FormFile("profile_picture")
+	if err == nil {
+		src, err := profilePictureFile.Open()
+		if err != nil {
+			log.Printf("UpdateProfileAdmins: Error opening file: %v", err)
+			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
+		}
+		defer src.Close()
+
+		profilePictureURL, err := uh.cloudinaryUtility.UploadCloudinary(src, profilePictureFile.Filename)
+		if err != nil {
+			log.Printf("UpdateProfileAdmins: Error uploading to Cloudinary: %v", err)
+			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
+		}
+		updatedUser.ProfilePicture = profilePictureURL
 	}
 
-	err := uh.userService.UpdateProfileAdmins(uint(userID), dataUser)
+	dataUser := users.PersonalDataEntity{
+		ProfilePicture: updatedUser.ProfilePicture,
+		Name:           updatedUser.Name,
+		Email:          updatedUser.Email,
+		Password:       updatedUser.Password,
+		PhoneNumber:    updatedUser.PhoneNumber,
+		PlaceBirth:     updatedUser.PlaceBirth,
+		BirthDate:      updatedUser.BirthDate,
+		Gender:         updatedUser.Gender,
+		Religion:       updatedUser.Religion,
+		NIK:            updatedUser.NIK,
+		Address:        updatedUser.Address,
+	}
+
+	err = uh.userService.UpdateProfileAdmins(uint(userID), dataUser)
+	if err != nil {
+		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+}
+
+func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
+	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if userID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
+
+	updatedUser := EmploymentData{}
+	if errBind := c.Bind(&updatedUser); errBind != nil {
+		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
+	}
+
+	dataUser := users.EmploymentDataEntity{
+		EmploymentStatus: updatedUser.EmploymentStatus,
+		JoinDate:         updatedUser.JoinDate,
+		Department:       updatedUser.Department,
+		JobPosition:      updatedUser.JobPosition,
+		JobLevel:         updatedUser.JobLevel,
+		Schedule:         updatedUser.Schedule,
+		ApprovalLine:     updatedUser.ApprovalLine,
+		Manager:          updatedUser.Manager,
+	}
+
+	err := uh.userService.UpdateProfileEmployments(uint(userID), dataUser)
+	if err != nil {
+		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+}
+
+func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
+	id := c.Param("id")
+	idConv, errConv := strconv.Atoi(id)
+	if errConv != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{
+			"status":  "failed",
+			"message": "error convert id: " + errConv.Error(),
+		})
+	}
+
+	updatedUser := EmploymentData{}
+	if errBind := c.Bind(&updatedUser); errBind != nil {
+		log.Printf("UpdateProfileAdmins: Error binding data: %v", errBind)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
+	}
+
+	dataUser := users.EmploymentDataEntity{
+		EmploymentStatus: updatedUser.EmploymentStatus,
+		JoinDate:         updatedUser.JoinDate,
+		Department:       updatedUser.Department,
+		JobPosition:      updatedUser.JobPosition,
+		JobLevel:         updatedUser.JobLevel,
+		Schedule:         updatedUser.Schedule,
+		ApprovalLine:     updatedUser.ApprovalLine,
+		Manager:          updatedUser.Manager,
+	}
+
+	err := uh.userService.UpdateProfileEmployments(uint(idConv), dataUser)
 	if err != nil {
 		log.Printf("UpdateProfileAdmins: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
@@ -175,27 +307,45 @@ func (uh *UserHandler) UpdateProfileEmployees(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
 
-	updatedUser := UserRequest{}
+	updatedUser := UpdateAdminRequest{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
 		log.Printf("update profile employees: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
 
-	dataUser := users.PersonalDataEntity{
-		ProfilePicture: updatedUser.PersonalData.ProfilePicture,
-		Name:           updatedUser.PersonalData.Name,
-		Email:          updatedUser.PersonalData.Email,
-		Password:       updatedUser.PersonalData.Password,
-		PhoneNumber:    updatedUser.PersonalData.PhoneNumber,
-		PlaceBirth:     updatedUser.PersonalData.PlaceBirth,
-		BirthDate:      updatedUser.PersonalData.BirthDate,
-		Gender:         updatedUser.PersonalData.Gender,
-		Religion:       updatedUser.PersonalData.Religion,
-		NIK:            updatedUser.PersonalData.NIK,
-		Address:        updatedUser.PersonalData.Address,
+	// Handle profile picture upload to Cloudinary
+	profilePictureFile, err := c.FormFile("profile_picture")
+	if err == nil {
+		src, err := profilePictureFile.Open()
+		if err != nil {
+			log.Printf("update profile employees: Error opening file: %v", err)
+			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
+		}
+		defer src.Close()
+
+		profilePictureURL, err := uh.cloudinaryUtility.UploadCloudinary(src, profilePictureFile.Filename)
+		if err != nil {
+			log.Printf("update profile employees: Error uploading to Cloudinary: %v", err)
+			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
+		}
+		updatedUser.ProfilePicture = profilePictureURL
 	}
 
-	err := uh.userService.UpdateProfileEmployees(uint(userID), dataUser)
+	dataUser := users.PersonalDataEntity{
+		ProfilePicture: updatedUser.ProfilePicture,
+		Name:           updatedUser.Name,
+		Email:          updatedUser.Email,
+		Password:       updatedUser.Password,
+		PhoneNumber:    updatedUser.PhoneNumber,
+		PlaceBirth:     updatedUser.PlaceBirth,
+		BirthDate:      updatedUser.BirthDate,
+		Gender:         updatedUser.Gender,
+		Religion:       updatedUser.Religion,
+		NIK:            updatedUser.NIK,
+		Address:        updatedUser.Address,
+	}
+
+	err = uh.userService.UpdateProfileEmployees(uint(userID), dataUser)
 	if err != nil {
 		log.Printf("update profile employees: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
@@ -205,17 +355,59 @@ func (uh *UserHandler) UpdateProfileEmployees(c echo.Context) error {
 }
 
 func (uh *UserHandler) DeleteAccountEmployees(c echo.Context) error {
-	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
-	if userID == 0 {
-		log.Println("Invalid user ID from token")
-		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
+	id := c.Param("id")
+	idConv, errConv := strconv.Atoi(id)
+	if errConv != nil {
+		return c.JSON(http.StatusBadRequest, map[string]any{
+			"status":  "failed",
+			"message": "error convert id: " + errConv.Error(),
+		})
 	}
 
-	err := uh.userService.DeleteAccountEmployee(uint(userID))
+	err := uh.userService.DeleteAccountEmployeeByAdmin(uint(idConv))
 	if err != nil {
 		log.Printf("Error deleting employees account: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error deleting employees account", nil))
 	}
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "account deleted successfully", nil))
+}
+
+func (uh *UserHandler) GetAllAccount(c echo.Context) error {
+	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if userID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
+
+	name := c.QueryParam("name")
+	department := c.QueryParam("job_level")
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(c.QueryParam("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	allAccount, err := uh.userService.GetAllAccount(name, department, page, pageSize)
+	if err != nil {
+		log.Println("Error fetching accounts:", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to fetch accounts", nil))
+	}
+
+	var allUserResponse []AllUsersResponse
+	for _, v := range allAccount {
+		for _, emp := range v.EmploymentData {
+			allUserResponse = append(allUserResponse, AllUsersResponse{
+				Name:             v.Name,
+				JobPosition:      emp.JobPosition,
+				JobLevel:         emp.JobLevel,
+				EmploymentStatus: emp.EmploymentStatus,
+				JoinDate:         emp.JoinDate,
+			})
+		}
+	}
+
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "All accounts fetched successfully", allUserResponse))
 }

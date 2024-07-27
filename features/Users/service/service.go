@@ -37,8 +37,8 @@ func (us *userService) DeleteAccountAdmin(userid uint) error {
 }
 
 // DeleteAccountEmployee implements users.ServiceUserInterface.
-func (us *userService) DeleteAccountEmployee(userid uint) error {
-	err := us.userData.DeleteAccountEmployee(userid)
+func (us *userService) DeleteAccountEmployeeByAdmin(userid uint) error {
+	err := us.userData.DeleteAccountEmployeeByAdmin(userid)
 	if err != nil {
 		log.Println("Error deleting account:", err)
 		return err
@@ -49,6 +49,15 @@ func (us *userService) DeleteAccountEmployee(userid uint) error {
 
 // GetProfile implements users.ServiceUserInterface.
 func (us *userService) GetProfile(userid uint) (data *users.PersonalDataEntity, err error) {
+	data, err = us.userData.AccountById(userid)
+	if err != nil {
+		log.Println("Error getting profile:", err)
+		return nil, err
+	}
+	return data, nil
+}
+
+func (us *userService) GetProfileById(userid uint) (data *users.PersonalDataEntity, err error) {
 	data, err = us.userData.AccountById(userid)
 	if err != nil {
 		log.Println("Error getting profile:", err)
@@ -123,6 +132,21 @@ func (us *userService) RegistrasiAccountEmployee(personalData users.PersonalData
 	if err := us.accountUtility.PhoneNumberValidator(personalData.PhoneNumber); err != nil {
 		return 0, err
 	}
+	if err := us.accountUtility.GenderValidator(personalData.Gender); err != nil {
+		return 0, err
+	}
+	if err := us.accountUtility.ReligionValidator(personalData.Religion); err != nil {
+		return 0, err
+	}
+
+	for _, employment := range personalData.EmploymentData {
+		if err := us.accountUtility.EmploymentStatusValidator(employment.EmploymentStatus); err != nil {
+			return 0, err
+		}
+		if err := us.accountUtility.JobLevelValidator(employment.JobLevel); err != nil {
+			return 0, err
+		}
+	}
 
 	// Generate and hash password
 	var errHash error
@@ -176,6 +200,19 @@ func (us *userService) UpdateProfileAdmins(userid uint, accounts users.PersonalD
 	return nil
 }
 
+func (us *userService) UpdateProfileEmployments(userid uint, accounts users.EmploymentDataEntity) error {
+	if userid == 0 {
+		return errors.New("invalid user ID")
+	}
+	err := us.userData.UpdateProfileEmployments(userid, accounts)
+	if err != nil {
+		log.Printf("failed to update profile employments: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // UpdateProfileEmployees implements users.ServiceUserInterface.
 func (us *userService) UpdateProfileEmployees(userid uint, accounts users.PersonalDataEntity) error {
 	if accounts.Email != "" {
@@ -207,27 +244,27 @@ func (us *userService) UpdateProfileEmployees(userid uint, accounts users.Person
 }
 
 // GetAllAccount implements users.ServiceUserInterface.
-func (us *userService) GetAllAccount(name, department string, page int, pageSize int) ([]users.PersonalDataEntity, error) {
+func (us *userService) GetAllAccount(name, jobLevel string, page int, pageSize int) ([]users.PersonalDataEntity, error) {
 	if name != "" {
 		product, err := us.userData.GetAccountByName(name)
 		if err != nil {
-			log.Println("Error retrieving product by name:", err)
+			log.Println("Error retrieving account by name:", err)
 			return nil, err
 		}
 		return product, nil
 	}
-	if department!= "" {
-		product, err := us.userData.GetAccountByDepartment(department)
-        if err!= nil {
-            log.Println("Error retrieving product by department:", err)
-            return nil, err
-        }
-        return product, nil
+	if jobLevel != "" {
+		product, err := us.userData.GetAccountByJobLevel(jobLevel)
+		if err != nil {
+			log.Println("Error retrieving account by department:", err)
+			return nil, err
+		}
+		return product, nil
 	}
-	
+
 	allAccount, err := us.userData.GetAll(page, pageSize)
 	if err != nil {
-		log.Println("Error retrieving all products:", err)
+		log.Println("Error retrieving all account:", err)
 		return nil, err
 	}
 	return allAccount, nil

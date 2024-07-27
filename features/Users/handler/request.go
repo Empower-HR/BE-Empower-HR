@@ -1,9 +1,13 @@
 package handler
 
 type UserRequest struct {
-	PersonalData PersonalData  `json:"personal_data"`
-	PayrollData  []PayrollData `json:"payroll_data"`
-	CompanyData  CompanyData   `json:"company_data"`
+	Name        string `json:"name"`
+	WorkEmail   string `json:"work_email"`
+	Password    string `json:"password"`
+	PhoneNumber string `json:"phone_number"`
+	Department  string `json:"department"`
+	JobPosition string `json:"job_position"`
+	Company     string `json:"company_name"`
 }
 
 type LoginRequest struct {
@@ -11,39 +15,27 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type PersonalData struct {
-	ProfilePicture string           `json:"profile_picture"`
-	Name           string           `json:"name"`
-	Email          string           `json:"email"`
-	Password       string           `json:"password"`
-	PhoneNumber    string           `json:"phone_number"`
-	PlaceBirth     string           `json:"place_birth"`
-	BirthDate      string           `json:"birth_date"`
-	Gender         string           `json:"gender"`
-	Religion       string           `json:"religion"`
-	NIK            string           `json:"nik"`
-	Address        string           `json:"address"`
-	EmploymentData []EmploymentData `json:"employment_data"`
+type UpdateAdminRequest struct {
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	Name           string `json:"name" form:"name"`
+	Email          string `json:"email" form:"email"`
+	Password       string `json:"password" form:"password"`
+	PhoneNumber    string `json:"phone_number" form:"phone_number"`
+	PlaceBirth     string `json:"place_birth" form:"place_birth"`
+	BirthDate      string `json:"birth_date" form:"birth_date"`
+	Gender         string `json:"gender" form:"gender"`
+	Religion       string `json:"religion" form:"religion"`
+	NIK            string `json:"nik" form:"nik"`
+	Address        string `json:"address" form:"address"`
 }
 
 type EmploymentData struct {
-	EmploymentStatus string        `json:"employment_status"`
-	JoinDate         string        `json:"join_date"`
-	Department       string        `json:"department,"`
-	JobPosition      string        `json:"job_position"`
-	JobLevel         string        `json:"job_level"`
-	Schedule         string        `json:"schedule"`
-	ApprovalLine     string        `json:"approval_line"`
-	Manager          string        `json:"manager"`
-	Payrolls         []PayrollData `json:"payrolls"`
-}
-
-type PayrollData struct {
-	Salary        float64 `json:"salary"`
-	BankName      string  `json:"bank_name"`
-	AccountNumber int     `json:"account_number"`
-}
-
-type CompanyData struct {
-	CompanyName string `json:"company_name"`
+	EmploymentStatus string `json:"employment_status"`
+	JoinDate         string `json:"join_date"`
+	Department       string `json:"department"`
+	JobPosition      string `json:"job_position"`
+	JobLevel         string `json:"job_level"`
+	Schedule         string `json:"schedule"`
+	ApprovalLine     string `json:"approval_line"`
+	Manager          string `json:"manager"`
 }

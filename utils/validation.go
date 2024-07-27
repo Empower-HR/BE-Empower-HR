@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,10 @@ type AccountUtilityInterface interface {
 	PhoneNumberValidator(inputHP string) error
 	GeneratePassword(length int) (string, error)
 	NumberLoop(n int) ([]int, error)
+	GenderValidator(gender string) error
+	ReligionValidator(religion string) error
+	EmploymentStatusValidator(status string) error
+	JobLevelValidator(level string) error
 }
 
 type accountUtility struct{}
@@ -101,4 +106,49 @@ func (ac *accountUtility) NumberLoop(n int) ([]int, error) {
 		result = append(result, i)
 	}
 	return result, nil
+}
+
+// GenderValidator validates if the gender is either "male" or "female".
+func (a *accountUtility) GenderValidator(gender string) error {
+	gender = strings.ToLower(gender)
+	if gender != "male" && gender != "female" {
+		return errors.New("invalid gender: must be 'male' or 'female'")
+	}
+	return nil
+}
+
+// ReligionValidator validates if the religion is one of the allowed values.
+func (a *accountUtility) ReligionValidator(religion string) error {
+	validReligions := []string{"islam", "katolik", "protestan", "hindhu", "budha", "khong hu chu"}
+	religion = strings.ToLower(religion)
+	for _, validReligion := range validReligions {
+		if religion == validReligion {
+			return nil
+		}
+	}
+	return errors.New("invalid religion: must be one of 'islam', 'katolik', 'protestan', 'hindhu', 'budha', 'khong hu chu'")
+}
+
+// EmploymentStatusValidator validates if the employment status is either "permanent" or "contract".
+func (a *accountUtility) EmploymentStatusValidator(status string) error {
+	validStatuses := []string{"permanent", "contract"}
+	status = strings.ToLower(status)
+	for _, validStatus := range validStatuses {
+		if status == validStatus {
+			return nil
+		}
+	}
+	return errors.New("invalid employment status: must be 'permanent' or 'contract'")
+}
+
+// JobLevelValidator validates if the job level is one of the allowed values.
+func (a *accountUtility) JobLevelValidator(level string) error {
+	validLevels := []string{"staff", "manager", "ceo"}
+	level = strings.ToLower(level)
+	for _, validLevel := range validLevels {
+		if level == validLevel {
+			return nil
+		}
+	}
+	return errors.New("invalid job level: must be 'staff', 'manager', or 'ceo'")
 }
