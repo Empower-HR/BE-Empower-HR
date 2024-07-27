@@ -1,7 +1,8 @@
 package dataattendance
 
 import (
-	"be-empower-hr/features/Attendance"
+	attendance "be-empower-hr/features/Attendance"
+
 	"gorm.io/gorm"
 )
 
@@ -64,6 +65,15 @@ func (am *AttandanceModel) GetAttByPersonalID(personalID uint, limit int, offset
 func (am *AttandanceModel) GetAllAtt(limit int, offset int) ([]attendance.Attandance, error) {
 	var attendances []attendance.Attandance
 	err := am.db.Where("deleted_at IS NULL").Limit(limit).Offset(offset).Find(&attendances).Error
+	if err != nil {
+		return nil, err
+	}
+	return attendances, nil
+}
+
+func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) ([]attendance.Attandance, error) {
+	var attendances []attendance.Attandance
+	err := am.db.Where("date = ? AND deleted_at IS NULL", date).Limit(limit).Offset(offset).Find(&attendances).Error
 	if err != nil {
 		return nil, err
 	}

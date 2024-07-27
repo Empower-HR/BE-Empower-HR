@@ -33,6 +33,7 @@ type AServices interface {
 	GetAllAtt(limit int, offset int) ([]Attandance, error)
 	CountAllAtt() (int64, error)
 	DownloadAllAtt() error
+	GetAllAttbyDate(date string, limit int, offset int) ([]Attandance, error)
 }
 
 type AQuery interface {
@@ -44,4 +45,5 @@ type AQuery interface {
 	DeleteAttbyId(attId uint) error
 	GetTotalAttendancesCount() (int64, error)
 	GetAllAttDownload() ([]Attandance, error)
+	GetAllAttbyDate(date string, limit int, offset int) ([]Attandance, error)
 }

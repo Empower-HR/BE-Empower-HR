@@ -76,6 +76,14 @@ func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.Attandance,
 	}
 	return attendance, nil
 }
+func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.Attandance, error) {
+
+    attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return attendance, nil
+}
 func (ah *attendanceService) CountAllAtt() (int64, error) {
 	count, err := ah.qry.GetTotalAttendancesCount()
 	if err != nil {

@@ -191,17 +191,26 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	if err != nil || pageSize < 1 {
 		pageSize = 10
 	}
-
+	var attendances []attendance.Attandance
 	// Create Pagination object
 	pagination := utils.NewPagination(page, pageSize)
 
 	// Use Pagination object to get offset and limit
 	offset := pagination.Offset()
 	limit := pagination.PageSize
-
-	attendances, err := ah.srv.GetAllAtt(limit, offset)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	
+	// filter by date
+	filterDate := c.QueryParam("date")
+	if filterDate != "" {
+		attendances, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+	} else{
+		attendances, err = ah.srv.GetAllAtt(limit, offset)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 	}
 	totalItems, _:= ah.srv.CountAllAtt()
 	var response []AttAllResponse
