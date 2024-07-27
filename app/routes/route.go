@@ -38,7 +38,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 
 	scheduleData := _scheduleData.New(db)
 	scheduleService := _schduleService.New(scheduleData, accountUtility)
-	scheduleHandlerAPI := _scheduleHandler.New(scheduleService, cs)
+	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)

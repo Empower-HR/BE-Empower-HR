@@ -29,6 +29,11 @@ func (ss *scheduleService) CreateSchedule(schedule schedule.ScheduleDataEntity) 
 		return 0, err
 	}
 
+	_, err = ss.GetScheduleById(schedule.CompanyID)
+	if err != nil {
+		return 0, err
+	}
+
 	if schedule.Name == "" || schedule.ScheduleIn == "" || schedule.ScheduleOut == "" {
 		return 0, errors.New("name, effective_date, schedule_in, and schedule_out cannot be empty")
 	}
@@ -52,15 +57,16 @@ func (ss *scheduleService) GetScheduleById(scheduleid uint) (*schedule.ScheduleD
 
 // UpdateSchedule implements schedule.ServiceScheduleInterface.
 func (ss *scheduleService) UpdateSchedule(scheduleid uint, account schedule.ScheduleDataEntity) error {
-	// if account.Name == "" || account.EffectiveDate == "" || account.ScheduleIn == "" || account.ScheduleOut == "" {
-	// 	return errors.New("nama/effective_date/schedule_in/schedule_out tidak boleh kosong")
-	// }
-
 	if account.Days <= 0 {
 		return errors.New("days must be greater than 0")
 	}
 
 	_, err := ss.accountUtility.NumberLoop(account.Days)
+	if err != nil {
+		return err
+	}
+
+	_, err = ss.GetScheduleById(account.CompanyID)
 	if err != nil {
 		return err
 	}

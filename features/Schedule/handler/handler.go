@@ -1,11 +1,9 @@
 package handler
 
 import (
-	companies "be-empower-hr/features/Companies"
 	schedule "be-empower-hr/features/Schedule"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/responses"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -13,14 +11,12 @@ import (
 )
 
 type ScheduleHandler struct {
-	scheduleService  schedule.ServiceScheduleInterface
-	companiesService companies.Service
+	scheduleService schedule.ServiceScheduleInterface
 }
 
-func New(sc schedule.ServiceScheduleInterface, cs companies.Service) *ScheduleHandler {
+func New(sc schedule.ServiceScheduleInterface) *ScheduleHandler {
 	return &ScheduleHandler{
-		scheduleService:  sc,
-		companiesService: cs,
+		scheduleService: sc,
 	}
 }
 
@@ -31,18 +27,12 @@ func (sh *ScheduleHandler) CreateSchedule() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
 		}
 
-		company, err := sh.companiesService.GetCompany(req.Company)
-		if err != nil {
-			log.Print("Error", err.Error())
-			return c.JSON(http.StatusNotFound, responses.JSONWebResponse(http.StatusNotFound, "not found", "Company id not found", nil))
-		}
-
 		parsedTime, err := utils.StringToDate(req.EffectiveDate)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input effective date"})
 		}
 		scheduleData := schedule.ScheduleDataEntity{
-			CompanyID:     company.ID,
+			CompanyID:     req.Company,
 			Name:          req.Name,
 			EffectiveDate: parsedTime,
 			ScheduleIn:    req.ScheduleIn,
@@ -103,12 +93,6 @@ func (sh *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "Invalid schedule ID", nil))
 	}
 
-	company, err := sh.companiesService.GetCompany(req.Company)
-	if err != nil {
-		log.Print("Error", err.Error())
-		return c.JSON(http.StatusNotFound, responses.JSONWebResponse(http.StatusNotFound, "not found", "Company id not found", nil))
-	}
-
 	parsedTime, err := utils.StringToDate(req.EffectiveDate)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input effective date"})
@@ -116,7 +100,7 @@ func (sh *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 
 	// Convert ScheduleRequest to ScheduleDataEntity
 	scheduleEntity := schedule.ScheduleDataEntity{
-		CompanyID:     company.ID,
+		CompanyID:     req.Company,
 		Name:          req.Name,
 		EffectiveDate: parsedTime,
 		ScheduleIn:    req.ScheduleIn,

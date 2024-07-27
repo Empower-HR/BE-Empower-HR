@@ -1,6 +1,7 @@
 package dataschedule
 
 import (
+	// companies "be-empower-hr/features/Companies"
 	schedule "be-empower-hr/features/Schedule"
 
 	"gorm.io/gorm"
@@ -10,10 +11,36 @@ type scheduleQuery struct {
 	db *gorm.DB
 }
 
+type companyModels struct {
+	db *gorm.DB
+}
+
 func New(db *gorm.DB) schedule.DataScheduleInterface {
-	return &scheduleQuery{
+	scheduleQuery := &scheduleQuery{
 		db: db,
 	}
+	// companyModels := &companyModels{
+	// 	db: db,
+	// }
+	return scheduleQuery
+}
+
+// GetCompany implements companies.Query.
+func (c *companyModels) GetCompany(ID uint) (schedule.CompanyDataEntity, error) {
+	var result schedule.CompanyDataEntity
+
+	err := c.db.Where("id = ?", ID).First(&result).Error
+
+	if err != nil {
+		return schedule.CompanyDataEntity{}, err
+	}
+
+	return result, nil
+}
+
+// UpdateCompany implements companies.Query.
+func (c *companyModels) UpdateCompany(ID uint, updateCompany schedule.CompanyDataEntity) error {
+	panic("unimplemented")
 }
 
 // CreateSchedule implements schedule.DataScheduleInterface.
