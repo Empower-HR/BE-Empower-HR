@@ -3,6 +3,7 @@ package datausers
 import (
 	dataleaves "be-empower-hr/features/Leaves/data_leaves"
 	datapayroll "be-empower-hr/features/Payroll/data_payroll"
+	dataatt"be-empower-hr/features/Attendance/data_attendance"
 	users "be-empower-hr/features/Users"
 	"time"
 
@@ -27,6 +28,7 @@ type PersonalData struct {
 	Role           string
 	EmploymentData []EmploymentData        `gorm:"foreignKey:PersonalDataID"`
 	Leaves         []dataleaves.LeavesData `gorm:"foreignKey:PersonalDataID"`
+	Attandance	   []dataatt.Attandance		`gorm:"foreignKey:PersonalDataID"`
 }
 
 type EmploymentData struct {

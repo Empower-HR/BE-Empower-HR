@@ -9,6 +9,13 @@ import (
 	_userHandler "be-empower-hr/features/Users/handler"
 	_userService "be-empower-hr/features/Users/service"
 
+	_attData "be-empower-hr/features/Attendance/data_attendance"
+	_attHandler "be-empower-hr/features/Attendance/handler"
+	_attService "be-empower-hr/features/Attendance/service"
+
+	// _scheduleData "be-empower-hr/features/Schedule/data_schedule"
+	// _schduleService "be-empower-hr/features/Schedule/service"
+	// _scheduleHandler "be-empower-hr/features/Schedule/handler"
 	_scheduleData "be-empower-hr/features/Schedule/data_schedule"
 	_scheduleHandler "be-empower-hr/features/Schedule/handler"
 	_schduleService "be-empower-hr/features/Schedule/service"
@@ -16,6 +23,7 @@ import (
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
+	"be-empower-hr/utils/pdf"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -25,10 +33,18 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	middlewares := middlewares.NewMiddlewares()
 	hashService := encrypts.NewHashService()
 	accountUtility := utils.NewAccountUtility()
+	pdfUtility := pdf.NewPdfUtility()
 	cloudinaryUtility := cloudinary.NewCloudinaryUtility()
 	company := _datacompanies.NewCompanyModels(db)
 	userData := _userData.New(db)
 	userService := _userService.New(userData, hashService, middlewares, accountUtility, company)
+	attData := _attData.NewAttandancesModel(db)
+	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
+	attHandler := _attHandler.New(attService)
+
+	scheduleData := _scheduleData.New(db)
+	scheduleService := _schduleService.New(scheduleData, accountUtility)
+	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 	userHandlerAPI := _userHandler.New(userService, cloudinaryUtility)
 
 	// api company
@@ -37,10 +53,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	cl := cloudinary.NewCloudinaryUtility()
 	ch := _companyHandler.NewCompanyHandler(cs, cl)
 
-	scheduleData := _scheduleData.New(db)
-	scheduleService := _schduleService.New(scheduleData, accountUtility)
-	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
-
+	
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
 	e.POST("/login", userHandlerAPI.Login)
@@ -58,6 +71,13 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
 	e.DELETE("/employee/:id", userHandlerAPI.DeleteAccountEmployees, middlewares.JWTMiddleware())
 
+	e.POST("/attendance", attHandler.AddAttendance, middlewares.JWTMiddleware())
+	e.PUT("/attendance/:attendance_id", attHandler.UpdateAttendance, middlewares.JWTMiddleware())
+	e.DELETE("/attendance/:attendance_id", attHandler.DeleteAttendance, middlewares.JWTMiddleware())
+	e.GET("/attendance", attHandler.GetAllAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/download", attHandler.DownloadPdf)
+  
 	// handler company
 	e.PUT("/companies", ch.UpdateCompany(), middlewares.JWTMiddleware())
 	e.GET("/companies", ch.GetCompany(), middlewares.JWTMiddleware())
