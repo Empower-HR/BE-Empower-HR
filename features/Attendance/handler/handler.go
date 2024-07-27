@@ -3,9 +3,11 @@ package handler
 import (
 	"be-empower-hr/app/middlewares"
 	attendance "be-empower-hr/features/Attendance"
+	"be-empower-hr/utils"
 	"be-empower-hr/utils/responses"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -126,17 +128,49 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
 
+	// Membaca parameter dari query string
+	pageStr := c.QueryParam("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSizeStr := c.QueryParam("pageSize")
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	// Create Pagination object
+	pagination := utils.NewPagination(page, pageSize)
+
+	// Use Pagination object to get offset and limit
+	offset := pagination.Offset()
+	limit := pagination.PageSize
+
+
 	// Call the service to retrieve the records
-	attendances, err := ah.srv.GetAttByPersonalID(uint(attId))
+	attendances, err := ah.srv.GetAttByPersonalID(uint(attId), limit, offset)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
+
+	totalItems, _:= ah.srv.CountAllAtt()
 	var response []AttResponse
 	for _, att := range attendances {
 		response = append(response, ToGetAttendanceResponse(att))
 	}
+
+	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
+
+		meta := map[string]interface{}{
+			"totalItems":   totalItems,
+			"itemsPerPage": limit,
+			"currentPage":  page,
+			"totalPages":   totalPages,
+		}
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "attendance records retrieved successfully", response))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response,meta))
 }
 
 func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
@@ -146,16 +180,44 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	}
 	fmt.Println("user_id:", personalID)
 
-	attendances, err := ah.srv.GetAllAtt()
+	// Membaca parameter dari query string
+	pageStr := c.QueryParam("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	pageSizeStr := c.QueryParam("pageSize")
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	// Create Pagination object
+	pagination := utils.NewPagination(page, pageSize)
+
+	// Use Pagination object to get offset and limit
+	offset := pagination.Offset()
+	limit := pagination.PageSize
+
+	attendances, err := ah.srv.GetAllAtt(limit, offset)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
+	totalItems, _:= ah.srv.CountAllAtt()
 	var response []AttAllResponse
 	for _, att := range attendances {
 		response = append(response, ToGetAllAttendance(att))
 	}
+	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
+
+		meta := map[string]interface{}{
+			"totalItems":   totalItems,
+			"itemsPerPage": limit,
+			"currentPage":  page,
+			"totalPages":   totalPages,
+		}
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "attendance records retrieved successfully", response))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response, meta))
 
 }
 

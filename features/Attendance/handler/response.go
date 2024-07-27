@@ -15,6 +15,8 @@ type AttAllResponse struct {
 	Lat      string `json:"lat"`
 	Notes    string `json:"notes"`
 }
+
+
 type AttResponse struct {
 	ID       uint   `json:"id"`
 	ClockIn  string `json:"clock_in"`

@@ -57,19 +57,26 @@ func (as *attendanceService) DeleteAttByID(attID uint) error {
 	return nil
 }
 
-func (as *attendanceService) GetAttByPersonalID(personalID uint) ([]att.Attandance, error) {
-	attendances, err := as.qry.GetAttByPersonalID(personalID)
+func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offset int) ([]att.Attandance, error) {
+	attendances, err := as.qry.GetAttByPersonalID(personalID, limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
 	return attendances, nil
 }
 
-func (as *attendanceService) GetAllAtt() ([]att.Attandance, error) {
+func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.Attandance, error) {
 
-    attendance, err := as.qry.GetAllAtt()
+    attendance, err := as.qry.GetAllAtt(limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
 	return attendance, nil
+}
+func (ah *attendanceService) CountAllAtt() (int64, error) {
+	count, err := ah.qry.GetTotalAttendancesCount()
+	if err != nil {
+		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
+	}
+	return count, nil
 }

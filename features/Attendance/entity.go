@@ -28,15 +28,17 @@ type AServices interface {
 	AddAtt(newAtt Attandance) error
 	UpdateAtt(id uint, updateAtt Attandance) error
 	DeleteAttByID(attID uint) error
-	GetAttByPersonalID(personalID uint) ([]Attandance, error)
-	GetAllAtt() ([]Attandance, error)
+	GetAttByPersonalID(personalID uint, limit int, offset int) ([]Attandance, error)
+	GetAllAtt(limit int, offset int) ([]Attandance, error)
+	CountAllAtt() (int64, error)
 }
 
 type AQuery interface {
 	Create(newAtt Attandance) error
 	IsDateExists(personalID uint, date string) (bool, error)
 	Update(id uint, updatedAtt Attandance) error
-	GetAttByPersonalID(personalID uint) ([]Attandance, error)
-	GetAllAtt() ([]Attandance, error)
+	GetAttByPersonalID(personalID uint, limit int, offset int) ([]Attandance, error)
+	GetAllAtt(limit int, offset int) ([]Attandance, error)
 	DeleteAttbyId(attId uint) error
+	GetTotalAttendancesCount() (int64, error)
 }
