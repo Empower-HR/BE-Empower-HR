@@ -1,6 +1,7 @@
 package handler
 
 type ScheduleRequest struct {
+	Company       uint   `json:"company_id"`
 	Name          string `json:"name"`
 	EffectiveDate string `json:"effective_date"`
 	ScheduleIn    string `json:"schedule_in"`
