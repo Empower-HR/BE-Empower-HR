@@ -9,9 +9,9 @@ import (
 	_userHandler "be-empower-hr/features/Users/handler"
 	_userService "be-empower-hr/features/Users/service"
 
-	// _scheduleData "be-empower-hr/features/Schedule/data_schedule"
-	// _schduleService "be-empower-hr/features/Schedule/service"
-	// _scheduleHandler "be-empower-hr/features/Schedule/handler"
+	_scheduleData "be-empower-hr/features/Schedule/data_schedule"
+	_scheduleHandler "be-empower-hr/features/Schedule/handler"
+	_schduleService "be-empower-hr/features/Schedule/service"
 
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
@@ -30,15 +30,15 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	userService := _userService.New(userData, hashService, middlewares, accountUtility)
 	userHandlerAPI := _userHandler.New(userService, cloudinaryUtility)
 
-	// scheduleData := _scheduleData.New(db)
-	// scheduleService := _schduleService.New(scheduleData, accountUtility)
-	// scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
-
 	// api company
 	cm := _datacompanies.NewCompanyModels(db)
 	cs := _companyService.NewCompanyServices(cm)
 	cl := cloudinary.NewCloudinaryUtility()
 	ch := _companyHandler.NewCompanyHandler(cs, cl)
+
+	scheduleData := _scheduleData.New(db)
+	scheduleService := _schduleService.New(scheduleData, accountUtility)
+	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
@@ -58,4 +58,11 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	// handler company
 	e.POST("/companies", ch.UpdateCompany())
 	e.GET("/companies", ch.GetCompany())
+
+	// handler scheduled
+	e.POST("/schedule", scheduleHandlerAPI.CreateSchedule(), middlewares.JWTMiddleware())
+	e.GET("/schedule", scheduleHandlerAPI.GetAllSchedule, middlewares.JWTMiddleware())
+	e.GET("/schedule/:id", scheduleHandlerAPI.GetScheduleById, middlewares.JWTMiddleware())
+	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
+	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
 }
