@@ -270,3 +270,15 @@ func (us *userService) GetAllAccount(name, jobLevel string, page int, pageSize i
 	return allAccount, nil
 
 }
+
+// update employment employee
+func (us *userService) UpdateEmploymentEmployee(ID uint, employeID uint, updateEmploymentEmployee users.EmploymentDataEntity) error{
+	err := us.userData.UpdateEmploymentEmployee(ID, employeID, updateEmploymentEmployee);
+
+	if err != nil {
+		log.Println("Error retrieving all account:", err)
+		return err
+	};
+
+	return nil;
+}

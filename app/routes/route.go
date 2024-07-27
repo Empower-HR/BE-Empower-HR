@@ -58,6 +58,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/admin", userHandlerAPI.DeleteAccountAdmin, middlewares.JWTMiddleware())
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
 	e.PUT("/employment", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
+	e.PUT("/employment/:id", userHandlerAPI.UpdateEmploymentEmployee, middlewares.JWTMiddleware())
 	//e.PUT("/employment/:id", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
 
 	//handler memployees

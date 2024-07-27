@@ -1,5 +1,7 @@
 package handler
 
+import users "be-empower-hr/features/Users"
+
 type UserRequest struct {
 	Name        string `json:"name"`
 	WorkEmail   string `json:"work_email"`
@@ -38,4 +40,17 @@ type EmploymentData struct {
 	Schedule         string `json:"schedule"`
 	ApprovalLine     string `json:"approval_line"`
 	Manager          string `json:"manager"`
+}
+
+func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
+	return users.EmploymentDataEntity{
+	EmploymentStatus : ed.EmploymentStatus,
+	JoinDate         : ed.JoinDate,
+	Department       : ed.Department,
+	JobPosition      : ed.JobPosition,
+	JobLevel         : ed.JobLevel,
+	Schedule         : ed.Schedule,
+	ApprovalLine     : ed.ApprovalLine,
+	Manager          : ed.Manager,
+	}
 }
