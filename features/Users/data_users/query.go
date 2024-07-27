@@ -316,7 +316,7 @@ func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.Employ
 // update employment employee
 func (uq *userQuery) UpdateEmploymentEmployee( ID, employeID uint, updateEmploymentEmployee users.EmploymentDataEntity) error {
 	cnvQueryModel := ToQueryEmploymentEmployee(updateEmploymentEmployee)
-	qry := uq.db.Where("id = ? AND personal_data_id = ?  AND role = 'admin' AND deleted_at IS NULL", ID, employeID).Updates(&cnvQueryModel);
+	qry := uq.db.Where("id = ? AND personal_data_id = ? AND deleted_at IS NULL", ID, employeID).Updates(&cnvQueryModel);
 
 	if qry.Error != nil {
 		return qry.Error
