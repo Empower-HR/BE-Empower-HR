@@ -1,10 +1,12 @@
 package schedule
 
+import "time"
+
 type ScheduleDataEntity struct {
 	ScheduleId    uint
 	CompanyID     uint
 	Name          string
-	EffectiveDate string
+	EffectiveDate time.Time
 	ScheduleIn    string
 	ScheduleOut   string
 	BreakStart    string
