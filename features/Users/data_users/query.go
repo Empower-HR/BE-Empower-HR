@@ -430,3 +430,42 @@ func (uq *userQuery) GetAccountByJobLevel(jobLevel string) ([]users.PersonalData
 
 	return result, nil
 }
+
+// Add Employe 
+func (uq *userQuery) CreatePersonal(CompanyID uint, addPersonal users.PersonalDataEntity) (uint, error) {
+	cnvQuery := ToPersonalDataQuery(addPersonal);
+	cnvQuery.CompanyID = CompanyID;
+	err := uq.db.Create(&cnvQuery).Error;
+
+	if err != nil {
+		return 0, err;
+	}
+
+	return cnvQuery.ID, nil;
+};
+
+// Add employment data
+func (uq *userQuery) CreateEmployment(personalID uint, addEmployment users.EmploymentDataEntity) (uint, error) {
+	cnvQuery := ToEmploymentQuery(addEmployment);
+	cnvQuery.PersonalDataID = personalID;
+	err := uq.db.Create(&cnvQuery).Error;
+
+	if err != nil {
+		return 0, err
+	};
+
+	return cnvQuery.ID, nil;
+};
+
+// Add Payroll data
+func (uq *userQuery) CreatePayroll(employmentID uint, addPayroll users.PayrollDataEntity) error {
+	cnvQuery := ToPayrollQuery(addPayroll);
+	cnvQuery.EmploymentDataID = employmentID;
+	err := uq.db.Create(&cnvQuery).Error
+
+	if err != nil {
+		return err
+	};
+
+	return nil;
+}

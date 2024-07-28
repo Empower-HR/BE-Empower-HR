@@ -35,8 +35,9 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	accountUtility := utils.NewAccountUtility()
 	pdfUtility := pdf.NewPdfUtility()
 	cloudinaryUtility := cloudinary.NewCloudinaryUtility()
+	company := _datacompanies.NewCompanyModels(db)
 	userData := _userData.New(db)
-	userService := _userService.New(userData, hashService, middlewares, accountUtility)
+	userService := _userService.New(userData, hashService, middlewares, accountUtility, company)
 	attData := _attData.NewAttandancesModel(db)
 	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
 	attHandler := _attHandler.New(attService)
@@ -64,6 +65,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	//e.PUT("/employment/:id", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
 
 	//handler memployees
+	e.POST("/employee", userHandlerAPI.CreateNewEmployee, middlewares.JWTMiddleware())
 	e.GET("/employee", userHandlerAPI.GetAllAccount, middlewares.JWTMiddleware())
 	e.GET("/employee/:id", userHandlerAPI.GetProfileById, middlewares.JWTMiddleware())
 	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
@@ -77,8 +79,8 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/attendance/download", attHandler.DownloadPdf)
   
 	// handler company
-	e.POST("/companies", ch.UpdateCompany())
-	e.GET("/companies", ch.GetCompany())
+	e.PUT("/companies", ch.UpdateCompany(), middlewares.JWTMiddleware())
+	e.GET("/companies", ch.GetCompany(), middlewares.JWTMiddleware())
 
 	// handler scheduled
 	e.POST("/schedule", scheduleHandlerAPI.CreateSchedule(), middlewares.JWTMiddleware())

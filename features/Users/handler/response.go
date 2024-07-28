@@ -41,3 +41,23 @@ type AllUsersResponse struct {
 	EmploymentStatus string `json:"employment_status"`
 	JoinDate         string `json:"join_date"`
 }
+
+type PersonalDataResponse struct {
+	ProfilePicture string `json:"profile_picture"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	PhoneNumber    string `json:"phone"`
+	PlaceBirth     string `json:"place_birth"`
+	BirthDate      string `json:"birth_date"`
+	Gender         string `json:"gender"`
+	Status         string `json:"status"`
+	Religion       string `json:"religion"`
+	NIK            string `json:"nik"`
+	Address        string `json:"address"`
+}
+
+type PayrollResponse struct {
+	Salary        float64 `json:"salary"`
+	BankName      string  `json:"bank_name"`
+	AccountNumber int     `json:"account_number"`
+}

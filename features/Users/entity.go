@@ -11,6 +11,7 @@ type PersonalDataEntity struct {
 	PlaceBirth     string
 	BirthDate      string
 	Gender         string
+	Status         string
 	Religion       string
 	NIK            string
 	Address        string
@@ -54,6 +55,9 @@ type DataUserInterface interface {
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
+	CreatePersonal(CompanyID uint, addPersonal PersonalDataEntity) (uint, error)
+	CreateEmployment(personalID uint, addEmployment EmploymentDataEntity) (uint, error)
+	CreatePayroll(employmentID uint, addPayroll PayrollDataEntity) error
 }
 
 type ServiceUserInterface interface {
@@ -69,4 +73,5 @@ type ServiceUserInterface interface {
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
+	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity) error
 }

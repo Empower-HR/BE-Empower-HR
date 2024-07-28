@@ -42,6 +42,26 @@ type EmploymentData struct {
 	Manager          string `json:"manager"`
 }
 
+type PersonalData struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	PhoneNumber    string `json:"phone"`
+	PlaceBirth     string `json:"place_birth"`
+	BirthDate      string `json:"birth_date"`
+	Gender         string `json:"gender"`
+	Status		   string `json:"status"`
+	Religion       string `json:"religion"`
+	NIK            string `json:"nik"`
+	Address        string `json:"address"`
+};
+
+type Payroll struct {
+	Salary           float64 `json:"salary"`
+	BankName         string  `json:"bank_name"`
+	AccountNumber    int 	 `json:"account_number"`
+}
+
+
 func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
 	return users.EmploymentDataEntity{
 	EmploymentStatus : ed.EmploymentStatus,
@@ -53,4 +73,34 @@ func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
 	ApprovalLine     : ed.ApprovalLine,
 	Manager          : ed.Manager,
 	}
+}
+
+func ToModelPersonalData (pd PersonalData) users.PersonalDataEntity{
+	return users.PersonalDataEntity{
+		ProfilePicture : "",
+		Name           : pd.Name,
+		Email          : pd.Email,
+		PhoneNumber    : pd.PhoneNumber,
+		PlaceBirth     : pd.PlaceBirth,
+		BirthDate      : pd.BirthDate,
+		Gender         : pd.Gender,
+		Status         : pd.Status,
+		Religion       : pd.Religion,
+		NIK            : pd.NIK,
+		Address        : pd.Address,
+	}
+}
+
+func ToModelPayroll (py Payroll) users.PayrollDataEntity {
+	return users.PayrollDataEntity{
+		Salary        : py.Salary,   
+		BankName      : py.BankName,
+		AccountNumber : py.AccountNumber,
+	}
+}
+
+type NewEmployeeRequest struct {
+	PersonalData   PersonalData    `json:"personal_data"`
+	EmploymentData EmploymentData  `json:"employment_data"`
+	Payroll        Payroll         `json:"payroll"`
 }

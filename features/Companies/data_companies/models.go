@@ -14,7 +14,6 @@ type CompanyData struct {
 	CompanyName    string
 	Email          string
 	PhoneNumber    string
-	Address        string
 	Npwp           int
 	CompanyAddress string
 	Signature      string
@@ -30,7 +29,6 @@ func (cd *CompanyData) ToCompanyEntity() companies.CompanyDataEntity{
 		CompanyName    : cd.CompanyName,
 		Email          : cd.Email,
 		PhoneNumber    : cd.PhoneNumber,
-		Address        : cd.Address,
 		Npwp           : cd.Npwp,
 		CompanyAddress : cd.CompanyAddress,
 		Signature      : cd.Signature,
@@ -43,7 +41,6 @@ func ToCompanyQuery(cmp companies.CompanyDataEntity) CompanyData {
 		CompanyName    : cmp.CompanyName,
 		Email          : cmp.Email,
 		PhoneNumber    : cmp.PhoneNumber,
-		Address        : cmp.Address,
 		Npwp           : cmp.Npwp,
 		CompanyAddress : cmp.CompanyAddress,
 		Signature      : cmp.Signature,
