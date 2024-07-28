@@ -15,7 +15,16 @@ type Attandance struct {
 	Lat				string
 	Notes			string
 }
-
+type AttendanceDetail struct {
+	ID			 uint
+    Name         string 
+	PersonalDataID 	uint
+    ScheduleIn   string
+    ScheduleOut  string
+    ClockIn      string
+	ClockOut     string 
+	Date		   string 
+}
 type AHandler interface {
 	AddAttendance(c echo.Context) error 
 	UpdateAttendance(c echo.Context) error
@@ -23,27 +32,32 @@ type AHandler interface {
 	GetAttendancesHandler(c echo.Context) error
 	GetAllAttendancesHandler(c echo.Context) error
 	DownloadPdf(c echo.Context) error
+	GetAttendancesbyID(c echo.Context) error
 }
 
 type AServices interface {
 	AddAtt(newAtt Attandance) error
 	UpdateAtt(id uint, updateAtt Attandance) error
 	DeleteAttByID(attID uint) error
-	GetAttByPersonalID(personalID uint, limit int, offset int) ([]Attandance, error)
-	GetAllAtt(limit int, offset int) ([]Attandance, error)
+	GetAttByPersonalID(personalID uint, limit int, offset int) ([]AttendanceDetail, error)
+	GetAllAtt(limit int, offset int) ([]AttendanceDetail, error)
 	CountAllAtt() (int64, error)
+	CountAllAttbyDate(date string) (int64, error)
 	DownloadAllAtt() error
-	GetAllAttbyDate(date string, limit int, offset int) ([]Attandance, error)
+	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
+	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
 }
 
 type AQuery interface {
 	Create(newAtt Attandance) error
 	IsDateExists(personalID uint, date string) (bool, error)
 	Update(id uint, updatedAtt Attandance) error
-	GetAttByPersonalID(personalID uint, limit int, offset int) ([]Attandance, error)
-	GetAllAtt(limit int, offset int) ([]Attandance, error)
+	GetAttByPersonalID(personalID uint, limit int, offset int) ([]AttendanceDetail, error)
 	DeleteAttbyId(attId uint) error
 	GetTotalAttendancesCount() (int64, error)
+	GetTotalAttendancesCountbyDate(date string) (int64, error)
 	GetAllAttDownload() ([]Attandance, error)
-	GetAllAttbyDate(date string, limit int, offset int) ([]Attandance, error)
+	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
+	GetAttendanceDetails(limit int, offset int) ([]AttendanceDetail, error)
+	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
 }
