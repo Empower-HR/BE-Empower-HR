@@ -24,7 +24,7 @@ func NewPdfUtility() PdfUtilityInterface {
 	return &pdfUtility{}
 }
 
-func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string)  (error) {
+func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 
 	pdf.AddPage()
@@ -36,16 +36,16 @@ func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string
 
 	// Add table headers
 	pdf.Ln(10)
+	pdf.Cell(60, 10, "Date")
 	pdf.Cell(60, 10, "Clock In")
 	pdf.Cell(60, 10, "Clock Out")
-	pdf.Cell(60, 10, "Date")
 	pdf.Ln(10)
 
 	// Add table rows
 	for _, item := range items {
+		pdf.Cell(60, 10, item.Date)
 		pdf.Cell(60, 10, item.Clock_in)
 		pdf.Cell(60, 10, item.Clock_out)
-		pdf.Cell(60, 10, item.Date)
 		pdf.Ln(10)
 	}
 
@@ -58,7 +58,6 @@ func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string
 }
 
 func (pu *pdfUtility) UploadPdf(url, filePath string) error {
-
 	// 	url := "http://localhost:8080/upload"
 	// filePath := "path/to/your.pdf"
 
