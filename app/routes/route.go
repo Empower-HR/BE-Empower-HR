@@ -20,6 +20,10 @@ import (
 	_scheduleHandler "be-empower-hr/features/Schedule/handler"
 	_schduleService "be-empower-hr/features/Schedule/service"
 
+	_annoData "be-empower-hr/features/Announcement/data_announcement"
+	_annoService "be-empower-hr/features/Announcement/service"
+	_annoHandler "be-empower-hr/features/Announcement/handler"
+
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
@@ -41,6 +45,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	attData := _attData.NewAttandancesModel(db)
 	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
 	attHandler := _attHandler.New(attService)
+	
+	annoData := _annoData.NewModelAnnouncement(db)
+	annoService := _annoService.New(annoData, hashService, middlewares, accountUtility)
+	annoHandler := _annoHandler.New(annoService, cloudinaryUtility)
 
 	scheduleData := _scheduleData.New(db)
 	scheduleService := _schduleService.New(scheduleData, accountUtility)
@@ -88,4 +96,9 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/schedule/:id", scheduleHandlerAPI.GetScheduleById, middlewares.JWTMiddleware())
 	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
 	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
+
+	// handler announcement
+	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
+	e.GET("/announcement", annoHandler.GetAnno, middlewares.JWTMiddleware())
+
 }
