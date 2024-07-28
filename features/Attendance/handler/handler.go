@@ -15,7 +15,7 @@ import (
 )
 
 type AttHandler struct {
-	srv 	attendance.AServices
+	srv attendance.AServices
 }
 
 func New(as attendance.AServices) attendance.AHandler {
@@ -39,12 +39,12 @@ func (ah *AttHandler) AddAttendance(c echo.Context) error {
 	}
 
 	dataAtt := attendance.Attandance{
-		PersonalDataID 	: uint(userID),
-		Clock_in        : AttRequest.Clock_in,
-		Date		   	: AttRequest.Date,
-		Long       		: AttRequest.Long,
-		Lat				: AttRequest.Lat,
-		Notes			: AttRequest.Notes,
+		PersonalDataID: uint(userID),
+		Clock_in:       AttRequest.Clock_in,
+		Date:           AttRequest.Date,
+		Long:           AttRequest.Long,
+		Lat:            AttRequest.Lat,
+		Notes:          AttRequest.Notes,
 	}
 
 	// panggil fungsi addAtt pada service
@@ -55,7 +55,6 @@ func (ah *AttHandler) AddAttendance(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "clock in successfully", nil))
 }
-
 
 // Update by id attendance
 func (ah *AttHandler) UpdateAttendance(c echo.Context) error {
@@ -77,12 +76,12 @@ func (ah *AttHandler) UpdateAttendance(c echo.Context) error {
 	}
 
 	dataAtt := attendance.Attandance{
-		PersonalDataID 	: uint(userID),
-		Clock_out        : AttRequest.Clock_out,
-		Status			: AttRequest.Status,
-		Long       		: AttRequest.Long,
-		Lat				: AttRequest.Lat,
-		Notes			: AttRequest.Notes,
+		PersonalDataID: uint(userID),
+		Clock_out:      AttRequest.Clock_out,
+		Status:         AttRequest.Status,
+		Long:           AttRequest.Long,
+		Lat:            AttRequest.Lat,
+		Notes:          AttRequest.Notes,
 	}
 
 	// panggil fungsi updateAtt pada service
@@ -93,7 +92,6 @@ func (ah *AttHandler) UpdateAttendance(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "clock out successfully", nil))
 }
-
 
 // Delete Att by id attendance
 func (ah *AttHandler) DeleteAttendance(c echo.Context) error {
@@ -148,14 +146,13 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	offset := pagination.Offset()
 	limit := pagination.PageSize
 
-
 	// Call the service to retrieve the records
 	attendances, err := ah.srv.GetAttByPersonalID(uint(attId), limit, offset)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
-	totalItems, _:= ah.srv.CountAllAtt()
+	totalItems, _ := ah.srv.CountAllAtt()
 	var response []AttResponse
 	for _, att := range attendances {
 		response = append(response, ToGetAttendanceResponse(att))
@@ -163,14 +160,14 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
-		meta := map[string]interface{}{
-			"totalItems":   totalItems,
-			"itemsPerPage": limit,
-			"currentPage":  page,
-			"totalPages":   totalPages,
-		}
+	meta := map[string]interface{}{
+		"totalItems":   totalItems,
+		"itemsPerPage": limit,
+		"currentPage":  page,
+		"totalPages":   totalPages,
+	}
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response,meta))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response, meta))
 }
 
 func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
@@ -198,7 +195,7 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	// Use Pagination object to get offset and limit
 	offset := pagination.Offset()
 	limit := pagination.PageSize
-	
+
 	// filter by date
 	filterDate := c.QueryParam("date")
 	if filterDate != "" {
@@ -206,40 +203,38 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
-	} else{
+	} else {
 		attendances, err = ah.srv.GetAllAtt(limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 	}
-	totalItems, _:= ah.srv.CountAllAtt()
+	totalItems, _ := ah.srv.CountAllAtt()
 	var response []AttAllResponse
 	for _, att := range attendances {
 		response = append(response, ToGetAllAttendance(att))
 	}
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
-		meta := map[string]interface{}{
-			"totalItems":   totalItems,
-			"itemsPerPage": limit,
-			"currentPage":  page,
-			"totalPages":   totalPages,
-		}
+	meta := map[string]interface{}{
+		"totalItems":   totalItems,
+		"itemsPerPage": limit,
+		"currentPage":  page,
+		"totalPages":   totalPages,
+	}
 	// Return the retrieved records as JSON
 	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", response, meta))
 
 }
 
-func (ah *AttHandler) DownloadPdf(c echo.Context) error{
-	// personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
-	// if personalID == 0 {
-	// 	return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
-	// }
+func (ah *AttHandler) DownloadPdf(c echo.Context) error {
+	personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if personalID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
 	err := ah.srv.DownloadAllAtt()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Download failed", nil))
 	}
-   // return c.File(pdfFileName)
-
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Download successfully", nil))
+	return c.File("./Attendance.pdf")
 }

@@ -10,33 +10,34 @@ import (
 )
 
 type attendanceService struct {
-	qry    			  att.AQuery
+	qry               att.AQuery
 	hashService       encrypts.HashInterface
 	middlewareservice middlewares.MiddlewaresInterface
 	accountUtility    utils.AccountUtilityInterface
-	pdfUtility 		  pdf.PdfUtilityInterface
+	pdfUtility        pdf.PdfUtilityInterface
 }
 
 func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface, pu pdf.PdfUtilityInterface) att.AServices {
 	return &attendanceService{
-		qry:    			ad,
+		qry: ad,
+		// qryUser:           as,
 		hashService:       hash,
 		middlewareservice: mi,
 		accountUtility:    au,
-		pdfUtility: pu,
+		pdfUtility:        pu,
 	}
 
 }
 
 func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
 	// Check if a record already exists for the given personalID and date
-    exists, err := as.qry.IsDateExists(newAtt.PersonalDataID, newAtt.Date)
-    if err != nil {
-        return err
-    }
-    if exists {
-        return errors.New("attendance record already exists for this date")
-    }
+	exists, err := as.qry.IsDateExists(newAtt.PersonalDataID, newAtt.Date)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("attendance record already exists for this date")
+	}
 
 	err = as.qry.Create(newAtt)
 	if err != nil {
@@ -44,7 +45,7 @@ func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
 	}
 	return nil
 }
-func (as *attendanceService) UpdateAtt(id uint,updateAtt att.Attandance) error {
+func (as *attendanceService) UpdateAtt(id uint, updateAtt att.Attandance) error {
 	err := as.qry.Update(id, updateAtt)
 	if err != nil {
 		return errors.New("terjadi kesalahan pada server saat Clock Out")
@@ -70,7 +71,7 @@ func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offs
 
 func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.Attandance, error) {
 
-    attendance, err := as.qry.GetAllAtt(limit, offset)
+	attendance, err := as.qry.GetAllAtt(limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
@@ -78,7 +79,7 @@ func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.Attandance,
 }
 func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.Attandance, error) {
 
-    attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
+	attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
 	if err != nil {
 		return nil, err
 	}
