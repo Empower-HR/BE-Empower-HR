@@ -77,6 +77,15 @@ func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.AttendanceD
 	}
 	return attendance, nil
 }
+func (as *attendanceService) GetAttByIdAtt(idAtt uint) ([]att.AttendanceDetail, error) {
+
+    // attendance, err := as.qry.GetAllAtt(limit, offset)
+    attendance, err := as.qry.GetAttByIdAtt(idAtt)
+	if err != nil {
+		return nil, errors.New("error retrieving attendance records")
+	}
+	return attendance, nil
+}
 func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.AttendanceDetail, error) {
 
     attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)

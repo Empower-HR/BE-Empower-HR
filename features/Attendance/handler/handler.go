@@ -117,11 +117,11 @@ func (ah *AttHandler) DeleteAttendance(c echo.Context) error {
 
 // Get by personal ID
 func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
-	attID := c.Param("attendance_id")
+	attID := c.Param("employee_id")
 
 	attId, err := strconv.ParseUint(attID, 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "Invalid Attendance ID", nil))
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "Invalid Emplpyee ID", nil))
 	}
 	personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if personalID == 0 {
@@ -237,6 +237,31 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 		
 	// Return the retrieved records as JSON
 	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", result, meta))
+
+}
+
+func (ah *AttHandler) GetAttendancesbyID(c echo.Context) error {
+	attID := c.Param("attendance_id")
+
+	attId, err := strconv.ParseUint(attID, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "Invalid Attendance ID", nil))
+	}
+	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if userID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
+	att, err := ah.srv.GetAttByIdAtt(uint(attId))
+	if err != nil {
+		log.Printf("Get Attandance: Error Get Attendance: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error Get data: "+err.Error(), nil))
+	}
+	var responseDetail []AttDetailResponse
+	for _, detail := range att {
+		responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(detail))
+	}
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Get Attendance successfully", responseDetail))
+	
 
 }
 

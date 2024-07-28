@@ -32,6 +32,7 @@ type AHandler interface {
 	GetAttendancesHandler(c echo.Context) error
 	GetAllAttendancesHandler(c echo.Context) error
 	DownloadPdf(c echo.Context) error
+	GetAttendancesbyID(c echo.Context) error
 }
 
 type AServices interface {
@@ -44,6 +45,7 @@ type AServices interface {
 	CountAllAttbyDate(date string) (int64, error)
 	DownloadAllAtt() error
 	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
+	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
 }
 
 type AQuery interface {
@@ -57,4 +59,5 @@ type AQuery interface {
 	GetAllAttDownload() ([]Attandance, error)
 	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
 	GetAttendanceDetails(limit int, offset int) ([]AttendanceDetail, error)
+	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
 }

@@ -187,3 +187,34 @@ func (am *AttandanceModel) GetAttendanceDetails(limit int, offset int) ([]attend
 
 	return results, nil
 }
+
+func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id,
+        sc.schedule_in, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+       at.id = ? AND at.deleted_at IS NULL`
+
+	err := am.db.Raw(query, idAtt).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+
+}
