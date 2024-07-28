@@ -29,10 +29,10 @@ func (cm *CompanyModels) GetCompany() (companies.CompanyDataEntity, error){
 	return result.ToCompanyEntity(), nil;
 };
 
-func (cm *CompanyModels) UpdateCompany(updateCompany companies.CompanyDataEntity) (error){
+func (cm *CompanyModels) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) (error){
 	cnvCompany := ToCompanyQuery(updateCompany);
 
-	qry := cm.db.Updates(&cnvCompany);
+	qry := cm.db.Where("id = ?", ID).Updates(&cnvCompany);
 
 	if qry.Error != nil {
 		return qry.Error

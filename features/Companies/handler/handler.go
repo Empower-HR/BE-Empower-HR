@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"be-empower-hr/app/middlewares"
 	companies "be-empower-hr/features/Companies"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/responses"
@@ -39,16 +40,20 @@ func (ch *CompanyHandlers) GetCompany() echo.HandlerFunc {
 
 func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var input CompanyInput;
+		companyID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+		if companyID == 0 {
+			return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+		}
 
+		input := CompanyInput{};
 		err := c.Bind(&input);
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
 		};
-
+		
+		// handle company picture
 		file, err := c.FormFile("company_picture");
-
 		if err == nil {
 			src , err := file.Open();
 			if err != nil {
@@ -57,16 +62,16 @@ func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 			}
 			defer src.Close()
 
-			urlImage, err := ch.cld.UploadCloudinary(src, file.Filename);
+			companyPictureURL, err := ch.cld.UploadCloudinary(src, file.Filename);
 			if err != nil {
 				log.Print("Error", err.Error())
 				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))
 			}
 			// set company picture jadi url dari response cld nya
-			input.CompanyPicture = urlImage;
+			input.CompanyPicture = companyPictureURL;
 		};
 
-		err = ch.srv.UpdateCompany(ToModelCompany(input));
+		err = ch.srv.UpdateCompany(uint(companyID), ToModelCompany(input));
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Internal server error: "+err.Error(), nil))

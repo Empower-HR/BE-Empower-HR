@@ -13,7 +13,6 @@ type CompanyDataEntity struct {
 	CompanyName    string
 	Email          string
 	PhoneNumber    string
-	Address        string
 	Npwp           int
 	CompanyAddress string
 	Signature      string
@@ -29,10 +28,10 @@ type Handler interface {
 
 type Query interface {
 	GetCompany() (CompanyDataEntity, error)
-	UpdateCompany(updateCompany CompanyDataEntity) error
+	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
 };
 
 type Service interface {
 	GetCompany() (CompanyDataEntity, error)
-	UpdateCompany(updateCompany CompanyDataEntity) error
+	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
 }

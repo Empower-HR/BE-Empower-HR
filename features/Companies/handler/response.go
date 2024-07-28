@@ -21,7 +21,6 @@ func ToResponseCompany(input companies.CompanyDataEntity) CompanyResponse{
 	CompanyName    	: input.CompanyName,
 	Email          	: input.Email,
 	PhoneNumber     : input.PhoneNumber,
-	Address         : input.Address,
 	Npwp            : input.Npwp,
 	CompanyAddress  : input.CompanyAddress,
 	Signature       : input.Signature,

@@ -29,12 +29,12 @@ func (cs *CompanyServices) GetCompany() (companies.CompanyDataEntity, error){
 	return result, nil;
 };
 
-func (cs *CompanyServices) UpdateCompany(updateCompany companies.CompanyDataEntity) error {
+func (cs *CompanyServices) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) error {
 	
-	err := cs.qry.UpdateCompany(updateCompany);
+	err := cs.qry.UpdateCompany(ID, updateCompany);
 
 	if err != nil {
-		log.Print("get company query error", err.Error())
+		log.Print("update company error", err.Error())
 		return  errors.New("internal server error")
 	};
 		
