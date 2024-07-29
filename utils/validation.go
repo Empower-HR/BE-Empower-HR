@@ -1,11 +1,16 @@
 package utils
 
 import (
+	"be-empower-hr/app/config"
+	"crypto/tls"
 	"errors"
+	"log"
 	"math/rand"
 	"regexp"
 	"strings"
 	"time"
+
+	"gopkg.in/gomail.v2"
 )
 
 type AccountUtilityInterface interface {
@@ -18,6 +23,7 @@ type AccountUtilityInterface interface {
 	ReligionValidator(religion string) error
 	EmploymentStatusValidator(status string) error
 	JobLevelValidator(level string) error
+	SendEmail(to, subject, body string) error
 }
 
 type accountUtility struct{}
@@ -73,7 +79,7 @@ func (ac *accountUtility) PhoneNumberValidator(inputHP string) error {
 }
 
 // GeneratePassword implements AccountUtilityInterface.
-func (*accountUtility) GeneratePassword(length int) (string, error) {
+func (ac *accountUtility) GeneratePassword(length int) (string, error) {
 	if length < 8 {
 		return "", errors.New("password harus terdiri dari minimal 8 karakter")
 	}
@@ -109,7 +115,7 @@ func (ac *accountUtility) NumberLoop(n int) ([]int, error) {
 }
 
 // GenderValidator validates if the gender is either "male" or "female".
-func (a *accountUtility) GenderValidator(gender string) error {
+func (ac *accountUtility) GenderValidator(gender string) error {
 	gender = strings.ToLower(gender)
 	if gender != "male" && gender != "female" {
 		return errors.New("invalid gender: must be 'male' or 'female'")
@@ -130,7 +136,7 @@ func (a *accountUtility) ReligionValidator(religion string) error {
 }
 
 // EmploymentStatusValidator validates if the employment status is either "permanent" or "contract".
-func (a *accountUtility) EmploymentStatusValidator(status string) error {
+func (ac *accountUtility) EmploymentStatusValidator(status string) error {
 	validStatuses := []string{"permanent", "contract"}
 	status = strings.ToLower(status)
 	for _, validStatus := range validStatuses {
@@ -142,7 +148,7 @@ func (a *accountUtility) EmploymentStatusValidator(status string) error {
 }
 
 // JobLevelValidator validates if the job level is one of the allowed values.
-func (a *accountUtility) JobLevelValidator(level string) error {
+func (ac *accountUtility) JobLevelValidator(level string) error {
 	validLevels := []string{"staff", "manager", "ceo"}
 	level = strings.ToLower(level)
 	for _, validLevel := range validLevels {
@@ -151,4 +157,27 @@ func (a *accountUtility) JobLevelValidator(level string) error {
 		}
 	}
 	return errors.New("invalid job level: must be 'staff', 'manager', or 'ceo'")
+}
+
+// SendEmail implements AccountUtilityInterface.
+func (ac *accountUtility) SendEmail(to string, subject string, body string) error {
+	from := config.EMAIL_SENDER
+	password := config.EMAIL_PASSWORD
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", body)
+
+	d := gomail.NewDialer("smtp.gmail.com", 587, from, password)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	if err := d.DialAndSend(m); err != nil {
+		log.Printf("Error sending email: %v", err)
+		return err
+	}
+
+	log.Printf("Email successfully sent to %s", to)
+	return nil
 }

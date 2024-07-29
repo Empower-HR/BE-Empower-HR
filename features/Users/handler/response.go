@@ -1,12 +1,14 @@
 package handler
 
 type UserResponse struct {
-	Name        string `json:"name"`
-	WorkEmail   string `json:"work_email"`
-	PhoneNumber string `json:"phone_number"`
-	Department  string `json:"department"`
-	JobPosition string `json:"job_position"`
-	CompanyName string `json:"company_name"`
+	PersonalDataID uint   `json:"personal_data_id"`
+	CompanyID      uint   `json:"company_id"`
+	Name           string `json:"name"`
+	WorkEmail      string `json:"work_email"`
+	PhoneNumber    string `json:"phone_number"`
+	Department     string `json:"department"`
+	JobPosition    string `json:"job_position"`
+	CompanyName    string `json:"company_name"`
 }
 
 type ProfileResponse struct {
@@ -35,6 +37,7 @@ type EmploymentDataResponse struct {
 }
 
 type AllUsersResponse struct {
+	PersonalDataID   uint   `json:"id"`
 	Name             string `json:"name"`
 	JobPosition      string `json:"job_position"`
 	JobLevel         string `json:"job_level"`

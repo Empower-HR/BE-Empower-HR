@@ -1,6 +1,9 @@
 package handler
 
-import users "be-empower-hr/features/Users"
+import (
+	users "be-empower-hr/features/Users"
+	"time"
+)
 
 type UserRequest struct {
 	Name        string `json:"name"`
@@ -43,64 +46,82 @@ type EmploymentData struct {
 }
 
 type PersonalData struct {
-	Name           string `json:"name"`
-	Email          string `json:"email"`
-	PhoneNumber    string `json:"phone"`
-	PlaceBirth     string `json:"place_birth"`
-	BirthDate      string `json:"birth_date"`
-	Gender         string `json:"gender"`
-	Status		   string `json:"status"`
-	Religion       string `json:"religion"`
-	NIK            string `json:"nik"`
-	Address        string `json:"address"`
-};
-
-type Payroll struct {
-	Salary           float64 `json:"salary"`
-	BankName         string  `json:"bank_name"`
-	AccountNumber    int 	 `json:"account_number"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone"`
+	PlaceBirth  string `json:"place_birth"`
+	BirthDate   string `json:"birth_date"`
+	Gender      string `json:"gender"`
+	Status      string `json:"status"`
+	Religion    string `json:"religion"`
+	NIK         string `json:"nik"`
+	Address     string `json:"address"`
 }
 
+type Payroll struct {
+	Salary        float64 `json:"salary"`
+	BankName      string  `json:"bank_name"`
+	AccountNumber int     `json:"account_number"`
+}
+
+type Leaves struct {
+	StartDate  time.Time `json:"start_date"`
+	EndDate    time.Time `json:"end_date"`
+	Reason     string    `json:"reason"`
+	Status     string    `json:"status"`
+	TotalLeave int       `json:"total_leave"`
+}
 
 func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
 	return users.EmploymentDataEntity{
-	EmploymentStatus : ed.EmploymentStatus,
-	JoinDate         : ed.JoinDate,
-	Department       : ed.Department,
-	JobPosition      : ed.JobPosition,
-	JobLevel         : ed.JobLevel,
-	Schedule         : ed.Schedule,
-	ApprovalLine     : ed.ApprovalLine,
-	Manager          : ed.Manager,
+		EmploymentStatus: ed.EmploymentStatus,
+		JoinDate:         ed.JoinDate,
+		Department:       ed.Department,
+		JobPosition:      ed.JobPosition,
+		JobLevel:         ed.JobLevel,
+		Schedule:         ed.Schedule,
+		ApprovalLine:     ed.ApprovalLine,
+		Manager:          ed.Manager,
 	}
 }
 
-func ToModelPersonalData (pd PersonalData) users.PersonalDataEntity{
+func ToModelPersonalData(pd PersonalData) users.PersonalDataEntity {
 	return users.PersonalDataEntity{
-		ProfilePicture : "",
-		Name           : pd.Name,
-		Email          : pd.Email,
-		PhoneNumber    : pd.PhoneNumber,
-		PlaceBirth     : pd.PlaceBirth,
-		BirthDate      : pd.BirthDate,
-		Gender         : pd.Gender,
-		Status         : pd.Status,
-		Religion       : pd.Religion,
-		NIK            : pd.NIK,
-		Address        : pd.Address,
+		ProfilePicture: "",
+		Name:           pd.Name,
+		Email:          pd.Email,
+		PhoneNumber:    pd.PhoneNumber,
+		PlaceBirth:     pd.PlaceBirth,
+		BirthDate:      pd.BirthDate,
+		Gender:         pd.Gender,
+		Status:         pd.Status,
+		Religion:       pd.Religion,
+		NIK:            pd.NIK,
+		Address:        pd.Address,
 	}
 }
 
-func ToModelPayroll (py Payroll) users.PayrollDataEntity {
+func ToModelPayroll(py Payroll) users.PayrollDataEntity {
 	return users.PayrollDataEntity{
-		Salary        : py.Salary,   
-		BankName      : py.BankName,
-		AccountNumber : py.AccountNumber,
+		Salary:        py.Salary,
+		BankName:      py.BankName,
+		AccountNumber: py.AccountNumber,
+	}
+}
+
+func ToModelLeaves(pd Leaves) users.LeavesDataEntity {
+	return users.LeavesDataEntity{
+		StartDate:  pd.StartDate,
+		EndDate:    pd.EndDate,
+		Reason:     pd.Reason,
+		Status:     pd.Status,
+		TotalLeave: 12,
 	}
 }
 
 type NewEmployeeRequest struct {
-	PersonalData   PersonalData    `json:"personal_data"`
-	EmploymentData EmploymentData  `json:"employment_data"`
-	Payroll        Payroll         `json:"payroll"`
+	PersonalData   PersonalData   `json:"personal_data"`
+	EmploymentData EmploymentData `json:"employment_data"`
+	Payroll        Payroll        `json:"payroll"`
+	Leaves         Leaves         `json:"leaves"`
 }
