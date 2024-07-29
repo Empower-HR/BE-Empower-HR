@@ -58,9 +58,12 @@ func (am *AttandanceModel) GetAttByPersonalID(personalID uint, limit int, offset
 
 	query := `
     SELECT 
-        pd.name,
-		at.personal_data_id,
-        sc.schedule_in, 
+       pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
         sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
@@ -85,6 +88,40 @@ func (am *AttandanceModel) GetAttByPersonalID(personalID uint, limit int, offset
 
 }
 
+func (am *AttandanceModel) GetAllAttbyIdPersonAndStatus(id uint, status string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+       at.personal_data_id = ? AND at.status = ? AND at.deleted_at IS NULL 
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, id,status, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
 	var results []attendance.AttendanceDetail
 
@@ -92,7 +129,10 @@ func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) (
     SELECT 
         pd.name,
 		at.personal_data_id, 
-        sc.schedule_in, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
         sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
@@ -113,6 +153,40 @@ func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) (
 		return nil, err
 	}
 
+	return results, nil
+}
+
+func (am *AttandanceModel) GetAllAttbyStatus(status string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id AND at.status = ?
+    WHERE 
+        at.deleted_at IS NULL
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, status, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+	
 	return results, nil
 }
 
@@ -162,9 +236,12 @@ func (am *AttandanceModel) GetAttendanceDetails(limit int, offset int) ([]attend
 
 	query := `
     SELECT 
-        pd.name, 
-		at.personal_data_id,
-        sc.schedule_in, 
+        pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
         sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
@@ -193,10 +270,12 @@ func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDet
 
 	query := `
     SELECT 
-        pd.name,
-		at.personal_data_id,
-        sc.schedule_in, 
-        sc.schedule_out, 
+       pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes,
         at.clock_in, 
         at.clock_out,
 		at.date,

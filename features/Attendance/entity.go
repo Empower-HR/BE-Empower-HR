@@ -23,7 +23,11 @@ type AttendanceDetail struct {
     ScheduleOut  string
     ClockIn      string
 	ClockOut     string 
-	Date		   string 
+	Status	        string
+	Date		   	string
+	Long       		string
+	Lat				string
+	Notes			string
 }
 type AHandler interface {
 	AddAttendance(c echo.Context) error 
@@ -45,7 +49,9 @@ type AServices interface {
 	CountAllAttbyDate(date string) (int64, error)
 	DownloadAllAtt() error
 	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
+	GetAllAttbyStatus(status string, limit int, offset int) ([]AttendanceDetail, error)
 	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
+	GetAttByPersonalIDandStatus(id uint, status string, limit int, offset int) ([]AttendanceDetail, error)
 }
 
 type AQuery interface {
@@ -60,4 +66,6 @@ type AQuery interface {
 	GetAllAttbyDate(date string, limit int, offset int) ([]AttendanceDetail, error)
 	GetAttendanceDetails(limit int, offset int) ([]AttendanceDetail, error)
 	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
+	GetAllAttbyStatus(status string, limit int, offset int) ([]AttendanceDetail, error)
+	GetAllAttbyIdPersonAndStatus(id uint, status string, limit int, offset int) ([]AttendanceDetail, error)
 }
