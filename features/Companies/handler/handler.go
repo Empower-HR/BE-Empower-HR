@@ -53,22 +53,40 @@ func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 		};
 		
 		// handle company picture
-		file, err := c.FormFile("company_picture");
+		companyPicture, err := c.FormFile("company_picture");
 		if err == nil {
-			src , err := file.Open();
+			src , err := companyPicture.Open();
 			if err != nil {
 				log.Print("Error", err.Error())
 				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))
 			}
 			defer src.Close()
 
-			companyPictureURL, err := ch.cld.UploadCloudinary(src, file.Filename);
+			companyPictureURL, err := ch.cld.UploadCloudinary(src, companyPicture.Filename);
 			if err != nil {
 				log.Print("Error", err.Error())
 				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))
 			}
 			// set company picture jadi url dari response cld nya
 			input.CompanyPicture = companyPictureURL;
+		};
+
+		companySignature, err := c.FormFile("signature");
+		if err == nil {
+			src , err := companySignature.Open();
+			if err != nil {
+				log.Print("Error", err.Error())
+				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))
+			}
+			defer src.Close()
+
+			companySignatureURL, err := ch.cld.UploadCloudinary(src, companySignature.Filename);
+			if err != nil {
+				log.Print("Error", err.Error())
+				return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "image error: "+err.Error(), nil))
+			}
+			// set company picture jadi url dari response cld nya
+			input.Signature = companySignatureURL;
 		};
 
 		err = ch.srv.UpdateCompany(uint(companyID), ToModelCompany(input));

@@ -8,7 +8,6 @@ type CompanyResponse struct {
 	CompanyName    string `json:"company_name"`
 	Email          string `json:"email"`
 	PhoneNumber    string `json:"phone"`
-	Address        string `json:"address"`
 	Npwp           int    `json:"npwp"`
 	CompanyAddress string `json:"company_address"`
 	Signature      string `json:"signature"`
