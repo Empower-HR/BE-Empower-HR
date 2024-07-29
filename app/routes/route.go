@@ -20,6 +20,10 @@ import (
 	_scheduleHandler "be-empower-hr/features/Schedule/handler"
 	_schduleService "be-empower-hr/features/Schedule/service"
 
+	_payrollData "be-empower-hr/features/Payroll/data_payroll"
+	_payrollHandler "be-empower-hr/features/Payroll/handler"
+	_payrollService "be-empower-hr/features/Payroll/service"
+
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
@@ -53,6 +57,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	cl := cloudinary.NewCloudinaryUtility()
 	ch := _companyHandler.NewCompanyHandler(cs, cl)
 
+	payrollData := _payrollData.New(db)
+	payrollService := _payrollService.New(payrollData)
+	payrollHandlerAPI := _payrollHandler.New(payrollService)
+
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
 	e.POST("/login", userHandlerAPI.Login)
@@ -81,7 +89,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
 	e.GET("/attendance/employe/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
-  
+
 	// handler company
 	e.PUT("/companies", ch.UpdateCompany(), middlewares.JWTMiddleware())
 	e.GET("/companies", ch.GetCompany(), middlewares.JWTMiddleware())
@@ -92,4 +100,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/schedule/:id", scheduleHandlerAPI.GetScheduleById, middlewares.JWTMiddleware())
 	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
 	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
+
+	e.POST("/payroll", payrollHandlerAPI.CreatePayroll, middlewares.JWTMiddleware())
+	e.GET("/payroll", payrollHandlerAPI.GetAllPayroll, middlewares.JWTMiddleware())
 }
