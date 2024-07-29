@@ -469,10 +469,11 @@ func (uq *userQuery) CountPermanentUsers(companyID uint) (int64, error) {
 	return count, nil
 }
 
-func (uq *userQuery) CountPayrollRecords(companyID uint) (int64, error) {
+func (uq *userQuery) CountPayrollUsers(companyID uint) (int64, error) {
 	var count int64
 	if err := uq.db.Model(&PayrollData{}).
-		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("employment_data_id IN (SELECT id FROM employment_data WHERE personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?))", companyID).
+		Where("deleted_at IS NULL").
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
@@ -487,14 +488,8 @@ func (uq *userQuery) GetCompanyIDByName(companyName string) (uint, error) {
 	return companyData.ID, nil
 }
 
-func (uq *userQuery) Dashboard(companyName string) (*users.DashboardStats, error) {
-	var stats DashboardStats
-
-	// Get CompanyID
-	companyID, err := uq.GetCompanyIDByName(companyName)
-	if err != nil {
-		return nil, err
-	}
+func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
+	var stats users.DashboardStats
 
 	// Fetch statistics
 	totalUsers, err := uq.CountTotalUsers(companyID)
@@ -532,12 +527,12 @@ func (uq *userQuery) Dashboard(companyName string) (*users.DashboardStats, error
 	}
 	stats.PermanentUsers = permanentUsers
 
-	payrollRecords, err := uq.CountPayrollRecords(companyID)
+	payrollRecords, err := uq.CountPayrollUsers(companyID)
 	if err != nil {
 		log.Printf("Error counting payroll records: %v", err)
 		return nil, err
 	}
 	stats.PayrollRecords = payrollRecords
 
-	return &users.DashboardStats{}, nil
+	return &stats, nil
 }

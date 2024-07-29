@@ -487,3 +487,28 @@ func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Create new employee successfully", nil))
 }
+
+func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
+	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if userID == 0 {
+		log.Println("invalid user ID from token")
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
+	}
+
+	companyID, err := getCompanyIDFromUserID(userID)
+	if err != nil {
+		log.Printf("Error retrieving company ID: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to retrieve company ID", nil))
+	}
+	log.Println(getCompanyIDFromUserID(userID))
+	dashboardData, err := uh.userService.Dashboard(companyID)
+	if err != nil {
+		log.Printf("error fetching dashboard data: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "failed to fetch dashboard data", nil))
+	}
+	return c.JSON(http.StatusOK, dashboardData)
+}
+
+func getCompanyIDFromUserID(userID int) (uint, error) {
+	return 1, nil
+}

@@ -64,3 +64,12 @@ type PayrollResponse struct {
 	BankName      string  `json:"bank_name"`
 	AccountNumber int     `json:"account_number"`
 }
+
+type DashboardStats struct {
+	TotalUsers     int `json:"total_users"`
+	MaleUsers      int `json:"male_users"`
+	FemaleUsers    int `json:"female_users"`
+	ContractUsers  int `json:"contract_users"`
+	PermanentUsers int `json:"permanent_users"`
+	PayrollRecords int `json:"payroll_records"`
+}
