@@ -445,3 +445,26 @@ func (uq *userQuery) CountFemaleUsers(companyID uint) (int64, error) {
 	}
 	return count, nil
 }
+
+func (uq *userQuery) CountContractUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&EmploymentData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("employment_status = ?", "contract").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// CountPermanentUsers menghitung jumlah pengguna dengan status pekerjaan "permanent" berdasarkan CompanyID
+func (uq *userQuery) CountPermanentUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&EmploymentData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("employment_status = ?", "permanent").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
