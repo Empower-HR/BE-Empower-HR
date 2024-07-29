@@ -2,6 +2,7 @@ package dataleaves
 
 import (
 	leaves "be-empower-hr/features/Leaves"
+	"be-empower-hr/utils"
 
 	"gorm.io/gorm"
 )
@@ -49,13 +50,14 @@ func (q *leavesQuery) UpdateLeaveStatus(leaveID uint, status string) error {
 
 func (q *leavesQuery) GetLeaveHistory(personalDataID uint, page, pageSize int) ([]leaves.LeavesDataEntity, error) {
 	var leaveEntities []leaves.LeavesDataEntity
-
-	// Query langsung ke database dan scan ke dalam slice leaveEntities
+	pagination := utils.NewPagination(page, pageSize)
 	err := q.db.Table("leaves_data").
 		Select("leaves_data.personal_data_id, personal_data.name, employment_data.job_position, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status").
 		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
 		Joins("JOIN employment_data ON leaves_data.personal_data_id = employment_data.personal_data_id").
 		Where("leaves_data.personal_data_id = ?", personalDataID).
+		Offset(pagination.Offset()).
+		Limit(pagination.PageSize).
 		Scan(&leaveEntities).Error
 
 	if err != nil {
@@ -103,4 +105,22 @@ func (q *leavesQuery) GetLeavesByDateRange(personalDataID uint, startDate, endDa
 	}
 
 	return leaveEntities, nil
+}
+
+// GetLeavesDetail implements leaves.DataLeavesInterface.
+func (q *leavesQuery) GetLeavesDetail(leaveID uint) (*leaves.LeavesDataEntity, error) {
+	var leaveEntity leaves.LeavesDataEntity
+
+	err := q.db.Table("leaves_data").
+		Select("leaves_data.id as leaves_id, leaves_data.personal_data_id, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status, leaves_data.total_leave, personal_data.name, employment_data.job_position").
+		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
+		Joins("JOIN employment_data ON leaves_data.personal_data_id = employment_data.personal_data_id").
+		Where("leaves_data.id = ?", leaveID).
+		Scan(&leaveEntity).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &leaveEntity, nil
 }

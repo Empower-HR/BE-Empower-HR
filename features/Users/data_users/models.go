@@ -75,13 +75,31 @@ type LeavesData struct {
 	PersonalDataID uint
 }
 
+type Attandance struct {
+	gorm.Model
+	PersonalDataID uint   `gorm:"foreignKey:PersonalDataID"`
+	Clock_in       string `json:"clock_in"`
+	Clock_out      string `json:"clock_out"`
+	Status         string `json:"status"`
+	Date           string `json:"date"`
+	Long           string `json:"long"`
+	Lat            string `json:"lat"`
+	Notes          string `json:"notes"`
+}
+
 type DashboardStats struct {
-	TotalUsers     int64
-	MaleUsers      int64
-	FemaleUsers    int64
-	ContractUsers  int64
-	PermanentUsers int64
-	PayrollRecords int64
+	TotalUsers               int64
+	MaleUsers                int64
+	FemaleUsers              int64
+	ContractUsers            int64
+	PermanentUsers           int64
+	PayrollRecords           int64
+	LeavesPending            int64
+	PersonalDataName         string
+	MalePercentage           float64
+	FemalePercentage         float64
+	ContractUsersPercentage  float64
+	PermanentUsersPercentage float64
 }
 
 func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData {

@@ -31,15 +31,6 @@ func (s *leavesService) UpdateLeaveStatus(leaveID uint, status string) error {
 		return err
 	}
 
-	// Additional logic if leave is approved
-	// if status == "approved" {
-	// 	err = s.leavesData.DecrementTotalLeave(leaveID)
-	// 	if err != nil {
-	// 		log.Println("Error decrementing total leave:", err)
-	// 		return err
-	// 	}
-	// }
-
 	return nil
 }
 
@@ -55,6 +46,40 @@ func (s *leavesService) RequestLeave(leave leaves.LeavesDataEntity) error {
 }
 
 // ViewLeaveHistory implements leaves.ServiceLeavesInterface.
-func (s *leavesService) ViewLeaveHistory(personalDataID uint, page, pageSize int) ([]leaves.LeavesDataEntity, error) {
-	panic("Not implemented")
+func (s *leavesService) ViewLeaveHistory(personalDataID uint, page, pageSize int, status string, startDate, endDate string) ([]leaves.LeavesDataEntity, error) {
+	var leaveEntities []leaves.LeavesDataEntity
+	var err error
+
+	if status != "" {
+		leaveEntities, err = s.leavesData.GetLeavesByStatus(personalDataID, status)
+		if err != nil {
+			log.Println("Error getting leaves by status:", err)
+			return nil, err
+		}
+	} else if startDate != "" && endDate != "" {
+		leaveEntities, err = s.leavesData.GetLeavesByDateRange(personalDataID, startDate, endDate)
+		if err != nil {
+			log.Println("Error getting leaves by date range:", err)
+			return nil, err
+		}
+	} else {
+		leaveEntities, err = s.leavesData.GetLeaveHistory(personalDataID, page, pageSize)
+		if err != nil {
+			log.Println("Error viewing leave history:", err)
+			return nil, err
+		}
+	}
+
+	return leaveEntities, nil
+}
+
+// GetLeavesByID implements leaves.ServiceLeavesInterface.
+func (s *leavesService) GetLeavesByID(leaveID uint) (leaves *leaves.LeavesDataEntity, err error) {
+	leaveEntity, err := s.leavesData.GetLeavesDetail(leaveID)
+	if err != nil {
+		log.Println("Error getting leave detail:", err)
+		return nil, err
+	}
+
+	return leaveEntity, nil
 }

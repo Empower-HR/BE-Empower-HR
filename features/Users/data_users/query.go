@@ -488,6 +488,17 @@ func (uq *userQuery) GetCompanyIDByName(companyName string) (uint, error) {
 	return companyData.ID, nil
 }
 
+func (uq *userQuery) CountPendingLeaves(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&LeavesData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("status = ?", "pending").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 	var stats users.DashboardStats
 
@@ -527,12 +538,27 @@ func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 	}
 	stats.PermanentUsers = permanentUsers
 
+	// menghitung presentase
+	if totalUsers > 0 {
+		stats.MalePercentage = (float64(maleUsers) / float64(totalUsers)) * 100
+		stats.FemalePercentage = (float64(femaleUsers) / float64(totalUsers)) * 100
+		stats.ContractUsersPercentage = (float64(contractUsers) / float64(totalUsers)) * 100
+		stats.PermanentUsersPercentage = (float64(permanentUsers) / float64(totalUsers)) * 100
+	}
+
 	payrollRecords, err := uq.CountPayrollUsers(companyID)
 	if err != nil {
 		log.Printf("Error counting payroll records: %v", err)
 		return nil, err
 	}
 	stats.PayrollRecords = payrollRecords
+
+	pendingLeaves, err := uq.CountPendingLeaves(companyID)
+	if err != nil {
+		log.Printf("Error counting pending leaves: %v", err)
+		return nil, err
+	}
+	stats.LeavesPending = pendingLeaves
 
 	return &stats, nil
 }

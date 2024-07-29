@@ -1,15 +1,13 @@
 package dataleaves
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 type LeavesData struct {
 	gorm.Model
-	StartDate      time.Time
-	EndDate        time.Time
+	StartDate      string
+	EndDate        string
 	Reason         string
 	Status         string
 	TotalLeave     int

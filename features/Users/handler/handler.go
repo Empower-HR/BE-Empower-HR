@@ -506,7 +506,19 @@ func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 		log.Printf("error fetching dashboard data: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "failed to fetch dashboard data", nil))
 	}
-	return c.JSON(http.StatusOK, dashboardData)
+
+	responseData := DashboardStatsResponses{
+		TotalUsers:               dashboardData.TotalUsers,
+		MalePercentage:           dashboardData.MalePercentage,
+		FemalePercentage:         dashboardData.FemalePercentage,
+		ContractUsersPercentage:  dashboardData.ContractUsersPercentage,
+		PermanentUsersPercentage: dashboardData.PermanentUsersPercentage,
+		PayrollRecords:           dashboardData.PayrollRecords,
+		LeavesRecords:            dashboardData.LeavesPending,
+		PersonalDataName:         dashboardData.PersonalDataName,
+	}
+
+	return c.JSON(http.StatusOK, responseData)
 }
 
 func getCompanyIDFromUserID(userID int) (uint, error) {

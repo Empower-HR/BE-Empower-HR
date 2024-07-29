@@ -53,13 +53,31 @@ type LeavesDataEntity struct {
 	PersonalDataID uint
 }
 
+type Attandance struct {
+	ID             uint
+	PersonalDataID uint
+	Clock_in       string
+	Clock_out      string
+	Status         string
+	Date           string
+	Long           string
+	Lat            string
+	Notes          string
+}
+
 type DashboardStats struct {
-	TotalUsers     int64
-	MaleUsers      int64
-	FemaleUsers    int64
-	ContractUsers  int64
-	PermanentUsers int64
-	PayrollRecords int64
+	TotalUsers               int64
+	MaleUsers                int64
+	FemaleUsers              int64
+	ContractUsers            int64
+	PermanentUsers           int64
+	PayrollRecords           int64
+	LeavesPending            int64
+	PersonalDataName         string
+	MalePercentage           float64
+	FemalePercentage         float64
+	ContractUsersPercentage  float64
+	PermanentUsersPercentage float64
 }
 
 type DataUserInterface interface {

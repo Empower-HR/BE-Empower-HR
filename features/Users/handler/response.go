@@ -65,11 +65,14 @@ type PayrollResponse struct {
 	AccountNumber int     `json:"account_number"`
 }
 
-type DashboardStats struct {
-	TotalUsers     int `json:"total_users"`
-	MaleUsers      int `json:"male_users"`
-	FemaleUsers    int `json:"female_users"`
-	ContractUsers  int `json:"contract_users"`
-	PermanentUsers int `json:"permanent_users"`
-	PayrollRecords int `json:"payroll_records"`
+type DashboardStatsResponses struct {
+	PersonalDataName         string  `json:"name"`
+	TotalUsers               int64   `json:"total_users"`
+	MalePercentage           float64 `json:"male"`
+	FemalePercentage         float64 `json:"female"`
+	ContractUsersPercentage  float64 `json:"contract"`
+	PermanentUsersPercentage float64 `json:"permanent"`
+	PayrollRecords           int64   `json:"payroll"`
+	LeavesRecords            int64   `json:"leaves"`
+	AttendanceRecords        int64   `json:"attendance"`
 }
