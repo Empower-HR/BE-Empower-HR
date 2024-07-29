@@ -92,7 +92,7 @@ func (uq *userQuery) AccountById(userid uint) (*users.PersonalDataEntity, error)
 }
 
 // CreateAccount implements users.DataUserInterface.
-func (uq *userQuery) CreateAccountAdmin(account users.PersonalDataEntity, companyName, department, jobPosition string) (uint, error) {
+func (uq *userQuery) CreateAccountAdmin(account users.PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error) {
 	var companyData CompanyData
 
 	// Check if company already exists
@@ -104,10 +104,10 @@ func (uq *userQuery) CreateAccountAdmin(account users.PersonalDataEntity, compan
 				CompanyName: companyName,
 			}
 			if err := uq.db.Create(&companyData).Error; err != nil {
-				return 0, err
+				return 0, 0, err
 			}
 		} else {
-			return 0, err
+			return 0, 0, err
 		}
 	}
 
@@ -127,74 +127,10 @@ func (uq *userQuery) CreateAccountAdmin(account users.PersonalDataEntity, compan
 		},
 	}
 	if err := uq.db.Create(&personalData).Error; err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return personalData.ID, nil
-}
-
-// CreateAccountEmployee implements users.DataUserInterface.
-func (uq *userQuery) CreateAccountEmployee(personalData users.PersonalDataEntity) (uint, error) {
-	var personalDataID uint
-
-	err := uq.db.Transaction(func(tx *gorm.DB) error {
-		personalDataModel := &PersonalData{
-			CompanyID:      personalData.CompanyID,
-			ProfilePicture: personalData.ProfilePicture,
-			Name:           personalData.Name,
-			Email:          personalData.Email,
-			Password:       personalData.Password,
-			PhoneNumber:    personalData.PhoneNumber,
-			PlaceBirth:     personalData.PlaceBirth,
-			BirthDate:      personalData.BirthDate,
-			Gender:         personalData.Gender,
-			Religion:       personalData.Religion,
-			NIK:            personalData.NIK,
-			Address:        personalData.Address,
-			Role:           "employees",
-		}
-
-		if err := tx.Create(&personalDataModel).Error; err != nil {
-			return err
-		}
-
-		personalDataID = personalDataModel.ID
-
-		for _, employment := range personalData.EmploymentData {
-			employmentDataModel := &EmploymentData{
-				PersonalDataID:   personalDataModel.ID,
-				EmploymentStatus: employment.EmploymentStatus,
-				JoinDate:         employment.JoinDate,
-				Department:       employment.Department,
-				JobPosition:      employment.JobPosition,
-				JobLevel:         employment.JobLevel,
-				Schedule:         employment.Schedule,
-				ApprovalLine:     employment.ApprovalLine,
-				Manager:          employment.Manager,
-			}
-
-			if err := tx.Create(&employmentDataModel).Error; err != nil {
-				return err
-			}
-
-			for _, payroll := range employment.Payrolls {
-				payrollDataModel := &PayrollData{
-					EmploymentDataID: employmentDataModel.ID,
-					Salary:           payroll.Salary,
-					BankName:         payroll.BankName,
-					AccountNumber:    payroll.AccountNumber,
-				}
-
-				if err := tx.Create(&payrollDataModel).Error; err != nil {
-					return err
-				}
-			}
-		}
-
-		return nil
-	})
-
-	return personalDataID, err
+	return personalData.ID, companyData.ID, nil
 }
 
 // DeleteAccountAdmin implements users.DataUserInterface.
@@ -314,19 +250,19 @@ func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.Employ
 }
 
 // update employment employee
-func (uq *userQuery) UpdateEmploymentEmployee( ID, employeID uint, updateEmploymentEmployee users.EmploymentDataEntity) error {
+func (uq *userQuery) UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee users.EmploymentDataEntity) error {
 	cnvQueryModel := ToQueryEmploymentEmployee(updateEmploymentEmployee)
-	qry := uq.db.Where("id = ? AND personal_data_id = ? AND deleted_at IS NULL", ID, employeID).Updates(&cnvQueryModel);
+	qry := uq.db.Where("id = ? AND personal_data_id = ? AND deleted_at IS NULL", ID, employeID).Updates(&cnvQueryModel)
 
 	if qry.Error != nil {
 		return qry.Error
-	};
+	}
 
 	if qry.RowsAffected < 1 {
 		return gorm.ErrRecordNotFound
 	}
 
-	return nil;
+	return nil
 }
 
 // GetAccountByName implements users.DataUserInterface.
@@ -431,41 +367,198 @@ func (uq *userQuery) GetAccountByJobLevel(jobLevel string) ([]users.PersonalData
 	return result, nil
 }
 
-// Add Employe 
+// Add Employe
 func (uq *userQuery) CreatePersonal(CompanyID uint, addPersonal users.PersonalDataEntity) (uint, error) {
-	cnvQuery := ToPersonalDataQuery(addPersonal);
-	cnvQuery.CompanyID = CompanyID;
-	err := uq.db.Create(&cnvQuery).Error;
-
-	if err != nil {
-		return 0, err;
-	}
-
-	return cnvQuery.ID, nil;
-};
-
-// Add employment data
-func (uq *userQuery) CreateEmployment(personalID uint, addEmployment users.EmploymentDataEntity) (uint, error) {
-	cnvQuery := ToEmploymentQuery(addEmployment);
-	cnvQuery.PersonalDataID = personalID;
-	err := uq.db.Create(&cnvQuery).Error;
+	cnvQuery := ToPersonalDataQuery(addPersonal)
+	cnvQuery.CompanyID = CompanyID
+	err := uq.db.Create(&cnvQuery).Error
 
 	if err != nil {
 		return 0, err
-	};
+	}
 
-	return cnvQuery.ID, nil;
-};
+	return cnvQuery.ID, nil
+}
+
+// Add employment data
+func (uq *userQuery) CreateEmployment(personalID uint, addEmployment users.EmploymentDataEntity) (uint, error) {
+	cnvQuery := ToEmploymentQuery(addEmployment)
+	cnvQuery.PersonalDataID = personalID
+	err := uq.db.Create(&cnvQuery).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return cnvQuery.ID, nil
+}
 
 // Add Payroll data
 func (uq *userQuery) CreatePayroll(employmentID uint, addPayroll users.PayrollDataEntity) error {
-	cnvQuery := ToPayrollQuery(addPayroll);
-	cnvQuery.EmploymentDataID = employmentID;
+	cnvQuery := ToPayrollQuery(addPayroll)
+	cnvQuery.EmploymentDataID = employmentID
 	err := uq.db.Create(&cnvQuery).Error
 
 	if err != nil {
 		return err
-	};
+	}
 
-	return nil;
+	return nil
+}
+
+// CreateLeaves implements users.DataUserInterface.
+func (uq *userQuery) CreateLeaves(PersonalID uint, addLeaves users.LeavesDataEntity) (uint, error) {
+	cnvQuery := ToLeavesQuery(addLeaves)
+	cnvQuery.PersonalDataID = PersonalID
+	err := uq.db.Create(&cnvQuery).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return cnvQuery.ID, nil
+}
+
+// CountTotalUsers menghitung jumlah total users berdasarkan CompanyID
+func (uq *userQuery) CountTotalUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&PersonalData{}).Where("company_id = ?", companyID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// CountMaleUsers menghitung jumlah gender laki-laki berdasarkan CompanyID
+func (uq *userQuery) CountMaleUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&PersonalData{}).Where("company_id = ? AND gender = ?", companyID, "male").Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// CountFemaleUsers menghitung jumlah gender perempuan berdasarkan CompanyID
+func (uq *userQuery) CountFemaleUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&PersonalData{}).Where("company_id = ? AND gender = ?", companyID, "female").Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *userQuery) CountContractUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&EmploymentData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("employment_status = ?", "contract").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// CountPermanentUsers menghitung jumlah pengguna dengan status pekerjaan "permanent" berdasarkan CompanyID
+func (uq *userQuery) CountPermanentUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&EmploymentData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("employment_status = ?", "permanent").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *userQuery) CountPayrollUsers(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&PayrollData{}).
+		Where("employment_data_id IN (SELECT id FROM employment_data WHERE personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?))", companyID).
+		Where("deleted_at IS NULL").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *userQuery) GetCompanyIDByName(companyName string) (uint, error) {
+	var companyData CompanyData
+	if err := uq.db.Where("company_name = ?", companyName).First(&companyData).Error; err != nil {
+		return 0, err
+	}
+	return companyData.ID, nil
+}
+
+func (uq *userQuery) CountPendingLeaves(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&LeavesData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("status = ?", "pending").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
+	var stats users.DashboardStats
+
+	// Fetch statistics
+	totalUsers, err := uq.CountTotalUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting total users: %v", err)
+		return nil, err
+	}
+	stats.TotalUsers = totalUsers
+
+	maleUsers, err := uq.CountMaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting male users: %v", err)
+		return nil, err
+	}
+	stats.MaleUsers = maleUsers
+
+	femaleUsers, err := uq.CountFemaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting female users: %v", err)
+		return nil, err
+	}
+	stats.FemaleUsers = femaleUsers
+
+	contractUsers, err := uq.CountContractUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting contract users: %v", err)
+		return nil, err
+	}
+	stats.ContractUsers = contractUsers
+
+	permanentUsers, err := uq.CountPermanentUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting permanent users: %v", err)
+		return nil, err
+	}
+	stats.PermanentUsers = permanentUsers
+
+	// menghitung presentase
+	if totalUsers > 0 {
+		stats.MalePercentage = (float64(maleUsers) / float64(totalUsers)) * 100
+		stats.FemalePercentage = (float64(femaleUsers) / float64(totalUsers)) * 100
+		stats.ContractUsersPercentage = (float64(contractUsers) / float64(totalUsers)) * 100
+		stats.PermanentUsersPercentage = (float64(permanentUsers) / float64(totalUsers)) * 100
+	}
+
+	payrollRecords, err := uq.CountPayrollUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting payroll records: %v", err)
+		return nil, err
+	}
+	stats.PayrollRecords = payrollRecords
+
+	pendingLeaves, err := uq.CountPendingLeaves(companyID)
+	if err != nil {
+		log.Printf("Error counting pending leaves: %v", err)
+		return nil, err
+	}
+	stats.LeavesPending = pendingLeaves
+
+	return &stats, nil
 }

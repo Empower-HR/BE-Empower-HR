@@ -1,5 +1,7 @@
 package users
 
+import "time"
+
 type PersonalDataEntity struct {
 	PersonalDataID uint
 	CompanyID      uint
@@ -41,12 +43,48 @@ type PayrollDataEntity struct {
 	AccountNumber    int
 }
 
+type LeavesDataEntity struct {
+	LeavesID       uint
+	StartDate      time.Time
+	EndDate        time.Time
+	Reason         string
+	Status         string
+	TotalLeave     int
+	PersonalDataID uint
+}
+
+type Attandance struct {
+	ID             uint
+	PersonalDataID uint
+	Clock_in       string
+	Clock_out      string
+	Status         string
+	Date           string
+	Long           string
+	Lat            string
+	Notes          string
+}
+
+type DashboardStats struct {
+	TotalUsers               int64
+	MaleUsers                int64
+	FemaleUsers              int64
+	ContractUsers            int64
+	PermanentUsers           int64
+	PayrollRecords           int64
+	LeavesPending            int64
+	PersonalDataName         string
+	MalePercentage           float64
+	FemalePercentage         float64
+	ContractUsersPercentage  float64
+	PermanentUsersPercentage float64
+}
+
 type DataUserInterface interface {
-	CreateAccountAdmin(account PersonalDataEntity, companyName, department, jobPosition string) (uint, error)
+	CreateAccountAdmin(account PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error)
 	GetAll(page, pageSize int) ([]PersonalDataEntity, error)
 	GetAccountByName(accountName string) ([]PersonalDataEntity, error)
 	GetAccountByJobLevel(jobLevel string) ([]PersonalDataEntity, error)
-	CreateAccountEmployee(account PersonalDataEntity) (uint, error)
 	AccountByEmail(email string) (*PersonalDataEntity, error)
 	AccountById(userid uint) (*PersonalDataEntity, error)
 	UpdateAccountEmployees(userid uint, account PersonalDataEntity) error
@@ -58,12 +96,20 @@ type DataUserInterface interface {
 	CreatePersonal(CompanyID uint, addPersonal PersonalDataEntity) (uint, error)
 	CreateEmployment(personalID uint, addEmployment EmploymentDataEntity) (uint, error)
 	CreatePayroll(employmentID uint, addPayroll PayrollDataEntity) error
+	CountTotalUsers(companyID uint) (int64, error)
+	CountMaleUsers(companyID uint) (int64, error)
+	CountFemaleUsers(companyID uint) (int64, error)
+	CountContractUsers(companyID uint) (int64, error)
+	CountPermanentUsers(companyID uint) (int64, error)
+	CountPayrollUsers(companyID uint) (int64, error)
+	GetCompanyIDByName(companyName string) (uint, error)
+	Dashboard(companyID uint) (*DashboardStats, error)
+	CreateLeaves(PersonalID uint, addLeaves LeavesDataEntity) (uint, error)
 }
 
 type ServiceUserInterface interface {
-	RegistrasiAccountAdmin(accounts PersonalDataEntity, companyName, department, jobPosition string) (uint, error)
+	RegistrasiAccountAdmin(accounts PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error)
 	GetAllAccount(name, jobLevel string, page, pageSize int) ([]PersonalDataEntity, error)
-	RegistrasiAccountEmployee(personalData PersonalDataEntity) (uint, error)
 	LoginAccount(email string, password string) (data *PersonalDataEntity, token string, err error)
 	GetProfile(userid uint) (data *PersonalDataEntity, err error)
 	GetProfileById(userid uint) (data *PersonalDataEntity, err error)
@@ -73,5 +119,6 @@ type ServiceUserInterface interface {
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
-	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity) error
+	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
+	Dashboard(companyID uint) (*DashboardStats, error)
 }

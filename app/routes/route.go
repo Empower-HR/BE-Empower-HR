@@ -61,7 +61,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
 	e.PUT("/employment", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
 	e.PUT("/employment/:id", userHandlerAPI.UpdateEmploymentEmployee, middlewares.JWTMiddleware())
-	//e.PUT("/employment/:id", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
+	e.GET("/dashboard", userHandlerAPI.DasboardAdmin, middlewares.JWTMiddleware())
 
 	//handler memployees
 	e.POST("/employee", userHandlerAPI.CreateNewEmployee, middlewares.JWTMiddleware())
@@ -75,6 +75,9 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/attendance/:attendance_id", attHandler.DeleteAttendance, middlewares.JWTMiddleware())
 	e.GET("/attendance", attHandler.GetAllAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/download", attHandler.DownloadPdf)
+
+
 	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
 	e.GET("/attendance/employe/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
