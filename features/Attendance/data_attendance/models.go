@@ -18,6 +18,18 @@ type Attandance struct {
 	Notes		   string					  `json:"notes"`
 }
 
+type PersonalData struct {
+	ID   uint
+	Name string
+	CompanyID   uint
+}
+
+type ScheduleData struct {
+	ID   uint
+	ScheduleIn    string
+	ScheduleOut   string
+	CompanyID     uint
+}
 
 func AttandanceInput(input attendance.Attandance) Attandance{
 	return Attandance{
@@ -31,3 +43,16 @@ func AttandanceInput(input attendance.Attandance) Attandance{
 		Notes:		input.Notes,
 	}
 }
+
+func (at *Attandance) ToAttEntity(pd *PersonalData, sc *ScheduleData) attendance.AttendanceDetail{
+	return attendance.AttendanceDetail{
+		Name : pd.Name,
+		PersonalDataID: at.PersonalDataID,
+		ScheduleIn   : sc.ScheduleIn,
+		ScheduleOut  : sc.ScheduleOut,
+		ClockIn     : at.Clock_in,
+		ClockOut  : at.Clock_out,
+		Date	: at.Date,
+	}
+}
+	

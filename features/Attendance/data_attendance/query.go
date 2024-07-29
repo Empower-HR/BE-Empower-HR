@@ -1,7 +1,8 @@
 package dataattendance
 
 import (
-	"be-empower-hr/features/Attendance"
+	attendance "be-empower-hr/features/Attendance"
+
 	"gorm.io/gorm"
 )
 
@@ -28,7 +29,7 @@ func (am *AttandanceModel) IsDateExists(personalID uint, date string) (bool, err
 		Where("personal_data_id = ? AND date = ? AND deleted_at IS NULL", personalID, date).
 		Count(&count).Error
 	if err != nil {
-		return false, err 
+		return false, err
 	}
 	return count > 0, nil
 }
@@ -50,24 +51,69 @@ func (am *AttandanceModel) Update(id uint, updatedAtt attendance.Attandance) err
 
 	return nil
 }
+
 // Get Att
-func (am *AttandanceModel) GetAttByPersonalID(personalID uint, limit int, offset int) ([]attendance.Attandance, error) {
-	var attandances []attendance.Attandance
+func (am *AttandanceModel) GetAttByPersonalID(personalID uint, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
 
-	err := am.db.Where("personal_data_id = ?", personalID).Limit(limit).Offset(offset).Find(&attandances).Error
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id,
+        sc.schedule_in, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+       at.personal_data_id = ? AND at.deleted_at IS NULL 
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, personalID, limit, offset).Scan(&results).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return attandances, nil
+	return results, nil
+
 }
-func (am *AttandanceModel) GetAllAtt(limit int, offset int) ([]attendance.Attandance, error) {
-	var attendances []attendance.Attandance
-	err := am.db.Where("deleted_at IS NULL").Limit(limit).Offset(offset).Find(&attendances).Error
+
+func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id, 
+        sc.schedule_in, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id AND at.date = ?
+    WHERE 
+        at.deleted_at IS NULL
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, date, limit, offset).Scan(&results).Error
 	if err != nil {
 		return nil, err
 	}
-	return attendances, nil
+
+	return results, nil
 }
 
 // delete Att
@@ -80,16 +126,25 @@ func (am *AttandanceModel) DeleteAttbyId(attId uint) error {
 	return am.db.Delete(&attandances).Error
 }
 
-
 func (am *AttandanceModel) GetTotalAttendancesCount() (int64, error) {
-    var count int64
-    err := am.db.Model(&attendance.Attandance{}).
-        Where("deleted_at IS NULL").
-        Count(&count).Error
-    if err != nil {
-        return 0, err
-    }
-    return count, nil
+	var count int64
+	err := am.db.Model(&attendance.Attandance{}).
+		Where("deleted_at IS NULL").
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (am *AttandanceModel) GetTotalAttendancesCountbyDate(date string) (int64, error) {
+	var count int64
+	err := am.db.Model(&attendance.Attandance{}).
+		Where("deleted_at IS NULL AND date = ?", date).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (am *AttandanceModel) GetAllAttDownload() ([]attendance.Attandance, error) {
@@ -99,4 +154,67 @@ func (am *AttandanceModel) GetAllAttDownload() ([]attendance.Attandance, error) 
 		return nil, err
 	}
 	return attendances, nil
+}
+
+// New Get Test
+func (am *AttandanceModel) GetAttendanceDetails(limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name, 
+		at.personal_data_id,
+        sc.schedule_in, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+        at.deleted_at IS NULL
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id,
+        sc.schedule_in, 
+        sc.schedule_out, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+        personal_data AS pd
+    JOIN 
+        schedule_data AS sc ON sc.company_id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+       at.id = ? AND at.deleted_at IS NULL`
+
+	err := am.db.Raw(query, idAtt).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+
 }
