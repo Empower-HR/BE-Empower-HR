@@ -468,3 +468,76 @@ func (uq *userQuery) CountPermanentUsers(companyID uint) (int64, error) {
 	}
 	return count, nil
 }
+
+func (uq *userQuery) CountPayrollRecords(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&PayrollData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *userQuery) GetCompanyIDByName(companyName string) (uint, error) {
+	var companyData CompanyData
+	if err := uq.db.Where("company_name = ?", companyName).First(&companyData).Error; err != nil {
+		return 0, err
+	}
+	return companyData.ID, nil
+}
+
+func (uq *userQuery) Dashboard(companyName string) (*users.DashboardStats, error) {
+	var stats DashboardStats
+
+	// Get CompanyID
+	companyID, err := uq.GetCompanyIDByName(companyName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch statistics
+	totalUsers, err := uq.CountTotalUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting total users: %v", err)
+		return nil, err
+	}
+	stats.TotalUsers = totalUsers
+
+	maleUsers, err := uq.CountMaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting male users: %v", err)
+		return nil, err
+	}
+	stats.MaleUsers = maleUsers
+
+	femaleUsers, err := uq.CountFemaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting female users: %v", err)
+		return nil, err
+	}
+	stats.FemaleUsers = femaleUsers
+
+	contractUsers, err := uq.CountContractUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting contract users: %v", err)
+		return nil, err
+	}
+	stats.ContractUsers = contractUsers
+
+	permanentUsers, err := uq.CountPermanentUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting permanent users: %v", err)
+		return nil, err
+	}
+	stats.PermanentUsers = permanentUsers
+
+	payrollRecords, err := uq.CountPayrollRecords(companyID)
+	if err != nil {
+		log.Printf("Error counting payroll records: %v", err)
+		return nil, err
+	}
+	stats.PayrollRecords = payrollRecords
+
+	return &users.DashboardStats{}, nil
+}

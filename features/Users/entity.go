@@ -53,6 +53,15 @@ type LeavesDataEntity struct {
 	PersonalDataID uint
 }
 
+type DashboardStats struct {
+	TotalUsers     int64
+	MaleUsers      int64
+	FemaleUsers    int64
+	ContractUsers  int64
+	PermanentUsers int64
+	PayrollRecords int64
+}
+
 type DataUserInterface interface {
 	CreateAccountAdmin(account PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error)
 	GetAll(page, pageSize int) ([]PersonalDataEntity, error)
@@ -72,6 +81,11 @@ type DataUserInterface interface {
 	CountTotalUsers(companyID uint) (int64, error)
 	CountMaleUsers(companyID uint) (int64, error)
 	CountFemaleUsers(companyID uint) (int64, error)
+	CountContractUsers(companyID uint) (int64, error)
+	CountPermanentUsers(companyID uint) (int64, error)
+	CountPayrollRecords(companyID uint) (int64, error)
+	GetCompanyIDByName(companyName string) (uint, error)
+	Dashboard(companyName string) (*DashboardStats, error)
 	CreateLeaves(PersonalID uint, addLeaves LeavesDataEntity) (uint, error)
 }
 
@@ -88,4 +102,5 @@ type ServiceUserInterface interface {
 	DeleteAccountEmployeeByAdmin(userid uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
 	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
+	Dashboard(companyName string) (*DashboardStats, error)
 }

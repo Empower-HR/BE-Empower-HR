@@ -341,3 +341,13 @@ func (us *userService) CreateNewEmployee(addPersonal users.PersonalDataEntity, a
 
 	return err
 }
+
+// Dashboard implements users.ServiceUserInterface.
+func (us *userService) Dashboard(companyName string) (*users.DashboardStats, error) {
+	stats, err := us.userData.Dashboard(companyName)
+	if err != nil {
+		log.Printf("Error fetching dashboard data from data layer: %v", err)
+		return nil, err
+	}
+	return stats, nil
+}

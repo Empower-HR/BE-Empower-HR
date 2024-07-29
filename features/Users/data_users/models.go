@@ -75,6 +75,15 @@ type LeavesData struct {
 	PersonalDataID uint
 }
 
+type DashboardStats struct {
+	TotalUsers     int64
+	MaleUsers      int64
+	FemaleUsers    int64
+	ContractUsers  int64
+	PermanentUsers int64
+	PayrollRecords int64
+}
+
 func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData {
 	return EmploymentData{
 		PersonalDataID:   input.PersonalDataID,
