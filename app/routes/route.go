@@ -53,7 +53,6 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	cl := cloudinary.NewCloudinaryUtility()
 	ch := _companyHandler.NewCompanyHandler(cs, cl)
 
-	
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
 	e.POST("/login", userHandlerAPI.Login)
@@ -76,7 +75,9 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/attendance/:attendance_id", attHandler.DeleteAttendance, middlewares.JWTMiddleware())
 	e.GET("/attendance", attHandler.GetAllAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
-	e.GET("/attendance/download", attHandler.DownloadPdf)
+	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
+	e.GET("/attendance/employe/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
   
 	// handler company
 	e.PUT("/companies", ch.UpdateCompany(), middlewares.JWTMiddleware())
