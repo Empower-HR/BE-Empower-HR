@@ -5,7 +5,6 @@ import (
 	dataleaves "be-empower-hr/features/Leaves/data_leaves"
 	datapayroll "be-empower-hr/features/Payroll/data_payroll"
 	users "be-empower-hr/features/Users"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -67,8 +66,8 @@ type PayrollData struct {
 
 type LeavesData struct {
 	gorm.Model
-	StartDate      time.Time
-	EndDate        time.Time
+	StartDate      string
+	EndDate        string
 	Reason         string
 	Status         string
 	TotalLeave     int
@@ -95,11 +94,13 @@ type DashboardStats struct {
 	PermanentUsers           int64
 	PayrollRecords           int64
 	LeavesPending            int64
-	PersonalDataName         string
 	MalePercentage           float64
 	FemalePercentage         float64
 	ContractUsersPercentage  float64
 	PermanentUsersPercentage float64
+	PersonalDataNames        string
+	AttendanceHadir          int64
+	CurrentDate              string
 }
 
 func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData {
@@ -164,7 +165,7 @@ func ToLeavesQuery(input users.LeavesDataEntity) LeavesData {
 		EndDate:        input.EndDate,
 		Reason:         input.Reason,
 		Status:         input.Status,
-		TotalLeave:     input.TotalLeave,
+		TotalLeave:     12,
 		PersonalDataID: input.PersonalDataID,
 	}
 }

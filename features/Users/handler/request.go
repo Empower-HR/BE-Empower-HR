@@ -2,7 +2,6 @@ package handler
 
 import (
 	users "be-empower-hr/features/Users"
-	"time"
 )
 
 type UserRequest struct {
@@ -49,6 +48,7 @@ type PersonalData struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phone"`
+	Password    string `json:"password"`
 	PlaceBirth  string `json:"place_birth"`
 	BirthDate   string `json:"birth_date"`
 	Gender      string `json:"gender"`
@@ -65,11 +65,11 @@ type Payroll struct {
 }
 
 type Leaves struct {
-	StartDate  time.Time `json:"start_date"`
-	EndDate    time.Time `json:"end_date"`
-	Reason     string    `json:"reason"`
-	Status     string    `json:"status"`
-	TotalLeave int       `json:"total_leave"`
+	StartDate  string `json:"start_date"`
+	EndDate    string `json:"end_date"`
+	Reason     string `json:"reason"`
+	Status     string `json:"status"`
+	TotalLeave int    `json:"total_leave"`
 }
 
 func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
@@ -91,6 +91,7 @@ func ToModelPersonalData(pd PersonalData) users.PersonalDataEntity {
 		Name:           pd.Name,
 		Email:          pd.Email,
 		PhoneNumber:    pd.PhoneNumber,
+		Password:       pd.Password,
 		PlaceBirth:     pd.PlaceBirth,
 		BirthDate:      pd.BirthDate,
 		Gender:         pd.Gender,
@@ -115,7 +116,7 @@ func ToModelLeaves(pd Leaves) users.LeavesDataEntity {
 		EndDate:    pd.EndDate,
 		Reason:     pd.Reason,
 		Status:     pd.Status,
-		TotalLeave: 12,
+		TotalLeave: pd.TotalLeave,
 	}
 }
 
