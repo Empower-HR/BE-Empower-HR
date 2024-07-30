@@ -49,4 +49,4 @@ jobs:
             docker rm empowerhrContainer
             docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/be-images
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/be-images
-            docker run -d -p 80:8080 -e DBUSER=${{ secrets.DBUSER }} -e DBPASS=${{ secrets.DBPASS }} -e DBHOST=${{ secrets.DBHOST }} -e DBPORT=${{ secrets.DBPORT }} -e DBNAME=${{ secrets.DBNAME }} -e JWTSECRET=${{ secrets.JWTSECRET }} -e CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }} --name empowerhrContainer ${{ secrets.DOCKERHUB_USERNAME }}/be-images:latest
+            docker run -d -p 80:8080 -e DBUSER=${{ secrets.DBUSER }} -e DBPASS=${{ secrets.DBPASS }} -e DBHOST=${{ secrets.DBHOST }} -e DBPORT=${{ secrets.DBPORT }} -e DBNAME=${{ secrets.DBNAME }} -e JWTSECRET=${{ secrets.JWTSECRET }} -e CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }} -e EMAIL_SENDER=${{ secrets.EMAIL_SENDER }} -e EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }} --name empowerhrContainer ${{ secrets.DOCKERHUB_USERNAME }}/be-images:latest

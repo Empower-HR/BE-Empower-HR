@@ -4,6 +4,7 @@ import (
 	users "be-empower-hr/features/Users"
 	"be-empower-hr/utils"
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -499,6 +500,17 @@ func (uq *userQuery) CountPendingLeaves(companyID uint) (int64, error) {
 	return count, nil
 }
 
+func (uq *userQuery) CountAttendanceHadir(companyID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&Attandance{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("status = ?", "hadir").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 	var stats users.DashboardStats
 
@@ -559,6 +571,89 @@ func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 		return nil, err
 	}
 	stats.LeavesPending = pendingLeaves
+
+	attendanceHadir, err := uq.CountAttendanceHadir(companyID)
+	if err != nil {
+		log.Printf("Error counting attendance with status 'hadir': %v", err)
+		return nil, err
+	}
+	stats.AttendanceHadir = attendanceHadir
+
+	var name string
+	if err := uq.db.Model(&PersonalData{}).
+		Where("company_id = ? AND deleted_at IS NULL", companyID).
+		Select("name").
+		Limit(1).
+		Pluck("name", &name).Error; err != nil {
+		log.Printf("Error fetching user name: %v", err)
+		return nil, err
+	}
+	stats.PersonalDataNames = name
+
+	stats.CurrentDate = time.Now().Format("Monday, 02 January 2006")
+
+	return &stats, nil
+}
+
+func (uq *userQuery) DashboardEmployees(companyID uint) (*users.DashboardStats, error) {
+	var stats users.DashboardStats
+
+	// Fetch statistics
+	totalUsers, err := uq.CountTotalUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting total users: %v", err)
+		return nil, err
+	}
+	stats.TotalUsers = totalUsers
+
+	maleUsers, err := uq.CountMaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting male users: %v", err)
+		return nil, err
+	}
+	stats.MaleUsers = maleUsers
+
+	femaleUsers, err := uq.CountFemaleUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting female users: %v", err)
+		return nil, err
+	}
+	stats.FemaleUsers = femaleUsers
+
+	contractUsers, err := uq.CountContractUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting contract users: %v", err)
+		return nil, err
+	}
+	stats.ContractUsers = contractUsers
+
+	permanentUsers, err := uq.CountPermanentUsers(companyID)
+	if err != nil {
+		log.Printf("Error counting permanent users: %v", err)
+		return nil, err
+	}
+	stats.PermanentUsers = permanentUsers
+
+	// menghitung presentase
+	if totalUsers > 0 {
+		stats.MalePercentage = (float64(maleUsers) / float64(totalUsers)) * 100
+		stats.FemalePercentage = (float64(femaleUsers) / float64(totalUsers)) * 100
+		stats.ContractUsersPercentage = (float64(contractUsers) / float64(totalUsers)) * 100
+		stats.PermanentUsersPercentage = (float64(permanentUsers) / float64(totalUsers)) * 100
+	}
+
+	var name string
+	if err := uq.db.Model(&PersonalData{}).
+		Where("company_id = ? AND deleted_at IS NULL", companyID).
+		Select("name").
+		Limit(1).
+		Pluck("name", &name).Error; err != nil {
+		log.Printf("Error fetching user name: %v", err)
+		return nil, err
+	}
+	stats.PersonalDataNames = name
+
+	stats.CurrentDate = time.Now().Format("Monday, 02 January 2006")
 
 	return &stats, nil
 }

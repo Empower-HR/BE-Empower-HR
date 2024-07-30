@@ -20,6 +20,10 @@ import (
 	_scheduleHandler "be-empower-hr/features/Schedule/handler"
 	_schduleService "be-empower-hr/features/Schedule/service"
 
+	_leavesData "be-empower-hr/features/Leaves/data_leaves"
+	_leavesHandler "be-empower-hr/features/Leaves/handler"
+	_leavesDataService "be-empower-hr/features/Leaves/service"
+  
 	_annoData "be-empower-hr/features/Announcement/data_announcement"
 	_annoService "be-empower-hr/features/Announcement/service"
 	_annoHandler "be-empower-hr/features/Announcement/handler"
@@ -55,6 +59,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 	userHandlerAPI := _userHandler.New(userService, cloudinaryUtility)
 
+	leavesData := _leavesData.New(db)
+	leavesDataService := _leavesDataService.New(leavesData)
+	leavesHandlerAPI := _leavesHandler.New(leavesDataService)
+
 	// api company
 	cm := _datacompanies.NewCompanyModels(db)
 	cs := _companyService.NewCompanyServices(cm)
@@ -77,6 +85,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/employee/:id", userHandlerAPI.GetProfileById, middlewares.JWTMiddleware())
 	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
 	e.DELETE("/employee/:id", userHandlerAPI.DeleteAccountEmployees, middlewares.JWTMiddleware())
+	e.GET("/dashboard/employee", userHandlerAPI.DashboardEmployees, middlewares.JWTMiddleware())
 
 	e.POST("/attendance", attHandler.AddAttendance, middlewares.JWTMiddleware())
 	e.PUT("/attendance/:attendance_id", attHandler.UpdateAttendance, middlewares.JWTMiddleware())
@@ -89,7 +98,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
 	e.GET("/attendance/user/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
-  
+
 	// handler company
 	e.PUT("/companies", ch.UpdateCompany(), middlewares.JWTMiddleware())
 	e.GET("/companies", ch.GetCompany(), middlewares.JWTMiddleware())
@@ -101,8 +110,13 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
 	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
 
+	//handler leaves
+	e.POST("/leaves", leavesHandlerAPI.RequestLeave, middlewares.JWTMiddleware())
+	e.PUT("/leaves/:id", leavesHandlerAPI.UpdateLeaveStatus, middlewares.JWTMiddleware())
+	e.GET("/leaves", leavesHandlerAPI.ViewLeaveHistory, middlewares.JWTMiddleware())
+	e.GET("/leaves/:id", leavesHandlerAPI.GetLeavesByID, middlewares.JWTMiddleware())
+  
 	// handler announcement
 	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
 	e.GET("/announcement", annoHandler.GetAnno, middlewares.JWTMiddleware())
-
 }
