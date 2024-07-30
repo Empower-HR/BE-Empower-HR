@@ -47,8 +47,8 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	attHandler := _attHandler.New(attService)
 	
 	annoData := _annoData.NewModelAnnouncement(db)
-	annoService := _annoService.New(annoData, hashService, middlewares, accountUtility)
-	annoHandler := _annoHandler.New(annoService, cloudinaryUtility)
+	annoService := _annoService.New(annoData, hashService, middlewares, accountUtility, cloudinaryUtility)
+	annoHandler := _annoHandler.New(annoService)
 
 	scheduleData := _scheduleData.New(db)
 	scheduleService := _schduleService.New(scheduleData, accountUtility)

@@ -1,6 +1,8 @@
 package Announcement
 
 import (
+	"io"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,6 +22,7 @@ type AnnoHandler interface {
 type AnnoServices interface {
 	AddAnno(newAnno Announcement) error
 	GetAll() ([]Announcement, error)
+	GetURLAtc(file io.Reader, filename string) (string, error)
 }
 
 type AnnoQuery interface {

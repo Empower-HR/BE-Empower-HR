@@ -23,7 +23,7 @@ func (anmo *AnnoModel) Create(newAnn announcement.Announcement) error {
 }
 func (anmo *AnnoModel) GetAll() ([]announcement.Announcement, error) {
 	var announcement []announcement.Announcement
-	err := anmo.db.Where("deleted_at IS NULL AND").Order("Create_at DESC").Find(&announcement).Error
+	err := anmo.db.Where("deleted_at IS NULL").Order("created_at DESC").Find(&announcement).Error
 	if err != nil {
 		return nil, err
 	}

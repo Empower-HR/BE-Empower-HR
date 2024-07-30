@@ -3,8 +3,8 @@ package handler
 import (
 	"be-empower-hr/app/middlewares"
 	announcement "be-empower-hr/features/Announcement"
-	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/responses"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,13 +13,11 @@ import (
 
 type AnnHandler struct {
 	srv announcement.AnnoServices
-	cloudinaryUtility cloudinary.CloudinaryUtilityInterface
 }
 
-func New(anoserv announcement.AnnoServices, cu cloudinary.CloudinaryUtilityInterface) announcement.AnnoHandler {
+func New(anoserv announcement.AnnoServices) announcement.AnnoHandler {
 	return &AnnHandler{
 		srv: anoserv,
-		cloudinaryUtility: cu,
 	}
 }
 
@@ -38,6 +36,7 @@ func (ah *AnnHandler) AddAnnouncement(c echo.Context) error {
 	}
 
 	// Handle profile picture upload to Cloudinary
+	var attachmentURL string
 	attachment, err := c.FormFile("attachment")
 	if err == nil {
 		src, err := attachment.Open()
@@ -46,13 +45,11 @@ func (ah *AnnHandler) AddAnnouncement(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
 		}
 		defer src.Close()
-
-		attchmentURL, err := ah.cloudinaryUtility.UploadCloudinary(src, attachment.Filename)
+		attachmentURL, err = ah.srv.GetURLAtc(src, attachment.Filename)
+		fmt.Println("ini url nya dong : ", attachmentURL)
 		if err != nil {
-			log.Printf("attachment: Error uploading to Cloudinary: %v", err)
-			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
+			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
 		}
-		annRequest.Attachment = attchmentURL
 	}
 
 
@@ -60,9 +57,9 @@ func (ah *AnnHandler) AddAnnouncement(c echo.Context) error {
 		CompanyID         : annRequest.CompanyID,
 		Title		   	  : annRequest.Title,
 		Description       : annRequest.Description,
-		Attachment		  : annRequest.Attachment,
+		Attachment		  : attachmentURL,
 	}
-
+	fmt.Println("datanya :", dataAnn)
 	// panggil fungsi addAtt pada service
 	err = ah.srv.AddAnno(dataAnn)
 	if err != nil {
