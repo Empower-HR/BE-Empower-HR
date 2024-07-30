@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"be-empower-hr/app/middlewares"
 	payroll "be-empower-hr/features/Payroll"
 	"be-empower-hr/utils/responses"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -44,4 +46,22 @@ func (ph *PayrollHandler) GetAllPayroll(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", err.Error(), nil))
 	}
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Team members retrieved successfully", payrolls))
+}
+
+func (ph *PayrollHandler ) DownloadPayrollPdf(c echo.Context) error {
+	personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if personalID == 0 {
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+	}
+
+	ID, err := strconv.Atoi(c.Param("id"));
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Invalid request parameters", nil))
+	}
+
+	err = ph.payrollService.GetPayrollDownload(uint(ID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Download failed", nil))
+	}
+	return c.File("./Payroll.pdf")
 }

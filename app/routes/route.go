@@ -23,10 +23,10 @@ import (
 	_payrollData "be-empower-hr/features/Payroll/data_payroll"
 	_payrollHandler "be-empower-hr/features/Payroll/handler"
 	_payrollService "be-empower-hr/features/Payroll/service"
-  
+
 	_annoData "be-empower-hr/features/Announcement/data_announcement"
-	_annoService "be-empower-hr/features/Announcement/service"
 	_annoHandler "be-empower-hr/features/Announcement/handler"
+	_annoService "be-empower-hr/features/Announcement/service"
 
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
@@ -66,7 +66,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	ch := _companyHandler.NewCompanyHandler(cs, cl)
 
 	payrollData := _payrollData.New(db)
-	payrollService := _payrollService.New(payrollData)
+	payrollService := _payrollService.New(payrollData, pdfUtility)
 	payrollHandlerAPI := _payrollHandler.New(payrollService)
 
 	//handler admin
@@ -111,6 +111,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 
 	e.POST("/payroll", payrollHandlerAPI.CreatePayroll, middlewares.JWTMiddleware())
 	e.GET("/payroll", payrollHandlerAPI.GetAllPayroll, middlewares.JWTMiddleware())
+	e.GET("/payroll/download/:id", payrollHandlerAPI.DownloadPayrollPdf, middlewares.JWTMiddleware())
   
 	// handler announcement
 	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
