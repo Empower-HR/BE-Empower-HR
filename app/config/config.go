@@ -11,6 +11,8 @@ import (
 var (
 	JWT_SECRET     string
 	CLOUDINARY_URL string
+	EMAIL_PASSWORD string
+	EMAIL_SENDER   string
 )
 
 type AppConfig struct {
@@ -39,6 +41,8 @@ func ReadEnv() *AppConfig {
 	app.DBNAME = os.Getenv("DBNAME")
 	JWT_SECRET = os.Getenv("JWTSECRET")
 	CLOUDINARY_URL = os.Getenv("CLOUDINARY_URL")
+	EMAIL_PASSWORD = os.Getenv("EMAIL_PASSWORD")
+	EMAIL_SENDER = os.Getenv("EMAIL_SENDER")
 	return &app
 }
 

@@ -1,12 +1,14 @@
 package handler
 
 type UserResponse struct {
-	Name        string `json:"name"`
-	WorkEmail   string `json:"work_email"`
-	PhoneNumber string `json:"phone_number"`
-	Department  string `json:"department"`
-	JobPosition string `json:"job_position"`
-	CompanyName string `json:"company_name"`
+	PersonalDataID uint   `json:"personal_data_id"`
+	CompanyID      uint   `json:"company_id"`
+	Name           string `json:"name"`
+	WorkEmail      string `json:"work_email"`
+	PhoneNumber    string `json:"phone_number"`
+	Department     string `json:"department"`
+	JobPosition    string `json:"job_position"`
+	CompanyName    string `json:"company_name"`
 }
 
 type ProfileResponse struct {
@@ -35,6 +37,7 @@ type EmploymentDataResponse struct {
 }
 
 type AllUsersResponse struct {
+	PersonalDataID   uint   `json:"id"`
 	Name             string `json:"name"`
 	JobPosition      string `json:"job_position"`
 	JobLevel         string `json:"job_level"`
@@ -60,4 +63,16 @@ type PayrollResponse struct {
 	Salary        float64 `json:"salary"`
 	BankName      string  `json:"bank_name"`
 	AccountNumber int     `json:"account_number"`
+}
+
+type DashboardStatsResponses struct {
+	PersonalDataName         string  `json:"name"`
+	TotalUsers               int64   `json:"total_users"`
+	MalePercentage           float64 `json:"male"`
+	FemalePercentage         float64 `json:"female"`
+	ContractUsersPercentage  float64 `json:"contract"`
+	PermanentUsersPercentage float64 `json:"permanent"`
+	PayrollRecords           int64   `json:"payroll"`
+	LeavesRecords            int64   `json:"leaves"`
+	AttendanceRecords        int64   `json:"attendance"`
 }

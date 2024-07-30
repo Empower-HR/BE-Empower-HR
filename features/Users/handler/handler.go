@@ -45,7 +45,7 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 		JobPosition: newUser.JobPosition,
 	}
 
-	_, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
+	personalDataID, companyID, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
 	if errInsert != nil {
 		log.Printf("register: error registering user: %v", errInsert)
 		if strings.Contains(errInsert.Error(), "validation") {
@@ -54,21 +54,20 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "user registration failed: "+errInsert.Error(), nil))
 	}
 
+	// Include both IDs in the response
 	userResponse := UserResponse{
-		Name:        newUser.Name,
-		WorkEmail:   newUser.WorkEmail,
-		PhoneNumber: newUser.PhoneNumber,
-		Department:  newUser.Department,
-		JobPosition: newUser.JobPosition,
-		CompanyName: newUser.Company,
+		PersonalDataID: personalDataID,
+		CompanyID:      companyID,
+		Name:           newUser.Name,
+		WorkEmail:      newUser.WorkEmail,
+		PhoneNumber:    newUser.PhoneNumber,
+		Department:     newUser.Department,
+		JobPosition:    newUser.JobPosition,
+		CompanyName:    newUser.Company,
 	}
 
 	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "user registration successful", userResponse))
 }
-
-// func (uh *UserHandler) RegisterEmployee(c echo.Context) error {
-
-// }
 
 func (uh *UserHandler) Login(c echo.Context) error {
 	loginReq := LoginRequest{}
@@ -424,6 +423,7 @@ func (uh *UserHandler) GetAllAccount(c echo.Context) error {
 	for _, v := range allAccount {
 		for _, emp := range v.EmploymentData {
 			allUserResponse = append(allUserResponse, AllUsersResponse{
+				PersonalDataID:   emp.EmploymentDataID,
 				Name:             v.Name,
 				JobPosition:      emp.JobPosition,
 				JobLevel:         emp.JobLevel,
@@ -449,41 +449,78 @@ func (uh *UserHandler) UpdateEmploymentEmployee(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
 
-	var input EmploymentData;
+	var input EmploymentData
 
 	if errBind := c.Bind(&input); errBind != nil {
 		log.Printf("update profile employees: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
-	};
+	}
 
-	err := uh.userService.UpdateEmploymentEmployee(uint(idConv), uint(employeeID), ToModelEmploymentData(input));
+	err := uh.userService.UpdateEmploymentEmployee(uint(idConv), uint(employeeID), ToModelEmploymentData(input))
 	if err != nil {
 		log.Printf("update profile employees: Error updating profile: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil));
-};
-
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+}
 
 func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
 
-	var newEmployeeRequeste NewEmployeeRequest;
+	var newEmployeeRequeste NewEmployeeRequest
 	if errNewEmployeReq := c.Bind(&newEmployeeRequeste); errNewEmployeReq != nil {
 		log.Printf("update profile employees: Error binding data: %v", errNewEmployeReq)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errNewEmployeReq.Error(), nil))
-	};
+	}
 
 	err := uh.userService.CreateNewEmployee(
-		ToModelPersonalData(newEmployeeRequeste.PersonalData), 
-		ToModelEmploymentData(newEmployeeRequeste.EmploymentData), 
+		ToModelPersonalData(newEmployeeRequeste.PersonalData),
+		ToModelEmploymentData(newEmployeeRequeste.EmploymentData),
 		ToModelPayroll(newEmployeeRequeste.Payroll),
-		);
+		ToModelLeaves(newEmployeeRequeste.Leaves),
+	)
 
 	if err != nil {
 		log.Printf("update profile employees: Error create employee data: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error create employee data: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Create new employee successfully", nil));
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Create new employee successfully", nil))
+}
+
+func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
+	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+	if userID == 0 {
+		log.Println("invalid user ID from token")
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
+	}
+
+	companyID, err := getCompanyIDFromUserID(userID)
+	if err != nil {
+		log.Printf("Error retrieving company ID: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to retrieve company ID", nil))
+	}
+	log.Println(getCompanyIDFromUserID(userID))
+	dashboardData, err := uh.userService.Dashboard(companyID)
+	if err != nil {
+		log.Printf("error fetching dashboard data: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "failed to fetch dashboard data", nil))
+	}
+
+	responseData := DashboardStatsResponses{
+		TotalUsers:               dashboardData.TotalUsers,
+		MalePercentage:           dashboardData.MalePercentage,
+		FemalePercentage:         dashboardData.FemalePercentage,
+		ContractUsersPercentage:  dashboardData.ContractUsersPercentage,
+		PermanentUsersPercentage: dashboardData.PermanentUsersPercentage,
+		PayrollRecords:           dashboardData.PayrollRecords,
+		LeavesRecords:            dashboardData.LeavesPending,
+		PersonalDataName:         dashboardData.PersonalDataName,
+	}
+
+	return c.JSON(http.StatusOK, responseData)
+}
+
+func getCompanyIDFromUserID(userID int) (uint, error) {
+	return 1, nil
 }
