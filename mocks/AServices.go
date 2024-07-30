@@ -59,6 +59,62 @@ func (_m *AServices) CountAllAtt() (int64, error) {
 	return r0, r1
 }
 
+// CountAllAttbyDate provides a mock function with given fields: date
+func (_m *AServices) CountAllAttbyDate(date string) (int64, error) {
+	ret := _m.Called(date)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountAllAttbyDate")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (int64, error)); ok {
+		return rf(date)
+	}
+	if rf, ok := ret.Get(0).(func(string) int64); ok {
+		r0 = rf(date)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(date)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountAllAttbyStatus provides a mock function with given fields: status
+func (_m *AServices) CountAllAttbyStatus(status string) (int64, error) {
+	ret := _m.Called(status)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountAllAttbyStatus")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (int64, error)); ok {
+		return rf(status)
+	}
+	if rf, ok := ret.Get(0).(func(string) int64); ok {
+		r0 = rf(status)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(status)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // DeleteAttByID provides a mock function with given fields: attID
 func (_m *AServices) DeleteAttByID(attID uint) error {
 	ret := _m.Called(attID)
@@ -95,29 +151,29 @@ func (_m *AServices) DownloadAllAtt() error {
 	return r0
 }
 
-// GetAllAtt provides a mock function with given fields: limit, offset
-func (_m *AServices) GetAllAtt(limit int, offset int) ([]attendance.Attandance, error) {
-	ret := _m.Called(limit, offset)
+// GetAllAtt provides a mock function with given fields: search, limit, offset
+func (_m *AServices) GetAllAtt(search string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(search, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllAtt")
 	}
 
-	var r0 []attendance.Attandance
+	var r0 []attendance.AttendanceDetail
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int, int) ([]attendance.Attandance, error)); ok {
-		return rf(limit, offset)
+	if rf, ok := ret.Get(0).(func(string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(search, limit, offset)
 	}
-	if rf, ok := ret.Get(0).(func(int, int) []attendance.Attandance); ok {
-		r0 = rf(limit, offset)
+	if rf, ok := ret.Get(0).(func(string, int, int) []attendance.AttendanceDetail); ok {
+		r0 = rf(search, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]attendance.Attandance)
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int, int) error); ok {
-		r1 = rf(limit, offset)
+	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
+		r1 = rf(search, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -125,29 +181,149 @@ func (_m *AServices) GetAllAtt(limit int, offset int) ([]attendance.Attandance, 
 	return r0, r1
 }
 
-// GetAttByPersonalID provides a mock function with given fields: personalID, limit, offset
-func (_m *AServices) GetAttByPersonalID(personalID uint, limit int, offset int) ([]attendance.Attandance, error) {
-	ret := _m.Called(personalID, limit, offset)
+// GetAllAttbyDate provides a mock function with given fields: date, limit, offset
+func (_m *AServices) GetAllAttbyDate(date string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(date, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAllAttbyDate")
+	}
+
+	var r0 []attendance.AttendanceDetail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(date, limit, offset)
+	}
+	if rf, ok := ret.Get(0).(func(string, int, int) []attendance.AttendanceDetail); ok {
+		r0 = rf(date, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
+		r1 = rf(date, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAllAttbyStatus provides a mock function with given fields: status, limit, offset
+func (_m *AServices) GetAllAttbyStatus(status string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(status, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAllAttbyStatus")
+	}
+
+	var r0 []attendance.AttendanceDetail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(status, limit, offset)
+	}
+	if rf, ok := ret.Get(0).(func(string, int, int) []attendance.AttendanceDetail); ok {
+		r0 = rf(status, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
+		r1 = rf(status, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAttByIdAtt provides a mock function with given fields: idAtt
+func (_m *AServices) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(idAtt)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAttByIdAtt")
+	}
+
+	var r0 []attendance.AttendanceDetail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(idAtt)
+	}
+	if rf, ok := ret.Get(0).(func(uint) []attendance.AttendanceDetail); ok {
+		r0 = rf(idAtt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(idAtt)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAttByPersonalID provides a mock function with given fields: personalID, searchBox, limit, offset
+func (_m *AServices) GetAttByPersonalID(personalID uint, searchBox string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(personalID, searchBox, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAttByPersonalID")
 	}
 
-	var r0 []attendance.Attandance
+	var r0 []attendance.AttendanceDetail
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, int, int) ([]attendance.Attandance, error)); ok {
-		return rf(personalID, limit, offset)
+	if rf, ok := ret.Get(0).(func(uint, string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(personalID, searchBox, limit, offset)
 	}
-	if rf, ok := ret.Get(0).(func(uint, int, int) []attendance.Attandance); ok {
-		r0 = rf(personalID, limit, offset)
+	if rf, ok := ret.Get(0).(func(uint, string, int, int) []attendance.AttendanceDetail); ok {
+		r0 = rf(personalID, searchBox, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]attendance.Attandance)
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, int, int) error); ok {
-		r1 = rf(personalID, limit, offset)
+	if rf, ok := ret.Get(1).(func(uint, string, int, int) error); ok {
+		r1 = rf(personalID, searchBox, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAttByPersonalIDandStatus provides a mock function with given fields: id, status, limit, offset
+func (_m *AServices) GetAttByPersonalIDandStatus(id uint, status string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	ret := _m.Called(id, status, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAttByPersonalIDandStatus")
+	}
+
+	var r0 []attendance.AttendanceDetail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+		return rf(id, status, limit, offset)
+	}
+	if rf, ok := ret.Get(0).(func(uint, string, int, int) []attendance.AttendanceDetail); ok {
+		r0 = rf(id, status, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]attendance.AttendanceDetail)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, string, int, int) error); ok {
+		r1 = rf(id, status, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
