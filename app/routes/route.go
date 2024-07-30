@@ -23,6 +23,10 @@ import (
 	_leavesData "be-empower-hr/features/Leaves/data_leaves"
 	_leavesHandler "be-empower-hr/features/Leaves/handler"
 	_leavesDataService "be-empower-hr/features/Leaves/service"
+  
+	_annoData "be-empower-hr/features/Announcement/data_announcement"
+	_annoService "be-empower-hr/features/Announcement/service"
+	_annoHandler "be-empower-hr/features/Announcement/handler"
 
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
@@ -45,6 +49,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	attData := _attData.NewAttandancesModel(db)
 	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
 	attHandler := _attHandler.New(attService)
+	
+	annoData := _annoData.NewModelAnnouncement(db)
+	annoService := _annoService.New(annoData, hashService, middlewares, accountUtility, cloudinaryUtility)
+	annoHandler := _annoHandler.New(annoService)
 
 	scheduleData := _scheduleData.New(db)
 	scheduleService := _schduleService.New(scheduleData, accountUtility)
@@ -83,11 +91,12 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/attendance/:attendance_id", attHandler.UpdateAttendance, middlewares.JWTMiddleware())
 	e.DELETE("/attendance/:attendance_id", attHandler.DeleteAttendance, middlewares.JWTMiddleware())
 	e.GET("/attendance", attHandler.GetAllAttendancesHandler, middlewares.JWTMiddleware())
+  
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/download", attHandler.DownloadPdf)
 
 	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
-	e.GET("/attendance/employe/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/user/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
 
 	// handler company
@@ -106,4 +115,8 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/leaves/:id", leavesHandlerAPI.UpdateLeaveStatus, middlewares.JWTMiddleware())
 	e.GET("/leaves", leavesHandlerAPI.ViewLeaveHistory, middlewares.JWTMiddleware())
 	e.GET("/leaves/:id", leavesHandlerAPI.GetLeavesByID, middlewares.JWTMiddleware())
+  
+	// handler announcement
+	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
+	e.GET("/announcement", annoHandler.GetAnno, middlewares.JWTMiddleware())
 }

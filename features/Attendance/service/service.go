@@ -7,6 +7,7 @@ import (
 	"be-empower-hr/utils/encrypts"
 	"be-empower-hr/utils/pdf"
 	"errors"
+	"fmt"
 )
 
 type attendanceService struct {
@@ -61,18 +62,18 @@ func (as *attendanceService) DeleteAttByID(attID uint) error {
 	return nil
 }
 
-func (as *attendanceService) GetAttByPersonalID(personalID uint, limit int, offset int) ([]att.AttendanceDetail, error) {
-	attendances, err := as.qry.GetAttByPersonalID(personalID, limit, offset)
+func (as *attendanceService) GetAttByPersonalID(personalID uint,searchBox string, limit int, offset int) ([]att.AttendanceDetail, error) {
+	attendances, err := as.qry.GetAttByPersonalID(personalID, searchBox, limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
 	return attendances, nil
 }
 
-func (as *attendanceService) GetAllAtt(limit int, offset int) ([]att.AttendanceDetail, error) {
+func (as *attendanceService) GetAllAtt(search string, limit int, offset int) ([]att.AttendanceDetail, error) {
 
     // attendance, err := as.qry.GetAllAtt(limit, offset)
-    attendance, err := as.qry.GetAttendanceDetails(limit, offset)
+    attendance, err := as.qry.GetAttendanceDetails(search,limit, offset)
 	if err != nil {
 		return nil, errors.New("error retrieving attendance records")
 	}
@@ -88,22 +89,55 @@ func (as *attendanceService) GetAttByIdAtt(idAtt uint) ([]att.AttendanceDetail, 
 	return attendance, nil
 }
 func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.AttendanceDetail, error) {
-
+	if date == "" {
+		return nil, fmt.Errorf("silahkan isi tanggal dengan benar")
+	}
 	attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	return attendance, nil
 }
-func (ah *attendanceService) CountAllAtt() (int64, error) {
-	count, err := ah.qry.GetTotalAttendancesCount()
+
+func (as *attendanceService) GetAllAttbyStatus(status string, limit int, offset int) ([]att.AttendanceDetail, error){
+	if status == "" {
+		return nil, fmt.Errorf("silahkan isi tanggal dengan benar")
+	}
+	attendance, err := as.qry.GetAllAttbyStatus(status, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return attendance, nil
+}
+
+func (as *attendanceService) GetAttByPersonalIDandStatus(id uint, status string, limit int, offset int) ([]att.AttendanceDetail, error){
+	if status == "" {
+		return nil, fmt.Errorf("silahkan isi tanggal dengan benar")
+	}
+	attendance, err := as.qry.GetAllAttbyIdPersonAndStatus(id, status, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return attendance, nil
+}
+
+func (as *attendanceService) CountAllAtt() (int64, error) {
+	count, err := as.qry.GetTotalAttendancesCount()
 	if err != nil {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
 	return count, nil
 }
-func (ah *attendanceService) CountAllAttbyDate(date string) (int64, error) {
-	count, err := ah.qry.GetTotalAttendancesCountbyDate(date)
+func (as *attendanceService) CountAllAttbyDate(date string) (int64, error) {
+	count, err := as.qry.GetTotalAttendancesCountbyDate(date)
+	if err != nil {
+		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
+	}
+	return count, nil
+}
+
+func (as *attendanceService) CountAllAttbyStatus(status string) (int64, error) {
+	count, err := as.qry.GetTotalAttendancesCountByStatus(status)
 	if err != nil {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
