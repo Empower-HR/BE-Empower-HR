@@ -13,22 +13,52 @@ type ServiceUserInterface struct {
 	mock.Mock
 }
 
-// CreateNewEmployee provides a mock function with given fields: addPersonal, addEmployment, addPayroll
-func (_m *ServiceUserInterface) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity) error {
-	ret := _m.Called(addPersonal, addEmployment, addPayroll)
+// CreateNewEmployee provides a mock function with given fields: addPersonal, addEmployment, addPayroll, addLeaves
+func (_m *ServiceUserInterface) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
+	ret := _m.Called(addPersonal, addEmployment, addPayroll, addLeaves)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateNewEmployee")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, users.EmploymentDataEntity, users.PayrollDataEntity) error); ok {
-		r0 = rf(addPersonal, addEmployment, addPayroll)
+	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, users.EmploymentDataEntity, users.PayrollDataEntity, users.LeavesDataEntity) error); ok {
+		r0 = rf(addPersonal, addEmployment, addPayroll, addLeaves)
 	} else {
 		r0 = ret.Error(0)
 	}
 
 	return r0
+}
+
+// Dashboard provides a mock function with given fields: companyID
+func (_m *ServiceUserInterface) Dashboard(companyID uint) (*users.DashboardStats, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Dashboard")
+	}
+
+	var r0 *users.DashboardStats
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (*users.DashboardStats, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) *users.DashboardStats); ok {
+		r0 = rf(companyID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*users.DashboardStats)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // DeleteAccountAdmin provides a mock function with given fields: userid
@@ -195,7 +225,7 @@ func (_m *ServiceUserInterface) LoginAccount(email string, password string) (*us
 }
 
 // RegistrasiAccountAdmin provides a mock function with given fields: accounts, companyName, department, jobPosition
-func (_m *ServiceUserInterface) RegistrasiAccountAdmin(accounts users.PersonalDataEntity, companyName string, department string, jobPosition string) (uint, error) {
+func (_m *ServiceUserInterface) RegistrasiAccountAdmin(accounts users.PersonalDataEntity, companyName string, department string, jobPosition string) (uint, uint, error) {
 	ret := _m.Called(accounts, companyName, department, jobPosition)
 
 	if len(ret) == 0 {
@@ -203,8 +233,9 @@ func (_m *ServiceUserInterface) RegistrasiAccountAdmin(accounts users.PersonalDa
 	}
 
 	var r0 uint
-	var r1 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) (uint, error)); ok {
+	var r1 uint
+	var r2 error
+	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) (uint, uint, error)); ok {
 		return rf(accounts, companyName, department, jobPosition)
 	}
 	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) uint); ok {
@@ -213,41 +244,19 @@ func (_m *ServiceUserInterface) RegistrasiAccountAdmin(accounts users.PersonalDa
 		r0 = ret.Get(0).(uint)
 	}
 
-	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity, string, string, string) error); ok {
+	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity, string, string, string) uint); ok {
 		r1 = rf(accounts, companyName, department, jobPosition)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(uint)
 	}
 
-	return r0, r1
-}
-
-// RegistrasiAccountEmployee provides a mock function with given fields: personalData
-func (_m *ServiceUserInterface) RegistrasiAccountEmployee(personalData users.PersonalDataEntity) (uint, error) {
-	ret := _m.Called(personalData)
-
-	if len(ret) == 0 {
-		panic("no return value specified for RegistrasiAccountEmployee")
-	}
-
-	var r0 uint
-	var r1 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity) (uint, error)); ok {
-		return rf(personalData)
-	}
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity) uint); ok {
-		r0 = rf(personalData)
+	if rf, ok := ret.Get(2).(func(users.PersonalDataEntity, string, string, string) error); ok {
+		r2 = rf(accounts, companyName, department, jobPosition)
 	} else {
-		r0 = ret.Get(0).(uint)
+		r2 = ret.Error(2)
 	}
 
-	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity) error); ok {
-		r1 = rf(personalData)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0, r1, r2
 }
 
 // UpdateEmploymentEmployee provides a mock function with given fields: ID, employeID, updateEmploymentEmployee

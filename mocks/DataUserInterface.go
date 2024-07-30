@@ -73,8 +73,176 @@ func (_m *DataUserInterface) AccountById(userid uint) (*users.PersonalDataEntity
 	return r0, r1
 }
 
+// CountContractUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountContractUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountContractUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountFemaleUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountFemaleUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountFemaleUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountMaleUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountMaleUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountMaleUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountPayrollUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountPayrollUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountPayrollUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountPermanentUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountPermanentUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountPermanentUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountTotalUsers provides a mock function with given fields: companyID
+func (_m *DataUserInterface) CountTotalUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountTotalUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CreateAccountAdmin provides a mock function with given fields: account, companyName, department, jobPosition
-func (_m *DataUserInterface) CreateAccountAdmin(account users.PersonalDataEntity, companyName string, department string, jobPosition string) (uint, error) {
+func (_m *DataUserInterface) CreateAccountAdmin(account users.PersonalDataEntity, companyName string, department string, jobPosition string) (uint, uint, error) {
 	ret := _m.Called(account, companyName, department, jobPosition)
 
 	if len(ret) == 0 {
@@ -82,8 +250,9 @@ func (_m *DataUserInterface) CreateAccountAdmin(account users.PersonalDataEntity
 	}
 
 	var r0 uint
-	var r1 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) (uint, error)); ok {
+	var r1 uint
+	var r2 error
+	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) (uint, uint, error)); ok {
 		return rf(account, companyName, department, jobPosition)
 	}
 	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, string, string, string) uint); ok {
@@ -92,41 +261,19 @@ func (_m *DataUserInterface) CreateAccountAdmin(account users.PersonalDataEntity
 		r0 = ret.Get(0).(uint)
 	}
 
-	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity, string, string, string) error); ok {
+	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity, string, string, string) uint); ok {
 		r1 = rf(account, companyName, department, jobPosition)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(uint)
 	}
 
-	return r0, r1
-}
-
-// CreateAccountEmployee provides a mock function with given fields: account
-func (_m *DataUserInterface) CreateAccountEmployee(account users.PersonalDataEntity) (uint, error) {
-	ret := _m.Called(account)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateAccountEmployee")
-	}
-
-	var r0 uint
-	var r1 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity) (uint, error)); ok {
-		return rf(account)
-	}
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity) uint); ok {
-		r0 = rf(account)
+	if rf, ok := ret.Get(2).(func(users.PersonalDataEntity, string, string, string) error); ok {
+		r2 = rf(account, companyName, department, jobPosition)
 	} else {
-		r0 = ret.Get(0).(uint)
+		r2 = ret.Error(2)
 	}
 
-	if rf, ok := ret.Get(1).(func(users.PersonalDataEntity) error); ok {
-		r1 = rf(account)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0, r1, r2
 }
 
 // CreateEmployment provides a mock function with given fields: personalID, addEmployment
@@ -150,6 +297,34 @@ func (_m *DataUserInterface) CreateEmployment(personalID uint, addEmployment use
 
 	if rf, ok := ret.Get(1).(func(uint, users.EmploymentDataEntity) error); ok {
 		r1 = rf(personalID, addEmployment)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateLeaves provides a mock function with given fields: PersonalID, addLeaves
+func (_m *DataUserInterface) CreateLeaves(PersonalID uint, addLeaves users.LeavesDataEntity) (uint, error) {
+	ret := _m.Called(PersonalID, addLeaves)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateLeaves")
+	}
+
+	var r0 uint
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, users.LeavesDataEntity) (uint, error)); ok {
+		return rf(PersonalID, addLeaves)
+	}
+	if rf, ok := ret.Get(0).(func(uint, users.LeavesDataEntity) uint); ok {
+		r0 = rf(PersonalID, addLeaves)
+	} else {
+		r0 = ret.Get(0).(uint)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, users.LeavesDataEntity) error); ok {
+		r1 = rf(PersonalID, addLeaves)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -196,6 +371,36 @@ func (_m *DataUserInterface) CreatePersonal(CompanyID uint, addPersonal users.Pe
 
 	if rf, ok := ret.Get(1).(func(uint, users.PersonalDataEntity) error); ok {
 		r1 = rf(CompanyID, addPersonal)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Dashboard provides a mock function with given fields: companyID
+func (_m *DataUserInterface) Dashboard(companyID uint) (*users.DashboardStats, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Dashboard")
+	}
+
+	var r0 *users.DashboardStats
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (*users.DashboardStats, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) *users.DashboardStats); ok {
+		r0 = rf(companyID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*users.DashboardStats)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -322,6 +527,34 @@ func (_m *DataUserInterface) GetAll(page int, pageSize int) ([]users.PersonalDat
 
 	if rf, ok := ret.Get(1).(func(int, int) error); ok {
 		r1 = rf(page, pageSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetCompanyIDByName provides a mock function with given fields: companyName
+func (_m *DataUserInterface) GetCompanyIDByName(companyName string) (uint, error) {
+	ret := _m.Called(companyName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCompanyIDByName")
+	}
+
+	var r0 uint
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (uint, error)); ok {
+		return rf(companyName)
+	}
+	if rf, ok := ret.Get(0).(func(string) uint); ok {
+		r0 = rf(companyName)
+	} else {
+		r0 = ret.Get(0).(uint)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(companyName)
 	} else {
 		r1 = ret.Error(1)
 	}
