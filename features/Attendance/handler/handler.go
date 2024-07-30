@@ -5,7 +5,6 @@ import (
 	attendance "be-empower-hr/features/Attendance"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/responses"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -30,8 +29,6 @@ func (ah *AttHandler) AddAttendance(c echo.Context) error {
 	if userID == 0 {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
-
-	fmt.Println("user-id :", userID)
 	AttRequest := AttRequest{}
 	if errBind := c.Bind(&AttRequest); errBind != nil {
 		log.Printf("Add Attendances: Error binding data: %v", errBind)
@@ -138,7 +135,10 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	if err != nil || pageSize < 1 {
 		pageSize = 10
 	}
+	status := c.QueryParam("status")
+	searchBox:= c.QueryParam("search")
 
+	
 	// Create Pagination object
 	pagination := utils.NewPagination(page, pageSize)
 
@@ -146,27 +146,31 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	offset := pagination.Offset()
 	limit := pagination.PageSize
 
-	// Call the service to retrieve the records
-	attendances, err := ah.srv.GetAttByPersonalID(uint(attId), limit, offset)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	}
-	var responseDetail []AttDetailResponse
-	totalItems, _:= ah.srv.CountAllAtt()
-	for _, att := range attendances {
-		responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(att))
-	}
+	var attDetail []attendance.AttendanceDetail
+	var responseDetail []AttResponse
+	var result interface{}
 
-	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
-
-	meta := map[string]interface{}{
-		"totalItems":   totalItems,
-		"itemsPerPage": limit,
-		"currentPage":  page,
-		"totalPages":   totalPages,
+	if status != "" { 
+		attDetail, err = ah.srv.GetAttByPersonalIDandStatus(uint(attId), status, limit, offset)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		for _, att := range attDetail {
+            responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
+        }
+		result = responseDetail
+	}else{
+		attDetail, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		for _, detail := range attDetail {
+			responseDetail = append(responseDetail, ToGetAttendanceResponse(detail))
+		}
+		result = responseDetail
 	}
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", responseDetail,meta))
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "attendance records retrieved successfully", result))
 }
 
 func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
@@ -196,9 +200,11 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 
 	// filter by date
 	filterDate := c.QueryParam("date")
-	var responseDetail []AttDetailResponse
-    var totalItems int64
+	filterStatus := c.QueryParam("status")
+	searchBox := c.QueryParam("search")
+	var responseDetail []AttResponse
 	var result interface{}
+	var totalItems int64
 
 	if filterDate != "" {
 		attDetail, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
@@ -206,23 +212,31 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 		for _, att := range attDetail {
-            responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(att))
+            responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		result = responseDetail
-        totalItems, _= ah.srv.CountAllAttbyDate(filterDate) // Adjust this method to count filtered records
-	} else{
-		attDetail, err = ah.srv.GetAllAtt(limit, offset)
+		totalItems, err = ah.srv.CountAllAttbyDate(filterDate)
+	} else if filterStatus != "" {
+		attDetail, err = ah.srv.GetAllAttbyStatus(filterStatus, limit, offset)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		for _, att := range attDetail {
+            responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
+        }
+		result = responseDetail
+		totalItems, err = ah.srv.CountAllAttbyStatus(filterStatus)
+	}else{
+		attDetail, err = ah.srv.GetAllAtt(searchBox, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 		for _, detail := range attDetail {
-			responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(detail))
+			responseDetail = append(responseDetail, ToGetAttendanceResponse(detail))
 		}
 		result = responseDetail
-		totalItems, _= ah.srv.CountAllAtt()
+		totalItems, err = ah.srv.CountAllAtt()
 	}
-	
-		
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
 		meta := map[string]interface{}{
@@ -231,10 +245,10 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 			"currentPage":  page,
 			"totalPages":   totalPages,
 		}
+
 		
 	// Return the retrieved records as JSON
 	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", result, meta))
-
 }
 
 func (ah *AttHandler) GetAttendancesbyID(c echo.Context) error {
@@ -253,13 +267,11 @@ func (ah *AttHandler) GetAttendancesbyID(c echo.Context) error {
 		log.Printf("Get Attandance: Error Get Attendance: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error Get data: "+err.Error(), nil))
 	}
-	var responseDetail []AttDetailResponse
+	var responseDetail []AttResponse
 	for _, detail := range att {
-		responseDetail = append(responseDetail, ToGetAttendanceDetailResponse(detail))
+		responseDetail = append(responseDetail, ToGetAttendanceResponse(detail))
 	}
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Get Attendance successfully", responseDetail))
-	
-
 }
 
 func (ah *AttHandler) DownloadPdf(c echo.Context) error {
