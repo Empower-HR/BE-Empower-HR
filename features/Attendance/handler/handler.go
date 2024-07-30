@@ -5,7 +5,6 @@ import (
 	attendance "be-empower-hr/features/Attendance"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/responses"
-	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -30,8 +29,6 @@ func (ah *AttHandler) AddAttendance(c echo.Context) error {
 	if userID == 0 {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
-
-	fmt.Println("user-id :", userID)
 	AttRequest := AttRequest{}
 	if errBind := c.Bind(&AttRequest); errBind != nil {
 		log.Printf("Add Attendances: Error binding data: %v", errBind)
@@ -172,7 +169,6 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 		}
 		result = responseDetail
 	}
-	fmt.Println("Data-Handler: ",result)
 	// Return the retrieved records as JSON
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "attendance records retrieved successfully", result))
 }

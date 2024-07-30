@@ -107,7 +107,6 @@ func (as *attendanceService) GetAllAttbyStatus(status string, limit int, offset 
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Data service:",attendance)
 	return attendance, nil
 }
 
