@@ -4,10 +4,8 @@ import (
 	"be-empower-hr/app/middlewares"
 	announcement "be-empower-hr/features/Announcement"
 	"be-empower-hr/utils/responses"
-	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -46,7 +44,6 @@ func (ah *AnnHandler) AddAnnouncement(c echo.Context) error {
 		}
 		defer src.Close()
 		attachmentURL, err = ah.srv.GetURLAtc(src, attachment.Filename)
-		fmt.Println("ini url nya dong : ", attachmentURL)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
 		}
@@ -59,7 +56,6 @@ func (ah *AnnHandler) AddAnnouncement(c echo.Context) error {
 		Description       : annRequest.Description,
 		Attachment		  : attachmentURL,
 	}
-	fmt.Println("datanya :", dataAnn)
 	// panggil fungsi addAtt pada service
 	err = ah.srv.AddAnno(dataAnn)
 	if err != nil {

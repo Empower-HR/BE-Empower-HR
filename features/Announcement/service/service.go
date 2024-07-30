@@ -7,7 +7,6 @@ import (
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 )
@@ -54,7 +53,6 @@ func (as *announcementService) GetAll() ([]ann.Announcement, error) {
 func (as *announcementService) GetURLAtc(file io.Reader, filename string) (string, error) {
     // Upload file ke Cloudinary
     attachmentURL, err := as.cloudinaryUtility.UploadCloudinary(file, filename)
-	fmt.Println("Url service: ", attachmentURL)
     if err != nil {
         log.Printf("Error uploading to Cloudinary: %v", err)
         return "", err
