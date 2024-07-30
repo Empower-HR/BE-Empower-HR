@@ -118,6 +118,17 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
 	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
 
+
+	e.POST("/payroll", payrollHandlerAPI.CreatePayroll, middlewares.JWTMiddleware())
+	e.GET("/payroll", payrollHandlerAPI.GetAllPayroll, middlewares.JWTMiddleware())
+	e.GET("/payroll/download/:id", payrollHandlerAPI.DownloadPayrollPdf, middlewares.JWTMiddleware())
+
+	//handler leaves
+	e.POST("/leaves", leavesHandlerAPI.RequestLeave, middlewares.JWTMiddleware())
+	e.PUT("/leaves/:id", leavesHandlerAPI.UpdateLeaveStatus, middlewares.JWTMiddleware())
+	e.GET("/leaves", leavesHandlerAPI.ViewLeaveHistory, middlewares.JWTMiddleware())
+	e.GET("/leaves/:id", leavesHandlerAPI.GetLeavesByID, middlewares.JWTMiddleware())
+  
 	// handler announcement
 	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
 	e.GET("/announcement", annoHandler.GetAnno, middlewares.JWTMiddleware())
