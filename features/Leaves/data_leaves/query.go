@@ -29,33 +29,26 @@ func (q *leavesQuery) RequestLeave(leave leaves.LeavesDataEntity) error {
 	return q.db.Create(&leaveData).Error
 }
 
-func (q *leavesQuery) UpdateLeaveStatus(leaveID uint, status string) error {
+func (q *leavesQuery) UpdateLeaveStatus(leaveID uint, updatesleaves leaves.LeavesDataEntity) error {
 	var leaveData LeavesData
 
-	// Find the leave data by ID
 	if err := q.db.First(&leaveData, leaveID).Error; err != nil {
 		return err
 	}
 
-	// Update the status
-	leaveData.Status = status
-
-	if status == "approved" {
-		leaveData.TotalLeave--
-	}
-
-	// Save the changes
 	return q.db.Save(&leaveData).Error
 }
 
 func (q *leavesQuery) GetLeaveHistory(personalDataID uint, page, pageSize int) ([]leaves.LeavesDataEntity, error) {
 	var leaveEntities []leaves.LeavesDataEntity
 	pagination := utils.NewPagination(page, pageSize)
+
 	err := q.db.Table("leaves_data").
-		Select("leaves_data.personal_data_id, personal_data.name, employment_data.job_position, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status").
+		Select("leaves_data.id AS leaves_id, leaves_data.personal_data_id, personal_data.name, employment_data.job_position, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status, leaves_data.total_leave").
 		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
 		Joins("JOIN employment_data ON leaves_data.personal_data_id = employment_data.personal_data_id").
 		Where("leaves_data.personal_data_id = ?", personalDataID).
+		Where("personal_data.role = ?", "employee").
 		Offset(pagination.Offset()).
 		Limit(pagination.PageSize).
 		Scan(&leaveEntities).Error
@@ -123,4 +116,42 @@ func (q *leavesQuery) GetLeavesDetail(leaveID uint) (*leaves.LeavesDataEntity, e
 	}
 
 	return &leaveEntity, nil
+}
+func (q *leavesQuery) CountTotalUsers(leaveID uint) (int64, error) {
+	var count int64
+	if err := q.db.Model(&PersonalData{}).Where("company_id = ?", leaveID).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (uq *leavesQuery) CountPendingLeaves(leavesID uint) (int64, error) {
+	var count int64
+	if err := uq.db.Model(&LeavesData{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", leavesID).
+		Where("status = ?", "pending").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetLeavesEmployees implements leaves.DataLeavesInterface.
+func (q *leavesQuery) GetLeaveHistoryEmployee(personalDataID uint, page, pageSize int) ([]leaves.LeavesDataEntity, error) {
+	var leaveEntities []leaves.LeavesDataEntity
+	pagination := utils.NewPagination(page, pageSize)
+	err := q.db.Table("leaves_data").
+		Select("leaves_data.id AS leaves_id, leaves_data.personal_data_id, personal_data.name, employment_data.job_position, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status, leaves_data.total_leave").
+		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
+		Joins("JOIN employment_data ON leaves_data.personal_data_id = employment_data.personal_data_id").
+		Where("leaves_data.personal_data_id = ?", personalDataID).
+		Offset(pagination.Offset()).
+		Limit(pagination.PageSize).
+		Scan(&leaveEntities).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return leaveEntities, nil
 }

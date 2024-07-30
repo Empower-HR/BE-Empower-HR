@@ -24,6 +24,10 @@ import (
 	_payrollHandler "be-empower-hr/features/Payroll/handler"
 	_payrollService "be-empower-hr/features/Payroll/service"
 
+	_leavesData "be-empower-hr/features/Leaves/data_leaves"
+	_leavesHandler "be-empower-hr/features/Leaves/handler"
+	_leavesDataService "be-empower-hr/features/Leaves/service"
+
 	_annoData "be-empower-hr/features/Announcement/data_announcement"
 	_annoHandler "be-empower-hr/features/Announcement/handler"
 	_annoService "be-empower-hr/features/Announcement/service"
@@ -59,6 +63,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	scheduleHandlerAPI := _scheduleHandler.New(scheduleService)
 	userHandlerAPI := _userHandler.New(userService, cloudinaryUtility)
 
+	leavesData := _leavesData.New(db)
+	leavesDataService := _leavesDataService.New(leavesData)
+	leavesHandlerAPI := _leavesHandler.New(leavesDataService)
+
 	// api company
 	cm := _datacompanies.NewCompanyModels(db)
 	cs := _companyService.NewCompanyServices(cm)
@@ -85,6 +93,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/employee/:id", userHandlerAPI.GetProfileById, middlewares.JWTMiddleware())
 	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
 	e.DELETE("/employee/:id", userHandlerAPI.DeleteAccountEmployees, middlewares.JWTMiddleware())
+	e.GET("/dashboard/employee", userHandlerAPI.DashboardEmployees, middlewares.JWTMiddleware())
 
 	e.POST("/attendance", attHandler.AddAttendance, middlewares.JWTMiddleware())
 	e.PUT("/attendance/:attendance_id", attHandler.UpdateAttendance, middlewares.JWTMiddleware())
@@ -109,10 +118,6 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/schedule/:id", scheduleHandlerAPI.UpdateSchedule, middlewares.JWTMiddleware())
 	e.DELETE("/schedule/:id", scheduleHandlerAPI.DeleteSchedule, middlewares.JWTMiddleware())
 
-	e.POST("/payroll", payrollHandlerAPI.CreatePayroll, middlewares.JWTMiddleware())
-	e.GET("/payroll", payrollHandlerAPI.GetAllPayroll, middlewares.JWTMiddleware())
-	e.GET("/payroll/download/:id", payrollHandlerAPI.DownloadPayrollPdf, middlewares.JWTMiddleware())
-  
 	// handler announcement
 	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())
 	e.GET("/announcement", annoHandler.GetAnno, middlewares.JWTMiddleware())

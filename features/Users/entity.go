@@ -1,7 +1,5 @@
 package users
 
-import "time"
-
 type PersonalDataEntity struct {
 	PersonalDataID uint
 	CompanyID      uint
@@ -45,8 +43,8 @@ type PayrollDataEntity struct {
 
 type LeavesDataEntity struct {
 	LeavesID       uint
-	StartDate      time.Time
-	EndDate        time.Time
+	StartDate      string
+	EndDate        string
 	Reason         string
 	Status         string
 	TotalLeave     int
@@ -73,11 +71,13 @@ type DashboardStats struct {
 	PermanentUsers           int64
 	PayrollRecords           int64
 	LeavesPending            int64
-	PersonalDataName         string
 	MalePercentage           float64
 	FemalePercentage         float64
 	ContractUsersPercentage  float64
 	PermanentUsersPercentage float64
+	PersonalDataNames        string
+	AttendanceHadir          int64
+	CurrentDate              string
 }
 
 type DataUserInterface interface {
