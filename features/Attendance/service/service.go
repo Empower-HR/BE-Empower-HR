@@ -75,9 +75,7 @@ func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
 		return errors.New("absensi ditolak karena lokasi anda terpantau jauh dari kantor")
 		 // Anda bisa mengembalikan nil karena absensi ditolak, bukan error
 	}
-
 	// Jika jarak dalam batas yang diperbolehkan, simpan catatan absensi
-	fmt.Println("Absensi Diterima")
 	err = as.qry.Create(newAtt)
 	if err != nil {
 		return errors.New("terjadi kesalahan pada server saat Clock In")

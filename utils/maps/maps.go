@@ -1,7 +1,6 @@
 package maps
 
 import (
-	"fmt"
 	"math"
 	"os"
 
@@ -22,7 +21,6 @@ func NewMapsUtility() MapsUtilityInterface {
 }
 
 func (mu *MapsUtility) GeoCode(address string) (float64, float64, error) {
-	fmt.Println("address: ", address)
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic("error get env")
@@ -30,8 +28,6 @@ func (mu *MapsUtility) GeoCode(address string) (float64, float64, error) {
 	keyApi := os.Getenv("API_KEYS")
 	client := geo.NewGoogleGeo(keyApi)
 	geoCodeRes, _ := client.Geocode(address)
-	// Output: &{40.7127837 -74.0059413 New York, NY, USA}
-	fmt.Println("geoCode",geoCodeRes)
 	return geoCodeRes.Lat,geoCodeRes.Lng, nil
 }
 
@@ -43,8 +39,6 @@ func (mu *MapsUtility) Geolocate() (float64, float64, error) {
 	keyApi := os.Getenv("API_KEYS")
 	client := geo.NewGoogleGeo(keyApi)
 	geolocateRes, _ := client.Geolocate()
-	// Output: &{40.7127837 -74.0059413 New York, NY, USA}
-	fmt.Println("geoCode",geolocateRes)
 	return geolocateRes.Lat,geolocateRes.Lng, nil
 }
 
