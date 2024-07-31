@@ -36,6 +36,7 @@ import (
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
 	"be-empower-hr/utils/pdf"
+	"be-empower-hr/utils/maps"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -47,11 +48,12 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	accountUtility := utils.NewAccountUtility()
 	pdfUtility := pdf.NewPdfUtility()
 	cloudinaryUtility := cloudinary.NewCloudinaryUtility()
+	mapsUtility := maps.NewMapsUtility()
 	company := _datacompanies.NewCompanyModels(db)
 	userData := _userData.New(db)
 	userService := _userService.New(userData, hashService, middlewares, accountUtility, company)
 	attData := _attData.NewAttandancesModel(db)
-	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility)
+	attService := _attService.New(attData, hashService, middlewares, accountUtility, pdfUtility, mapsUtility)
 	attHandler := _attHandler.New(attService)
 	
 	annoData := _annoData.NewModelAnnouncement(db)

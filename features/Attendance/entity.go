@@ -29,6 +29,12 @@ type AttendanceDetail struct {
 	Lat				string
 	Notes			string
 }
+
+type CompanyDataEntity struct {
+	ID	uint
+	CompanyAddress string
+}
+
 type AHandler interface {
 	AddAttendance(c echo.Context) error 
 	UpdateAttendance(c echo.Context) error
@@ -70,5 +76,5 @@ type AQuery interface {
 	GetAttByIdAtt(idAtt uint) ([]AttendanceDetail, error)
 	GetAllAttbyStatus(status string, limit int, offset int) ([]AttendanceDetail, error)
 	GetAllAttbyIdPersonAndStatus(id uint, status string, limit int, offset int) ([]AttendanceDetail, error)
-
+	GetCompany(idPerson uint) ([]CompanyDataEntity, error)
 }

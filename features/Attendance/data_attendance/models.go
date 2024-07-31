@@ -30,6 +30,10 @@ type ScheduleData struct {
 	ScheduleOut   string
 	CompanyID     uint
 }
+type CompanyData struct {
+	ID   uint
+	CompanyAddress string
+}
 
 func AttandanceInput(input attendance.Attandance) Attandance{
 	return Attandance{
@@ -55,4 +59,10 @@ func (at *Attandance) ToAttEntity(pd *PersonalData, sc *ScheduleData) attendance
 		Date	: at.Date,
 	}
 }
-	
+
+func (at *Attandance) ToCompanyEntity(cm *CompanyData) attendance.CompanyDataEntity {
+	return attendance.CompanyDataEntity{
+		ID : cm.ID,
+		CompanyAddress: cm.CompanyAddress,
+	}
+}

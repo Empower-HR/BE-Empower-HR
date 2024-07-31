@@ -285,4 +285,3 @@ func (ah *AttHandler) DownloadPdf(c echo.Context) error {
 	}
 	return c.File("./Attendance.pdf")
 }
-

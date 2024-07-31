@@ -5,9 +5,11 @@ import (
 	att "be-empower-hr/features/Attendance"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/encrypts"
+	"be-empower-hr/utils/maps"
 	"be-empower-hr/utils/pdf"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 type attendanceService struct {
@@ -16,9 +18,10 @@ type attendanceService struct {
 	middlewareservice middlewares.MiddlewaresInterface
 	accountUtility    utils.AccountUtilityInterface
 	pdfUtility        pdf.PdfUtilityInterface
+	mapsUtility		  maps.MapsUtilityInterface
 }
 
-func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface, pu pdf.PdfUtilityInterface) att.AServices {
+func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface, pu pdf.PdfUtilityInterface, mu maps.MapsUtilityInterface) att.AServices {
 	return &attendanceService{
 		qry: ad,
 		// qryUser:           as,
@@ -26,12 +29,14 @@ func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresI
 		middlewareservice: mi,
 		accountUtility:    au,
 		pdfUtility:        pu,
+		mapsUtility: mu,
 	}
 
 }
 
+// AddAtt menambahkan catatan absensi baru
 func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
-	// Check if a record already exists for the given personalID and date
+	// Periksa apakah catatan sudah ada untuk personalID dan tanggal yang diberikan
 	exists, err := as.qry.IsDateExists(newAtt.PersonalDataID, newAtt.Date)
 	if err != nil {
 		return err
@@ -40,10 +45,42 @@ func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
 		return errors.New("attendance record already exists for this date")
 	}
 
+	// Ambil data perusahaan berdasarkan personalDataID
+	company, err := as.qry.GetCompany(newAtt.PersonalDataID)
+	if err != nil {
+		return err
+	}
+
+	// Ambil alamat perusahaan dan lakukan geocoding untuk mendapatkan latitude dan longitude
+	companyLat, companyLng, err := as.mapsUtility.GeoCode(company[0].CompanyAddress)
+	if err != nil {
+		return err
+	}
+
+	// Parsing latitude dan longitude dari newAtt
+	attLat, err := strconv.ParseFloat(newAtt.Lat, 64)
+	if err != nil {
+		return errors.New("invalid latitude format")
+	}
+
+	attLng, err := strconv.ParseFloat(newAtt.Long, 64)
+	if err != nil {
+		return errors.New("invalid longitude format")
+	}
+
+	// Hitung jarak antara lokasi absensi dan lokasi perusahaan
+	minDistance := 100.0 // Jarak minimum dalam meter
+	distance := as.mapsUtility.Haversine(attLat, attLng, companyLat, companyLng)
+	if distance > minDistance {
+		return errors.New("absensi ditolak karena lokasi anda terpantau jauh dari kantor")
+		 // Anda bisa mengembalikan nil karena absensi ditolak, bukan error
+	}
+	// Jika jarak dalam batas yang diperbolehkan, simpan catatan absensi
 	err = as.qry.Create(newAtt)
 	if err != nil {
 		return errors.New("terjadi kesalahan pada server saat Clock In")
 	}
+
 	return nil
 }
 func (as *attendanceService) UpdateAtt(id uint, updateAtt att.Attandance) error {

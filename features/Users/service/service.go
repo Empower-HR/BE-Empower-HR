@@ -76,10 +76,10 @@ func (us *userService) LoginAccount(email string, password string) (data *users.
 		return nil, "", err
 	}
 
-	// isLoginValid := us.hashService.CheckPasswordHash(data.Password, password)
-	// if !isLoginValid {
-	// 	return nil, "", errors.New("email atau password tidak sesuai")
-	// }
+	isLoginValid := us.hashService.CheckPasswordHash(data.Password, password)
+	if !isLoginValid {
+		return nil, "", errors.New("email atau password tidak sesuai")
+	}
 
 	token, errJWT := us.middlewareservice.CreateToken(int(data.PersonalDataID))
 	if errJWT != nil {
