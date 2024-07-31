@@ -2,6 +2,7 @@ package pdf
 
 import (
 	attendance "be-empower-hr/features/Attendance"
+	payroll "be-empower-hr/features/Payroll"
 	"bytes"
 	"fmt"
 	"io"
@@ -9,12 +10,14 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/jung-kurt/gofpdf"
 )
 
 type PdfUtilityInterface interface {
 	DownloadPdf(items []attendance.Attandance, filename string) error
+	DownloadPdfPayroll(item payroll.PayrollResponsePDF, filename string) error 
 	UploadPdf(url, filePath string) error
 }
 
@@ -56,6 +59,50 @@ func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string
 	}
 	return nil
 }
+
+func (pu *pdfUtility) DownloadPdfPayroll(item payroll.PayrollResponsePDF, filename string) error {
+	pdf := gofpdf.New("L", "mm", "A4", "")
+
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 16)
+	pdf.Cell(40, 10, "Payslip :" + item.EmploymentName)
+
+	// Set header font
+	pdf.SetFont("Arial", "", 12)
+
+	// Add table headers with adjusted spacing
+	pdf.Ln(10)
+	pdf.Cell(25, 10, "Payroll_ID")
+	pdf.Cell(40, 10, "Employment Name")
+	pdf.Cell(25, 10, "Date")
+	pdf.Cell(40, 10, "Position")
+	pdf.Cell(25, 10, "Salary")
+	pdf.Cell(40, 10, "Bank Name")
+	pdf.Cell(40, 10, "Account Number")
+	pdf.Ln(10)
+
+	IdStr := strconv.Itoa(int(item.ID))
+	salaryStr := strconv.FormatFloat(item.Salary, 'f', 2, 64)
+	AccStr := strconv.Itoa(int(item.AccountNumber))
+
+	// Add table rows with adjusted spacing
+	pdf.Cell(25, 10, IdStr)
+	pdf.Cell(40, 10, item.EmploymentName)
+	pdf.Cell(25, 10, item.Date)
+	pdf.Cell(40, 10, item.Position)
+	pdf.Cell(25, 10, salaryStr)
+	pdf.Cell(40, 10, item.BankName)
+	pdf.Cell(40, 10, AccStr)
+	pdf.Ln(10)
+
+	// Save the file
+	err := pdf.OutputFileAndClose(filename)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 
 func (pu *pdfUtility) UploadPdf(url, filePath string) error {
 	// 	url := "http://localhost:8080/upload"
