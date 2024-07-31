@@ -13,6 +13,8 @@ require (
 
 require github.com/labstack/echo v3.3.10+incompatible
 
+require github.com/martinlindhe/google-geolocate v0.0.0-20211021100736-8c4877eb6655 // indirect
+
 require (
 	github.com/cloudinary/cloudinary-go/v2 v2.7.0 // indirect
 	github.com/creasty/defaults v1.5.1 // indirect
@@ -28,7 +30,6 @@ require (
 	github.com/xuri/efp v0.0.0-20231025114914-d1ff6096ae53 // indirect
 	github.com/xuri/excelize/v2 v2.8.1 // indirect
 	github.com/xuri/nfp v0.0.0-20230919160717-d98342af3f05 // indirect
-
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
