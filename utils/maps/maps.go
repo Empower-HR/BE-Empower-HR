@@ -9,57 +9,54 @@ import (
 	geo "github.com/martinlindhe/google-geolocate"
 )
 
-type mapsUtilityInterface interface {
-	GeoCode(address string) (*geo.Point, error)
-	GeoLocate() (float64, float64, error)
-	haversine(lat1, lon1, lat2, lon2 float64) (float64, error)
+type MapsUtilityInterface interface {
+	GeoCode(address string) (float64, float64, error)
+	Geolocate() (float64, float64, error)
+	Haversine(lat1, lon1, lat2, lon2 float64) float64
 }
 
-type mapsUtility struct {
-	client *geo.GoogleGeo
+type MapsUtility struct{}
+
+func NewMapsUtility() MapsUtilityInterface {
+	return &MapsUtility{}
 }
 
-func NewMapsUtility() (mapsUtilityInterface, error) {
-	if err := godotenv.Load(".env"); err != nil {
-		return nil, fmt.Errorf("error loading .env file: %v", err)
+func (mu *MapsUtility) GeoCode(address string) (float64, float64, error) {
+	fmt.Println("address: ", address)
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic("error get env")
 	}
-
 	keyApi := os.Getenv("API_KEYS")
-	if keyApi == "" {
-		return nil, fmt.Errorf("API_KEYS environment variable is not set")
-	}
-
 	client := geo.NewGoogleGeo(keyApi)
-	return &mapsUtility{client: client}, nil
+	geoCodeRes, _ := client.Geocode(address)
+	// Output: &{40.7127837 -74.0059413 New York, NY, USA}
+	fmt.Println("geoCode",geoCodeRes)
+	return geoCodeRes.Lat,geoCodeRes.Lng, nil
 }
 
-func (mu *mapsUtility) GeoCode(address string) (*geo.Point, error) {
-	geoCodeRes, err := mu.client.Geocode(address)
+func (mu *MapsUtility) Geolocate() (float64, float64, error) {
+	err := godotenv.Load(".env")
 	if err != nil {
-		return nil, fmt.Errorf("error geocoding address: %v", err)
+		panic("error get env")
 	}
-
-	fmt.Println("geoCode", geoCodeRes)
-	return geoCodeRes, nil
+	keyApi := os.Getenv("API_KEYS")
+	client := geo.NewGoogleGeo(keyApi)
+	geolocateRes, _ := client.Geolocate()
+	// Output: &{40.7127837 -74.0059413 New York, NY, USA}
+	fmt.Println("geoCode",geolocateRes)
+	return geolocateRes.Lat,geolocateRes.Lng, nil
 }
 
-func (mu *mapsUtility) GeoLocate() (float64, float64, error) {
-	geolocateRes, err := mu.client.Geolocate()
-	if err != nil {
-		return 0, 0, fmt.Errorf("error locating geolocation: %v", err)
-	}
-
-	fmt.Println("geoLocate", geolocateRes)
-	return geolocateRes.Lat, geolocateRes.Lng, nil
-}
-
-func (mu *mapsUtility) haversine(lat1, lon1, lat2, lon2 float64) (float64, error) {
+func (mu *MapsUtility) Haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const earthRadius = 6371000
+	// Mengubah derajat ke radian
 	lat1Rad := lat1 * math.Pi / 180
 	lon1Rad := lon1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
 	lon2Rad := lon2 * math.Pi / 180
 
+	// Perhitungan Haversine
 	dLat := lat2Rad - lat1Rad
 	dLon := lon2Rad - lon1Rad
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
@@ -67,5 +64,5 @@ func (mu *mapsUtility) haversine(lat1, lon1, lat2, lon2 float64) (float64, error
 			math.Sin(dLon/2)*math.Sin(dLon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	return earthRadius * c, nil
+	return earthRadius * c
 }

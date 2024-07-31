@@ -328,3 +328,28 @@ func (am *AttandanceModel) GetTotalAttendancesCountByStatus(status string) (int6
 	}
 	return count, nil
 }
+
+func (am *AttandanceModel) GetCompany(idPerson uint) ([]attendance.CompanyDataEntity, error) {
+    var results []attendance.CompanyDataEntity
+
+	query := `
+        SELECT 
+        pd.company_id,
+        cd.company_address
+    FROM
+        personal_data AS pd
+    JOIN 
+        company_data AS cd ON cd.id = pd.company_id
+    LEFT JOIN 
+        attandances AS at ON at.personal_data_id = pd.id
+    WHERE 
+    pd.id = ?
+    LIMIT 1
+    `
+	err := am.db.Raw(query, idPerson).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
