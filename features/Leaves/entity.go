@@ -27,7 +27,6 @@ type PersonalDataEntity struct {
 	NIK            string
 	Address        string
 	Role           string
-	TotalLeave     int
 }
 
 type EmploymentDataEntity struct {
@@ -60,6 +59,8 @@ type DataLeavesInterface interface {
 	CountTotalUsers(companyID uint) (int64, error)
 	CountPendingLeaves(companyID uint) (int64, error)
 	UpdatePersonalData(personalData PersonalDataEntity) error
+	GetLeavesDataByID(leaveID uint, leaveData *LeavesDataEntity) error
+	UpdateLeaveData(leaveData LeavesDataEntity) error
 }
 
 type ServiceLeavesInterface interface {

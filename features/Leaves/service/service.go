@@ -3,7 +3,9 @@ package service
 import (
 	leaves "be-empower-hr/features/Leaves"
 	"errors"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -29,38 +31,50 @@ func (s *leavesService) UpdateLeaveStatus(userID uint, leaveID uint, updatesleav
 		return errors.New("invalid status")
 	}
 
+	// Fetch leave details
+	leaveDetail, err := s.leavesData.GetLeavesDetail(leaveID)
+	if err != nil {
+		log.Println("Error fetching leave details:", err)
+		return err
+	}
+
+	// Calculate leave days
+	leaveDays, err := CalculateLeaveDays(leaveDetail.StartDate, leaveDetail.EndDate)
+	if err != nil {
+		log.Println("Error calculating leave days:", err)
+		return err
+	}
+
+	log.Printf("UserID: %d, LeaveID: %d, Status: %s, Requested Leave Days: %d", userID, leaveID, updatesleaves.Status, leaveDays)
+
+	// Check if the leave request is approved and adjust the total leave balance
+	if updatesleaves.Status == "approved" {
+		var leaveData leaves.LeavesDataEntity
+		if err := s.leavesData.GetLeavesDataByID(leaveDetail.LeavesID, &leaveData); err != nil {
+			log.Println("Error fetching leave data:", err)
+			return err
+		}
+
+		log.Printf("UserID: %d, Current Total Leave: %d, Requested Leave Days: %d", userID, leaveData.TotalLeave, leaveDays)
+
+		// Check if the user has sufficient leave balance
+		if leaveData.TotalLeave < leaveDays {
+			log.Println("Insufficient leave balance")
+			return fmt.Errorf("insufficient leave balance: you have %d days left but requested %d days", leaveData.TotalLeave, leaveDays)
+		}
+
+		// Update the total leave balance
+		leaveData.TotalLeave -= leaveDays
+		if err := s.leavesData.UpdateLeaveData(leaveData); err != nil {
+			log.Println("Error updating leave data:", err)
+			return err
+		}
+	}
+
 	// Update the leave status
 	if err := s.leavesData.UpdateLeaveStatus(leaveID, updatesleaves); err != nil {
 		log.Println("Error updating leave status:", err)
 		return err
-	}
-
-	// If the leave request is approved, adjust the total leave balance
-	if updatesleaves.Status == "approved" {
-		// Fetch leave details
-		leaveDetail, err := s.leavesData.GetLeavesDetail(leaveID)
-		if err != nil {
-			return err
-		}
-		leaveDays, err := CalculateLeaveDays(leaveDetail.StartDate, leaveDetail.EndDate)
-		if err != nil {
-			return err
-		}
-
-		var personalData leaves.PersonalDataEntity
-		if err := s.leavesData.GetPersonalDataByID(leaveDetail.PersonalDataID, &personalData); err != nil {
-			return err
-		}
-
-		if personalData.TotalLeave < leaveDays {
-			return errors.New("insufficient leave balance")
-		}
-
-		// Update the total leave balance
-		personalData.TotalLeave -= leaveDays
-		if err := s.leavesData.UpdatePersonalData(personalData); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -162,21 +176,64 @@ func (s *leavesService) Dashboard(companyID uint) (*leaves.DashboardLeavesStats,
 	}, nil
 }
 
+var bulanMap = map[string]string{
+	"Januari":   "January",
+	"Februari":  "February",
+	"Maret":     "March",
+	"April":     "April",
+	"Mei":       "May",
+	"Juni":      "June",
+	"Juli":      "July",
+	"Agustus":   "August",
+	"September": "September",
+	"Oktober":   "October",
+	"November":  "November",
+	"Desember":  "December",
+}
+
+func ConvertIndonesiaMonthToEnglish(dateStr string) (string, error) {
+	parts := strings.Split(dateStr, " ")
+	if len(parts) != 3 {
+		return "", errors.New("format tanggal tidak valid")
+	}
+	day := parts[0]
+	monthIndo := parts[1]
+	year := parts[2]
+
+	monthEng, ok := bulanMap[monthIndo]
+	if !ok {
+		return "", fmt.Errorf("bulan %s tidak valid", monthIndo)
+	}
+
+	return fmt.Sprintf("%s %s %s", day, monthEng, year), nil
+}
+
 func CalculateLeaveDays(startDate, endDate string) (int, error) {
 	layout := "02 January 2006"
-	start, err := time.Parse(layout, startDate)
+
+	startDateEng, err := ConvertIndonesiaMonthToEnglish(startDate)
 	if err != nil {
 		return 0, err
 	}
-	end, err := time.Parse(layout, endDate)
+	endDateEng, err := ConvertIndonesiaMonthToEnglish(endDate)
+	if err != nil {
+		return 0, err
+	}
+
+	start, err := time.Parse(layout, startDateEng)
+	if err != nil {
+		return 0, err
+	}
+
+	end, err := time.Parse(layout, endDateEng)
 	if err != nil {
 		return 0, err
 	}
 
 	if end.Before(start) {
-		return 0, errors.New("end date cannot be before start date")
+		return 0, errors.New("tanggal akhir tidak boleh sebelum tanggal mulai")
 	}
 
 	duration := end.Sub(start)
-	return int(duration.Hours() / 24), nil
+	return int(duration.Hours()/24) + 1, nil
 }

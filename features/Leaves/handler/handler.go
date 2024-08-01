@@ -135,7 +135,7 @@ func (lh *LeavesHandler) ViewLeaveHistory(c echo.Context) error {
 	}
 
 	// Get dashboard stats
-	dashboardStats, err := lh.leavesService.Dashboard(uint(userID))
+	dashboardStats, err := lh.leavesService.Dashboard(uint(companyID))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to fetch dashboard stats", nil))
 	}

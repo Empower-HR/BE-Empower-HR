@@ -3,6 +3,7 @@ package dataleaves
 import (
 	leaves "be-empower-hr/features/Leaves"
 	"be-empower-hr/utils"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ func (q *leavesQuery) RequestLeave(leave leaves.LeavesDataEntity) error {
 		EndDate:        leave.EndDate,
 		Reason:         leave.Reason,
 		Status:         "pending",
-		TotalLeave:     leave.TotalLeave,
+		TotalLeave:     12,
 		PersonalDataID: leave.PersonalDataID,
 	}
 	return q.db.Create(&leaveData).Error
@@ -129,18 +130,24 @@ func (q *leavesQuery) GetLeavesDetail(leaveID uint) (*leaves.LeavesDataEntity, e
 }
 func (q *leavesQuery) CountTotalUsers(companyID uint) (int64, error) {
 	var count int64
-	if err := q.db.Model(&PersonalData{}).Where("company_id = ?", companyID).Count(&count).Error; err != nil {
+	query := `SELECT COUNT(*) AS total_users FROM personal_data WHERE company_id = ?`
+	if err := q.db.Raw(query, companyID).Scan(&count).Error; err != nil {
 		return 0, err
 	}
+	log.Println("Total users:", count)
 	return count, nil
 }
 
 func (q *leavesQuery) CountPendingLeaves(companyID uint) (int64, error) {
 	var count int64
-	if err := q.db.Model(&LeavesData{}).
-		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
-		Where("status = ?", "pending").
-		Count(&count).Error; err != nil {
+	query := `
+		SELECT COUNT(*) AS total_pending_leaves
+		FROM personal_data pd
+		INNER JOIN leaves_data ld ON ld.personal_data_id = pd.id
+		WHERE pd.company_id = ?
+		AND ld.status = 'pending'
+	`
+	if err := q.db.Raw(query, companyID).Scan(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
@@ -153,7 +160,7 @@ func (q *leavesQuery) GetLeaveHistoryEmployee(personalDataID uint, page, pageSiz
 	err := q.db.Table("leaves_data").
 		Select("leaves_data.id AS leaves_id, leaves_data.personal_data_id, leaves_data.start_date, leaves_data.end_date, leaves_data.reason, leaves_data.status, leaves_data.total_leave, personal_data.name, employment_data.job_position").
 		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
-		Joins("JOIN employment_data ON leaves_data.personal_data_id = employment_data.personal_data_id").
+		Joins("JOIN employment_data ON personal_data.id = employment_data.personal_data_id").
 		Where("leaves_data.personal_data_id = ?", personalDataID).
 		Offset(pagination.Offset()).
 		Limit(pagination.PageSize).
@@ -194,4 +201,37 @@ func (q *leavesQuery) GetPersonalDataByID(id uint, pd *leaves.PersonalDataEntity
 
 func (q *leavesQuery) UpdatePersonalData(personalData leaves.PersonalDataEntity) error {
 	return q.db.Save(&personalData).Error
+}
+
+func (q *leavesQuery) GetLeavesDataByID(leaveID uint, leaveData *leaves.LeavesDataEntity) error {
+	var data LeavesData
+	if err := q.db.First(&data, leaveID).Error; err != nil {
+		return err
+	}
+
+	// Map the database model to the entity
+	*leaveData = leaves.LeavesDataEntity{
+		LeavesID:       data.ID,
+		StartDate:      data.StartDate,
+		EndDate:        data.EndDate,
+		Reason:         data.Reason,
+		Status:         data.Status,
+		TotalLeave:     data.TotalLeave,
+		PersonalDataID: data.PersonalDataID,
+	}
+
+	return nil
+}
+
+// UpdateLeaveData updates the leave data in the database
+func (q *leavesQuery) UpdateLeaveData(leaveData leaves.LeavesDataEntity) error {
+	var data LeavesData
+	if err := q.db.First(&data, leaveData.LeavesID).Error; err != nil {
+		return err
+	}
+
+	// Update the fields
+	data.TotalLeave = leaveData.TotalLeave
+
+	return q.db.Save(&data).Error
 }
