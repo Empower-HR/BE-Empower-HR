@@ -44,9 +44,13 @@ func (pu *pdfUtility) DownloadPdf(items []attendance.Attandance, filename string
 	pdf.Cell(60, 10, "Clock Out")
 	pdf.Ln(10)
 
+
+	
 	// Add table rows
 	for _, item := range items {
-		pdf.Cell(60, 10, item.Date)
+		format := "02-01-2006"
+		date := item.Date.Format(format)
+		pdf.Cell(60, 10, date)
 		pdf.Cell(60, 10, item.Clock_in)
 		pdf.Cell(60, 10, item.Clock_out)
 		pdf.Ln(10)
