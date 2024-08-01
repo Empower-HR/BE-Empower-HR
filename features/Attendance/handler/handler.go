@@ -168,9 +168,20 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		totalItems, err = ah.srv.CountAllAttbyStatusandPerson(status, uint(attId))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 		result = responseDetail
 	} else if filterDate != "" {
-		attDetail, err = ah.srv.GetAllAttbyDateandPerson(filterDate, limit, offset, uint(attId))
+		date, err := strconv.Atoi(filterDate)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		err = ah.srv.CheckingTheValueOfDate(date)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		attDetail, err = ah.srv.GetAllAttbyDateandPerson(int(date), limit, offset, uint(attId))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -178,8 +189,10 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		result = responseDetail
-		totalItems, err = ah.srv.CountAllAttbyDateandPerson(filterDate, uint(attId))
-	
+		totalItems, err = ah.srv.CountAllAttbyDateandPerson(int(date), uint(attId))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 	} else{
 		attDetail, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
 		if err != nil {
@@ -238,7 +251,15 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	var totalItems int64
 
 	if filterDate != "" {
-		attDetail, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
+		date, err := strconv.Atoi(filterDate)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		err = ah.srv.CheckingTheValueOfDate(date)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		attDetail, err = ah.srv.GetAllAttbyDate(int(date), limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -246,7 +267,7 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		result = responseDetail
-		totalItems, err = ah.srv.CountAllAttbyDate(filterDate)
+		totalItems, err = ah.srv.CountAllAttbyDate(int(date))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}

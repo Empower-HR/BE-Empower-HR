@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 )
 
 type attendanceService struct {
@@ -163,18 +162,9 @@ func (as *attendanceService) GetAttByIdAtt(idAtt uint) ([]att.AttendanceDetail, 
 	}
 	return attendance, nil
 }
-func (as *attendanceService) GetAllAttbyDate(date string, limit int, offset int) ([]att.AttendanceDetail, error) {
-	if date == "" {
-		return nil, fmt.Errorf("silahkan isi dengan format agustus 2024")
-	}
-	format := "01-2006"
-	dateNew, err := time.Parse(format, date)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("date format time", dateNew)
+func (as *attendanceService) GetAllAttbyDate(date int, limit int, offset int) ([]att.AttendanceDetail, error) {
 	
-	attendance, err := as.qry.GetAllAttbyDate(dateNew, limit, offset)
+	attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +184,7 @@ func (as *attendanceService) GetAllAttbyStatus(status string, limit int, offset 
 
 func (as *attendanceService) GetAttByPersonalIDandStatus(id uint, status string, limit int, offset int) ([]att.AttendanceDetail, error) {
 	if status == "" {
-		return nil, fmt.Errorf("silahkan isi tanggal dengan benar")
+		return nil, fmt.Errorf("silahkan isi status dengan benar")
 	}
 	attendance, err := as.qry.GetAllAttbyIdPersonAndStatus(id, status, limit, offset)
 	if err != nil {
@@ -210,10 +200,8 @@ func (as *attendanceService) CountAllAtt() (int64, error) {
 	}
 	return count, nil
 }
-func (as *attendanceService) CountAllAttbyDate(date string) (int64, error) {
-	format := "01-2006"
-	dateNew, err := time.Parse(format, date)
-	count, err := as.qry.GetTotalAttendancesCountbyDate(dateNew)
+func (as *attendanceService) CountAllAttbyDate(date int) (int64, error) {
+	count, err := as.qry.GetTotalAttendancesCountbyDate(date)
 	if err != nil {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
@@ -244,10 +232,8 @@ func (ah *attendanceService) DownloadAllAtt() error {
 }
 
 // CountAllAttbyDateandPerson implements attendance.AServices.
-func (as *attendanceService) CountAllAttbyDateandPerson(date string, personID uint) (int64, error) {
-	format := "01-2006"
-	dateNew, err := time.Parse(format, date)
-	count, err := as.qry.GetTotalAttendancesCountbyDateandPerson(dateNew, personID)
+func (as *attendanceService) CountAllAttbyDateandPerson(date int, personID uint) (int64, error) {
+	count, err := as.qry.GetTotalAttendancesCountbyDateandPerson(date, personID)
 	if err != nil {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
@@ -255,10 +241,8 @@ func (as *attendanceService) CountAllAttbyDateandPerson(date string, personID ui
 }
 
 // GetAllAttbyDateandPerson implements attendance.AServices.
-func (as *attendanceService) GetAllAttbyDateandPerson(date string, limit int, offset int, personId uint) ([]att.AttendanceDetail, error) {
-	format := "01-2006"
-	dateNew, err := time.Parse(format, date)
-	attendance, err := as.qry.GetAllAttbyDateandPerson(personId, dateNew, limit, offset)
+func (as *attendanceService) GetAllAttbyDateandPerson(date int, limit int, offset int, personId uint) ([]att.AttendanceDetail, error) {
+	attendance, err := as.qry.GetAllAttbyDateandPerson(personId, date, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -281,4 +265,10 @@ func (as *attendanceService) CountAllAttbyPerson(personID uint) (int64, error) {
 		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
 	}
 	return count, nil
+}
+func (as *attendanceService) CheckingTheValueOfDate(date int) (error) {
+	if date <= 0 {
+		return errors.New("masukkan bulan yang benar")
+	}
+	return nil
 }

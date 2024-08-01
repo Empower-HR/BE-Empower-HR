@@ -135,7 +135,7 @@ func (am *AttandanceModel) GetAllAttbyIdPersonAndStatus(id uint, status string, 
 	return results, nil
 }
 
-func (am *AttandanceModel) GetAllAttbyDate(date time.Time, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+func (am *AttandanceModel) GetAllAttbyDate(date int, limit int, offset int) ([]attendance.AttendanceDetail, error) {
 	var results []attendance.AttendanceDetail
 
 	query := `
@@ -158,7 +158,7 @@ func (am *AttandanceModel) GetAllAttbyDate(date time.Time, limit int, offset int
     LEFT JOIN 
         attandances AS at ON at.personal_data_id = pd.id
     WHERE 
-       at.date >= DATE_TRUNC('month', TO_DATE(?, 'MM-YYYY'))
+       EXTRACT(MONTH FROM date) = ?
     LIMIT ? OFFSET ?`
     
 	err := am.db.Raw(query, date, limit, offset).Scan(&results).Error
@@ -222,10 +222,10 @@ func (am *AttandanceModel) GetTotalAttendancesCount() (int64, error) {
 	}
 	return count, nil
 }
-func (am *AttandanceModel) GetTotalAttendancesCountbyDate(date time.Time) (int64, error) {
+func (am *AttandanceModel) GetTotalAttendancesCountbyDate(date int) (int64, error) {
 	var count int64
 	err := am.db.Model(&attendance.Attandance{}).
-		Where("deleted_at IS NULL AND date >= DATE_TRUNC('month', TO_DATE(?, 'MM-YYYY'))", date).
+		Where("deleted_at IS NULL AND EXTRACT(MONTH FROM date) = ?", date).
 		Count(&count).Error
 	if err != nil {
 		return 0, err
@@ -356,7 +356,7 @@ func (am *AttandanceModel) GetCompany(idPerson uint) ([]attendance.CompanyDataEn
 }
 
 // GetAllAttbyDateandPerson implements attendance.AQuery.
-func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date time.Time, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date int, limit int, offset int) ([]attendance.AttendanceDetail, error) {
 	var results []attendance.AttendanceDetail
 
 	query := `
@@ -379,7 +379,7 @@ func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date time.Ti
     LEFT JOIN 
         attandances AS at ON at.personal_data_id = pd.id
     WHERE 
-        at.personal_data_id = ? AND at.date >= DATE_TRUNC('month', TO_DATE(?, 'MM-YYYY'))
+        at.personal_data_id = ? AND EXTRACT(MONTH FROM date) = ?
     LIMIT ? OFFSET ?`
 
 	err := am.db.Raw(query, perseonID, date, limit, offset).Scan(&results).Error
@@ -391,10 +391,10 @@ func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date time.Ti
 }
 
 // GetTotalAttendancesCountbyDateandPerson implements attendance.AQuery.
-func (am *AttandanceModel) GetTotalAttendancesCountbyDateandPerson(date time.Time, personID uint) (int64, error) {
+func (am *AttandanceModel) GetTotalAttendancesCountbyDateandPerson(date int, personID uint) (int64, error) {
 	var count int64
 	err := am.db.Model(&attendance.Attandance{}).
-		Where("deleted_at IS NULL AND date >= DATE_TRUNC('month', TO_DATE(?, 'MM-YYYY'))", date).
+		Where("deleted_at IS NULL AND personal_data_id = ? AND EXTRACT(MONTH FROM date) = ?", personID, date).
 		Count(&count).Error
 	if err != nil {
 		return 0, err
