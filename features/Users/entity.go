@@ -118,6 +118,6 @@ type ServiceUserInterface interface {
 	DeleteAccountAdmin(userid uint) error
 	DeleteAccountEmployeeByAdmin(userid uint, companyID uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
-	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
+	CreateNewEmployee(cmID uint, addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
 	Dashboard(companyID uint) (*DashboardStats, error)
 }

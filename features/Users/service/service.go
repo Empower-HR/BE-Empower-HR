@@ -252,9 +252,9 @@ func (us *userService) UpdateEmploymentEmployee(ID uint, employeID uint, updateE
 }
 
 // Create Employment
-func (us *userService) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
+func (us *userService) CreateNewEmployee(cmID uint, addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
 	// get company ID
-	result, err := us.company.GetCompany()
+	result, err := us.company.GetCompanyID(cmID)
 	if err != nil {
 		log.Println("Error get company account:", err)
 	}

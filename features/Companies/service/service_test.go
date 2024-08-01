@@ -16,13 +16,13 @@ func TestGetCompany(t *testing.T) {
 
 	t.Run("Success Get Company", func(t *testing.T) {
 		expectedResult := companies.CompanyDataEntity{
-			CompanyPicture: "img.png", 
-			CompanyName: "Pt. Konoho", 
-			Email: "konoha@indo.com", 
-			PhoneNumber: "08345677543",
-			Npwp: 9777868,
+			CompanyPicture: "img.png",
+			CompanyName:    "Pt. Konoho",
+			Email:          "konoha@indo.com",
+			PhoneNumber:    "08345677543",
+			Npwp:           9777868,
 			CompanyAddress: "jl. indo konohan 1",
-			Signature: "ttd.png",
+			Signature:      "ttd.png",
 		}
 
 		qry.On("GetCompany").Return(expectedResult, nil).Once()
@@ -54,13 +54,13 @@ func TestUpdateCompany(t *testing.T) {
 
 	ID := uint(1)
 	updateData := companies.CompanyDataEntity{
-		CompanyPicture: "img.png", 
-		CompanyName: "Pt. Konoho", 
-		Email: "konoha@indo.com", 
-		PhoneNumber: "08345677543",
-		Npwp: 9777868,
+		CompanyPicture: "img.png",
+		CompanyName:    "Pt. Konoho",
+		Email:          "konoha@indo.com",
+		PhoneNumber:    "08345677543",
+		Npwp:           9777868,
 		CompanyAddress: "jl. indo konohan 1",
-		Signature: "ttd.png",
+		Signature:      "ttd.png",
 	}
 
 	t.Run("Success Update Company", func(t *testing.T) {

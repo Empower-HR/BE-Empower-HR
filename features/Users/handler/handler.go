@@ -464,14 +464,21 @@ func (uh *UserHandler) UpdateEmploymentEmployee(c echo.Context) error {
 }
 
 func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
-
+	companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"status":  "failed",
+			"message": "unauthorized: " + err.Error(),
+		})
+	}
 	var newEmployeeRequeste NewEmployeeRequest
 	if errNewEmployeReq := c.Bind(&newEmployeeRequeste); errNewEmployeReq != nil {
 		log.Printf("update profile employees: Error binding data: %v", errNewEmployeReq)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errNewEmployeReq.Error(), nil))
 	}
 
-	err := uh.userService.CreateNewEmployee(
+	err = uh.userService.CreateNewEmployee(
+		companyID,
 		ToModelPersonalData(newEmployeeRequeste.PersonalData),
 		ToModelEmploymentData(newEmployeeRequeste.EmploymentData),
 		ToModelPayroll(newEmployeeRequeste.Payroll),
@@ -485,7 +492,6 @@ func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "Create new employee successfully", nil))
 }
-
 func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if userID == 0 {
