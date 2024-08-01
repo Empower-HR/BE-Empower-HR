@@ -136,27 +136,29 @@ func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) (
 	var results []attendance.AttendanceDetail
 
 	query := `
-    SELECT 
-        pd.name,
-		at.personal_data_id, 
-        at.long,
-		at.lat,
-		at.status,
-		at.notes, 
-        sc.schedule_out, 
-        at.clock_in, 
-        at.clock_out,
-		at.date,
-		at.id
-    FROM
-        personal_data AS pd
-    JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id AND at.date = ?
-    WHERE 
-        at.deleted_at IS NULL
-    LIMIT ? OFFSET ?`
+        SELECT 
+            pd.name,
+            at.personal_data_id, 
+            at.long,
+            at.lat,
+            at.status,
+            at.notes, 
+            sc.schedule_out, 
+            at.clock_in, 
+            at.clock_out,
+            at.date,
+            at.id
+        FROM
+            personal_data AS pd
+        JOIN 
+            schedule_data AS sc ON sc.company_id = pd.company_id
+        LEFT JOIN 
+            attandances AS at ON at.personal_data_id = pd.id 
+        WHERE 
+            EXTRACT(YEAR FROM at.created_at) = ?
+            AND EXTRACT(MONTH FROM at.created_at) = ?
+        LIMIT 100 OFFSET 0`
+
 
 	err := am.db.Raw(query, date, limit, offset).Scan(&results).Error
 	if err != nil {

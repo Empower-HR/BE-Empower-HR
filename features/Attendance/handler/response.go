@@ -1,8 +1,6 @@
 package handler
 
-import(
-	"be-empower-hr/features/Attendance"
-)
+import attendance "be-empower-hr/features/Attendance"
 
 type AttAllResponse struct {
 	ID       uint   `json:"id"`
@@ -39,7 +37,7 @@ type AttDetailResponse struct {
 	PersonalDataID 	uint	`json:"personal_id"`
     ClockIn      string `json:"clock_in"`
     ClockOut     string `json:"clock_out"`
-	Date		 string `json: "date"`
+	Date		 string `json:"date"`
 }
 
 
