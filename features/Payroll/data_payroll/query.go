@@ -45,7 +45,7 @@ func (pq *payrollQuery) GetAllPayroll() ([]payroll.PayrollResponse, error) {
 	var payrolls []PayrollData
 	if err := pq.db.Find(&payrolls).Error; err != nil {
 		return nil, err
-	}     
+	}
 	var result []payroll.PayrollResponse
 	for _, p := range payrolls {
 		emp, err := pq.GetEmpById(p.EmploymentDataID)
@@ -70,13 +70,12 @@ func (pq *payrollQuery) GetAllPayroll() ([]payroll.PayrollResponse, error) {
 	return result, nil
 }
 
-
-func (pq *payrollQuery) GetPayrollDownload(ID uint) (payroll.PayrollResponsePDF, error){
+func (pq *payrollQuery) GetPayrollDownload(ID uint) (payroll.PayrollResponsePDF, error) {
 	var payrolls PayrollData
 
-	 err := pq.db.Where("id = ?", ID).First(&payrolls).Error
+	err := pq.db.Where("id = ?", ID).First(&payrolls).Error
 
-	 if err != nil {
+	if err != nil {
 		return payroll.PayrollResponsePDF{}, err
 	}
 	var result payroll.PayrollResponsePDF
@@ -95,16 +94,16 @@ func (pq *payrollQuery) GetPayrollDownload(ID uint) (payroll.PayrollResponsePDF,
 	}
 
 	result = payroll.PayrollResponsePDF{
-		ID: payrolls.ID ,
+		ID:             payrolls.ID,
 		EmploymentName: personal.Name,
-		Date: date,
-		Position: emp.JobPosition,
-		Salary: payrolls.Salary,
-		BankName: payrolls.BankName,
-		AccountNumber: payrolls.AccountNumber,
-	};
+		Date:           date,
+		Position:       emp.JobPosition,
+		Salary:         payrolls.Salary,
+		BankName:       payrolls.BankName,
+		AccountNumber:  payrolls.AccountNumber,
+	}
 
-	return result, nil;
+	return result, nil
 }
 
 func (pq *payrollQuery) GetEmpById(id uint) (payroll.EmploymentDataEntity, error) {
@@ -133,6 +132,3 @@ func (pq *payrollQuery) GetUserById(id uint) (payroll.PersonalDataEntity, error)
 	}
 	return personalData, nil
 }
-
-
-

@@ -9,5 +9,13 @@ type LeaveHistory struct {
 	EndDate      string `json:"end_date"`
 	Reason       string `json:"reason"`
 	Status       string `json:"status"`
-	TotalLeave   int    `json:"total_leave"`
+}
+
+type LeaveHistoryResponse struct {
+	Code           int            `json:"code"`
+	Status         string         `json:"status"`
+	Message        string         `json:"message"`
+	Data           []LeaveHistory `json:"data"`
+	TotalEmployees int            `json:"total_employees"`
+	TotalLeaves    int            `json:"total_leaves"`
 }

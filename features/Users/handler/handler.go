@@ -136,7 +136,6 @@ func (uh *UserHandler) GetProfile(c echo.Context) error {
 			JobLevel:         emp.JobLevel,
 			Schedule:         emp.Schedule,
 			ApprovalLine:     emp.ApprovalLine,
-			Manager:          emp.Manager,
 		}
 	}
 
@@ -180,7 +179,6 @@ func (uh *UserHandler) GetProfileById(c echo.Context) error {
 			JobLevel:         emp.JobLevel,
 			Schedule:         emp.Schedule,
 			ApprovalLine:     emp.ApprovalLine,
-			Manager:          emp.Manager,
 		}
 	}
 
@@ -260,7 +258,6 @@ func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
 		JobLevel:         updatedUser.JobLevel,
 		Schedule:         updatedUser.Schedule,
 		ApprovalLine:     updatedUser.ApprovalLine,
-		Manager:          updatedUser.Manager,
 	}
 
 	err := uh.userService.UpdateProfileEmployments(uint(userID), dataUser)
@@ -296,7 +293,6 @@ func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
 		JobLevel:         updatedUser.JobLevel,
 		Schedule:         updatedUser.Schedule,
 		ApprovalLine:     updatedUser.ApprovalLine,
-		Manager:          updatedUser.Manager,
 	}
 
 	err := uh.userService.UpdateProfileEmployments(uint(idConv), dataUser)
@@ -387,7 +383,15 @@ func (uh *UserHandler) DeleteAccountEmployees(c echo.Context) error {
 		})
 	}
 
-	err := uh.userService.DeleteAccountEmployeeByAdmin(uint(idConv))
+	companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"status":  "failed",
+			"message": "unauthorized: " + err.Error(),
+		})
+	}
+
+	err = uh.userService.DeleteAccountEmployeeByAdmin(uint(idConv), companyID)
 	if err != nil {
 		log.Printf("error deleting employees account: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error deleting employees account", nil))
@@ -401,9 +405,15 @@ func (uh *UserHandler) GetAllAccount(c echo.Context) error {
 	if userID == 0 {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 	}
-
+	companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"status":  "failed",
+			"message": "unauthorized: " + err.Error(),
+		})
+	}
 	name := c.QueryParam("name")
-	department := c.QueryParam("job_level")
+	jobLevel := c.QueryParam("job_level")
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil {
 		page = 1
@@ -413,7 +423,7 @@ func (uh *UserHandler) GetAllAccount(c echo.Context) error {
 		pageSize = 10
 	}
 
-	allAccount, err := uh.userService.GetAllAccount(name, department, page, pageSize)
+	allAccount, err := uh.userService.GetAllAccount(companyID, name, jobLevel, page, pageSize)
 	if err != nil {
 		log.Println("error fetching accounts:", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to fetch accounts", nil))
@@ -495,10 +505,12 @@ func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
 	}
 
-	companyID, err := getCompanyIDFromUserID(userID)
+	companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
 	if err != nil {
-		log.Printf("Error retrieving company ID: %v", err)
-		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to retrieve company ID", nil))
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"status":  "failed",
+			"message": "unauthorized: " + err.Error(),
+		})
 	}
 
 	dashboardData, err := uh.userService.Dashboard(companyID)

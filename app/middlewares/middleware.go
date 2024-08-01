@@ -14,11 +14,12 @@ import (
 
 type MiddlewaresInterface interface {
 	JWTMiddleware() echo.MiddlewareFunc
-	CreateToken(userId int) (string, error)
+	CreateToken(userId int, companyId int) (string, error)
 	ExtractTokenUserId(e echo.Context) int
 	InvalidateToken(token string) error
 	IsTokenInvalidated(token string) bool
 	ExtractTokenUserRole(e echo.Context) string
+	ExtractCompanyID(e echo.Context) (uint, error)
 }
 
 type middlewares struct {
@@ -38,10 +39,11 @@ func (m *middlewares) JWTMiddleware() echo.MiddlewareFunc {
 	})
 }
 
-func (m *middlewares) CreateToken(userId int) (string, error) {
+func (m *middlewares) CreateToken(userId int, companyId int) (string, error) {
 	claims := jwt.MapClaims{
 		"authorized": true,
 		"userId":     userId,
+		"company_id": companyId,
 		"exp":        time.Now().Add(time.Hour * 1).Unix(), // Token expires after 1 hour
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -112,4 +114,27 @@ func (m *middlewares) ExtractTokenUserRole(e echo.Context) string {
 		return ""
 	}
 	return role
+}
+
+func (m *middlewares) ExtractCompanyID(e echo.Context) (uint, error) {
+	header := e.Request().Header.Get("Authorization")
+	headerToken := strings.Split(header, " ")
+	if len(headerToken) != 2 {
+		return 0, errors.New("invalid authorization header")
+	}
+	token := headerToken[1]
+	tokenJWT, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return []byte(config.JWT_SECRET), nil
+	})
+
+	if err != nil || !tokenJWT.Valid {
+		return 0, errors.New("invalid token")
+	}
+
+	claims := tokenJWT.Claims.(jwt.MapClaims)
+	companyIDFloat, isValidCompanyID := claims["company_id"].(float64)
+	if !isValidCompanyID {
+		return 0, errors.New("company ID not found in token")
+	}
+	return uint(companyIDFloat), nil
 }

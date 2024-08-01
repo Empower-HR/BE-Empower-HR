@@ -41,5 +41,10 @@ type EmploymentData struct {
 	JobLevel         string
 	Schedule         string
 	ApprovalLine     string
-	Manager          string
+}
+
+type DashboardLeavesStats struct {
+	TotalUsers        int64
+	LeavesPending     int64
+	PersonalDataNames string
 }

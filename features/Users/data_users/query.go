@@ -83,7 +83,6 @@ func (uq *userQuery) AccountById(userid uint) (*users.PersonalDataEntity, error)
 			JobLevel:         employment.JobLevel,
 			Schedule:         employment.Schedule,
 			ApprovalLine:     employment.ApprovalLine,
-			Manager:          employment.Manager,
 		}
 		// Append EmploymentDataEntity to PersonalDataEntity
 		personalDataEntity.EmploymentData = append(personalDataEntity.EmploymentData, employmentEntity)
@@ -239,7 +238,6 @@ func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.Employ
 		"JobLevel":         accounts.JobLevel,
 		"Schedule":         accounts.Schedule,
 		"ApprovalLine":     accounts.ApprovalLine,
-		"Manager":          accounts.Manager,
 	}
 
 	// Update the employment data fields
@@ -296,14 +294,17 @@ func (uq *userQuery) GetAccountByName(accountName string) ([]users.PersonalDataE
 }
 
 // GetAll implements users.DataUserInterface.
-func (uq *userQuery) GetAll(page int, pageSize int) ([]users.PersonalDataEntity, error) {
+func (uq *userQuery) GetAll(page int, pageSize int, companyID uint) ([]users.PersonalDataEntity, error) {
 	var personalDataList []PersonalData
-	if err := uq.db.Preload("EmploymentData").Find(&personalDataList).Error; err != nil {
-		return nil, err
-	}
 	pagination := utils.NewPagination(page, pageSize)
 
-	tx := uq.db.Limit(pagination.PageSize).Offset(pagination.Offset()).Preload("EmploymentData").Find(&personalDataList)
+	// Fetch data filtered by companyID
+	tx := uq.db.Where("company_id = ?", companyID).
+		Preload("EmploymentData").
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Find(&personalDataList)
+
 	if tx.Error != nil {
 		log.Printf("Error fetching all accounts: %v", tx.Error)
 		return nil, tx.Error
