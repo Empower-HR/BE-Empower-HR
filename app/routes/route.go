@@ -79,7 +79,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 
 	//handler admin
 	e.POST("/admin", userHandlerAPI.RegisterAdmin)
-	e.POST("/auth", userHandlerAPI.Login)
+	e.POST("/login", userHandlerAPI.Login)
 	e.GET("/admin", userHandlerAPI.GetProfile, middlewares.JWTMiddleware())
 	e.DELETE("/admin", userHandlerAPI.DeleteAccountAdmin, middlewares.JWTMiddleware())
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
