@@ -43,7 +43,7 @@ func (lh *LeavesHandler) RequestLeave(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to request leave", nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Leave requested successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "Leave requested successfully", nil))
 }
 
 func (lh *LeavesHandler) UpdateLeaveStatus(c echo.Context) error {
@@ -77,7 +77,7 @@ func (lh *LeavesHandler) UpdateLeaveStatus(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating status: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "leave status updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "leave status updated successfully", nil))
 }
 
 func (lh *LeavesHandler) GetLeavesByID(c echo.Context) error {
