@@ -45,7 +45,7 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 		JobPosition: newUser.JobPosition,
 	}
 
-	personalDataID, companyID, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
+	_, _, errInsert := uh.userService.RegistrasiAccountAdmin(dataUser, newUser.Company, empData.Department, empData.JobPosition)
 	if errInsert != nil {
 		log.Printf("register: error registering user: %v", errInsert)
 		if strings.Contains(errInsert.Error(), "validation") {
@@ -54,19 +54,7 @@ func (uh *UserHandler) RegisterAdmin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "user registration failed: "+errInsert.Error(), nil))
 	}
 
-	// Include both IDs in the response
-	userResponse := UserResponse{
-		PersonalDataID: personalDataID,
-		CompanyID:      companyID,
-		Name:           newUser.Name,
-		WorkEmail:      newUser.WorkEmail,
-		PhoneNumber:    newUser.PhoneNumber,
-		Department:     newUser.Department,
-		JobPosition:    newUser.JobPosition,
-		CompanyName:    newUser.Company,
-	}
-
-	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "user registration successful", userResponse))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "user registration successful", nil))
 }
 
 func (uh *UserHandler) Login(c echo.Context) error {
@@ -235,7 +223,7 @@ func (uh *UserHandler) UpdateProfileAdmins(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
 }
 
 func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
@@ -266,7 +254,7 @@ func (uh *UserHandler) UpdateProfileEmployment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
 }
 
 func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
@@ -301,7 +289,7 @@ func (uh *UserHandler) UpdateProfileEmploymentByAdmin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
 }
 
 func (uh *UserHandler) DeleteAccountAdmin(c echo.Context) error {
@@ -370,7 +358,7 @@ func (uh *UserHandler) UpdateProfileEmployees(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
 }
 
 func (uh *UserHandler) DeleteAccountEmployees(c echo.Context) error {
@@ -472,7 +460,7 @@ func (uh *UserHandler) UpdateEmploymentEmployee(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "profile updated successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
 }
 
 func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
@@ -495,7 +483,7 @@ func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error create employee data: "+err.Error(), nil))
 	}
 
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Create new employee successfully", nil))
+	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "Create new employee successfully", nil))
 }
 
 func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
