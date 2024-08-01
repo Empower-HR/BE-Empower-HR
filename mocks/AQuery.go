@@ -259,6 +259,36 @@ func (_m *AQuery) GetAttendanceDetails(searchTerm string, limit int, offset int)
 	return r0, r1
 }
 
+// GetCompany provides a mock function with given fields: idPerson
+func (_m *AQuery) GetCompany(idPerson uint) ([]attendance.CompanyDataEntity, error) {
+	ret := _m.Called(idPerson)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCompany")
+	}
+
+	var r0 []attendance.CompanyDataEntity
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) ([]attendance.CompanyDataEntity, error)); ok {
+		return rf(idPerson)
+	}
+	if rf, ok := ret.Get(0).(func(uint) []attendance.CompanyDataEntity); ok {
+		r0 = rf(idPerson)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]attendance.CompanyDataEntity)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(idPerson)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTotalAttendancesCount provides a mock function with given fields:
 func (_m *AQuery) GetTotalAttendancesCount() (int64, error) {
 	ret := _m.Called()

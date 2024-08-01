@@ -61,17 +61,17 @@ func (_m *ServiceLeavesInterface) RequestLeave(leave leaves.LeavesDataEntity) er
 	return r0
 }
 
-// UpdateLeaveStatus provides a mock function with given fields: leaveID, status
-func (_m *ServiceLeavesInterface) UpdateLeaveStatus(leaveID uint, status string) error {
-	ret := _m.Called(leaveID, status)
+// UpdateLeaveStatus provides a mock function with given fields: leaveID, updatesleaves
+func (_m *ServiceLeavesInterface) UpdateLeaveStatus(leaveID uint, updatesleaves leaves.LeavesDataEntity) error {
+	ret := _m.Called(leaveID, updatesleaves)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateLeaveStatus")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(uint, string) error); ok {
-		r0 = rf(leaveID, status)
+	if rf, ok := ret.Get(0).(func(uint, leaves.LeavesDataEntity) error); ok {
+		r0 = rf(leaveID, updatesleaves)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -85,6 +85,36 @@ func (_m *ServiceLeavesInterface) ViewLeaveHistory(personalDataID uint, page int
 
 	if len(ret) == 0 {
 		panic("no return value specified for ViewLeaveHistory")
+	}
+
+	var r0 []leaves.LeavesDataEntity
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, int, int, string, string, string) ([]leaves.LeavesDataEntity, error)); ok {
+		return rf(personalDataID, page, pageSize, status, startDate, endDate)
+	}
+	if rf, ok := ret.Get(0).(func(uint, int, int, string, string, string) []leaves.LeavesDataEntity); ok {
+		r0 = rf(personalDataID, page, pageSize, status, startDate, endDate)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]leaves.LeavesDataEntity)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, int, int, string, string, string) error); ok {
+		r1 = rf(personalDataID, page, pageSize, status, startDate, endDate)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// ViewLeaveHistoryEmployee provides a mock function with given fields: personalDataID, page, pageSize, status, startDate, endDate
+func (_m *ServiceLeavesInterface) ViewLeaveHistoryEmployee(personalDataID uint, page int, pageSize int, status string, startDate string, endDate string) ([]leaves.LeavesDataEntity, error) {
+	ret := _m.Called(personalDataID, page, pageSize, status, startDate, endDate)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ViewLeaveHistoryEmployee")
 	}
 
 	var r0 []leaves.LeavesDataEntity
