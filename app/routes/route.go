@@ -35,8 +35,8 @@ import (
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/cloudinary"
 	"be-empower-hr/utils/encrypts"
-	"be-empower-hr/utils/pdf"
 	"be-empower-hr/utils/maps"
+	"be-empower-hr/utils/pdf"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -86,14 +86,14 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.DELETE("/admin", userHandlerAPI.DeleteAccountAdmin, middlewares.JWTMiddleware())
 	e.PUT("/admin", userHandlerAPI.UpdateProfileAdmins, middlewares.JWTMiddleware())
 	e.PUT("/employment", userHandlerAPI.UpdateProfileEmployment, middlewares.JWTMiddleware())
-	e.PUT("/employment/:id", userHandlerAPI.UpdateEmploymentEmployee, middlewares.JWTMiddleware())
+	e.PUT("/employment/:id", userHandlerAPI.UpdateProfileEmploymentByAdmin, middlewares.JWTMiddleware())
 	e.GET("/dashboard", userHandlerAPI.DasboardAdmin, middlewares.JWTMiddleware())
 
 	//handler memployees
 	e.POST("/employee", userHandlerAPI.CreateNewEmployee, middlewares.JWTMiddleware())
 	e.GET("/employee", userHandlerAPI.GetAllAccount, middlewares.JWTMiddleware())
 	e.GET("/employee/:id", userHandlerAPI.GetProfileById, middlewares.JWTMiddleware())
-	e.PUT("/employee", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
+	e.PUT("/employee/:id", userHandlerAPI.UpdateProfileEmployees, middlewares.JWTMiddleware())
 	e.DELETE("/employee/:id", userHandlerAPI.DeleteAccountEmployees, middlewares.JWTMiddleware())
 	e.GET("/dashboard/employee", userHandlerAPI.DashboardEmployees, middlewares.JWTMiddleware())
 

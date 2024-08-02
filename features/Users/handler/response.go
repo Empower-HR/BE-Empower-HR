@@ -22,7 +22,7 @@ type ProfileResponse struct {
 	Religion       string                   `json:"religion"`
 	NIK            string                   `json:"nik"`
 	Address        string                   `json:"address"`
-	EmploymentData []EmploymentDataResponse `json:"employment_data"`
+	EmploymentData []EmploymentDataResponse `json:"employmentData"`
 }
 
 type EmploymentDataResponse struct {
