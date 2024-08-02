@@ -11,6 +11,7 @@ var (
 	CLOUDINARY_URL string
 	EMAIL_PASSWORD string
 	EMAIL_SENDER   string
+	API_KEYS string
 )
 
 type AppConfig struct {
@@ -37,6 +38,7 @@ func ReadEnv() *AppConfig {
 	CLOUDINARY_URL = os.Getenv("CLOUDINARY_URL")
 	EMAIL_PASSWORD = os.Getenv("EMAIL_PASSWORD")
 	EMAIL_SENDER = os.Getenv("EMAIL_SENDER")
+	API_KEYS = os.Getenv("API_KEYS")
 	return &app
 }
 

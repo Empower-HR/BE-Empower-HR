@@ -1,10 +1,10 @@
 package maps
 
 import (
+	"be-empower-hr/app/config"
+	"fmt"
 	"math"
-	"os"
 
-	"github.com/joho/godotenv"
 	geo "github.com/martinlindhe/google-geolocate"
 )
 
@@ -21,22 +21,17 @@ func NewMapsUtility() MapsUtilityInterface {
 }
 
 func (mu *MapsUtility) GeoCode(address string) (float64, float64, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("error get env")
-	}
-	keyApi := os.Getenv("API_KEYS")
+	keyApi := config.API_KEYS
+	fmt.Println("api key", keyApi)
 	client := geo.NewGoogleGeo(keyApi)
 	geoCodeRes, _ := client.Geocode(address)
+	fmt.Println("GEOCODENYA BROOO", geoCodeRes)
+	
 	return geoCodeRes.Lat,geoCodeRes.Lng, nil
 }
 
 func (mu *MapsUtility) Geolocate() (float64, float64, error) {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("error get env")
-	}
-	keyApi := os.Getenv("API_KEYS")
+	keyApi := config.API_KEYS
 	client := geo.NewGoogleGeo(keyApi)
 	geolocateRes, _ := client.Geolocate()
 	return geolocateRes.Lat,geolocateRes.Lng, nil
