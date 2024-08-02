@@ -119,8 +119,8 @@ func ToModelLeaves(pd Leaves) users.LeavesDataEntity {
 }
 
 type NewEmployeeRequest struct {
-	PersonalData   PersonalData   `json:"personal_data"`
-	EmploymentData EmploymentData `json:"employment_data"`
+	PersonalData   PersonalData   `json:"personal"`
+	EmploymentData EmploymentData `json:"employment"`
 	Payroll        Payroll        `json:"payroll"`
 	Leaves         Leaves         `json:"leaves"`
 }

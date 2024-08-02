@@ -5,10 +5,12 @@ import (
 	attendance "be-empower-hr/features/Attendance"
 	"be-empower-hr/utils"
 	"be-empower-hr/utils/responses"
+	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -34,18 +36,24 @@ func (ah *AttHandler) AddAttendance(c echo.Context) error {
 		log.Printf("Add Attendances: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
+	format := "02-01-2006"
+	date, err := time.Parse(format, AttRequest.Date)
+    if err != nil {
+        fmt.Println("Error parsing date:", err)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
+    }
 
 	dataAtt := attendance.Attandance{
 		PersonalDataID: uint(userID),
 		Clock_in:       AttRequest.Clock_in,
-		Date:           AttRequest.Date,
+		Date:           date,
 		Long:           AttRequest.Long,
 		Lat:            AttRequest.Lat,
 		Notes:          AttRequest.Notes,
 	}
 
 	// panggil fungsi addAtt pada service
-	err := ah.srv.AddAtt(dataAtt)
+	err = ah.srv.AddAtt(dataAtt)
 	if err != nil {
 		log.Printf("Add Attandance: Error add Attendance: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error add data: "+err.Error(), nil))
@@ -71,7 +79,6 @@ func (ah *AttHandler) UpdateAttendance(c echo.Context) error {
 		log.Printf("Add Attendances: Error binding data: %v", errBind)
 		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
-
 	dataAtt := attendance.Attandance{
 		PersonalDataID: uint(userID),
 		Clock_out:      AttRequest.Clock_out,
@@ -137,6 +144,7 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	}
 	status := c.QueryParam("status")
 	searchBox:= c.QueryParam("search")
+	filterDate:= c.QueryParam("date")
 
 	
 	// Create Pagination object
@@ -149,6 +157,7 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	var attDetail []attendance.AttendanceDetail
 	var responseDetail []AttResponse
 	var result interface{}
+	var totalItems int64
 
 	if status != "" { 
 		attDetail, err = ah.srv.GetAttByPersonalIDandStatus(uint(attId), status, limit, offset)
@@ -158,8 +167,33 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 		for _, att := range attDetail {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
+		totalItems, err = ah.srv.CountAllAttbyStatusandPerson(status, uint(attId))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 		result = responseDetail
-	}else{
+	} else if filterDate != "" {
+		date, err := strconv.Atoi(filterDate)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		err = ah.srv.CheckingTheValueOfDate(date)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		attDetail, err = ah.srv.GetAllAttbyDateandPerson(int(date), limit, offset, uint(attId))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		for _, att := range attDetail {
+            responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
+        }
+		result = responseDetail
+		totalItems, err = ah.srv.CountAllAttbyDateandPerson(int(date), uint(attId))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+	} else{
 		attDetail, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -169,8 +203,18 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 		}
 		result = responseDetail
 	}
+	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
+
+		meta := map[string]interface{}{
+			"totalItems":   totalItems,
+			"itemsPerPage": limit,
+			"currentPage":  page,
+			"totalPages":   totalPages,
+		}
+
+		
 	// Return the retrieved records as JSON
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "attendance records retrieved successfully", result))
+	return c.JSON(http.StatusOK, responses.PaginatedJSONResponse(http.StatusOK, "success", "attendance records retrieved successfully", result, meta))
 }
 
 func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
@@ -207,7 +251,15 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 	var totalItems int64
 
 	if filterDate != "" {
-		attDetail, err = ah.srv.GetAllAttbyDate(filterDate, limit, offset)
+		date, err := strconv.Atoi(filterDate)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		err = ah.srv.CheckingTheValueOfDate(date)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		attDetail, err = ah.srv.GetAllAttbyDate(int(date), limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -215,7 +267,10 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		result = responseDetail
-		totalItems, err = ah.srv.CountAllAttbyDate(filterDate)
+		totalItems, err = ah.srv.CountAllAttbyDate(int(date))
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 	} else if filterStatus != "" {
 		attDetail, err = ah.srv.GetAllAttbyStatus(filterStatus, limit, offset)
 		if err != nil {
@@ -226,6 +281,9 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
         }
 		result = responseDetail
 		totalItems, err = ah.srv.CountAllAttbyStatus(filterStatus)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 	}else{
 		attDetail, err = ah.srv.GetAllAtt(searchBox, limit, offset)
 		if err != nil {
@@ -236,6 +294,9 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 		}
 		result = responseDetail
 		totalItems, err = ah.srv.CountAllAtt()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 	}
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
@@ -285,4 +346,3 @@ func (ah *AttHandler) DownloadPdf(c echo.Context) error {
 	}
 	return c.File("./Attendance.pdf")
 }
-

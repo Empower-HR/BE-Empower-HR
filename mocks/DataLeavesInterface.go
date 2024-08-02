@@ -43,6 +43,36 @@ func (_m *DataLeavesInterface) GetLeaveHistory(personalDataID uint, page int, pa
 	return r0, r1
 }
 
+// GetLeaveHistoryEmployee provides a mock function with given fields: personalDataID, page, pageSize
+func (_m *DataLeavesInterface) GetLeaveHistoryEmployee(personalDataID uint, page int, pageSize int) ([]leaves.LeavesDataEntity, error) {
+	ret := _m.Called(personalDataID, page, pageSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLeaveHistoryEmployee")
+	}
+
+	var r0 []leaves.LeavesDataEntity
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, int, int) ([]leaves.LeavesDataEntity, error)); ok {
+		return rf(personalDataID, page, pageSize)
+	}
+	if rf, ok := ret.Get(0).(func(uint, int, int) []leaves.LeavesDataEntity); ok {
+		r0 = rf(personalDataID, page, pageSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]leaves.LeavesDataEntity)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, int, int) error); ok {
+		r1 = rf(personalDataID, page, pageSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetLeavesByDateRange provides a mock function with given fields: personalDataID, startDate, endDate
 func (_m *DataLeavesInterface) GetLeavesByDateRange(personalDataID uint, startDate string, endDate string) ([]leaves.LeavesDataEntity, error) {
 	ret := _m.Called(personalDataID, startDate, endDate)
@@ -151,17 +181,17 @@ func (_m *DataLeavesInterface) RequestLeave(leave leaves.LeavesDataEntity) error
 	return r0
 }
 
-// UpdateLeaveStatus provides a mock function with given fields: leaveID, status
-func (_m *DataLeavesInterface) UpdateLeaveStatus(leaveID uint, status string) error {
-	ret := _m.Called(leaveID, status)
+// UpdateLeaveStatus provides a mock function with given fields: leaveID, updatesleaves
+func (_m *DataLeavesInterface) UpdateLeaveStatus(leaveID uint, updatesleaves leaves.LeavesDataEntity) error {
+	ret := _m.Called(leaveID, updatesleaves)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateLeaveStatus")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(uint, string) error); ok {
-		r0 = rf(leaveID, status)
+	if rf, ok := ret.Get(0).(func(uint, leaves.LeavesDataEntity) error); ok {
+		r0 = rf(leaveID, updatesleaves)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -2,6 +2,7 @@ package dataattendance
 
 import (
 	attendance "be-empower-hr/features/Attendance"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ type Attandance struct {
 	Clock_in       string   		          `json:"clock_in"`
 	Clock_out      string                  `json:"clock_out"`
 	Status         string                     `json:"status"`
-	Date    	   string                  `json:"date"`
+	Date    	   time.Time                  `json:"date"`
 	Long       	   string                     `json:"long"`
 	Lat	   		   string					  `json:"lat"`
 	Notes		   string					  `json:"notes"`
@@ -30,6 +31,10 @@ type ScheduleData struct {
 	ScheduleOut   string
 	CompanyID     uint
 }
+type CompanyData struct {
+	ID   uint
+	CompanyAddress string
+}
 
 func AttandanceInput(input attendance.Attandance) Attandance{
 	return Attandance{
@@ -44,15 +49,21 @@ func AttandanceInput(input attendance.Attandance) Attandance{
 	}
 }
 
-func (at *Attandance) ToAttEntity(pd *PersonalData, sc *ScheduleData) attendance.AttendanceDetail{
-	return attendance.AttendanceDetail{
-		Name : pd.Name,
-		PersonalDataID: at.PersonalDataID,
-		ScheduleIn   : sc.ScheduleIn,
-		ScheduleOut  : sc.ScheduleOut,
-		ClockIn     : at.Clock_in,
-		ClockOut  : at.Clock_out,
-		Date	: at.Date,
+// func (at *Attandance) ToAttEntity(pd *PersonalData, sc *ScheduleData) attendance.AttendanceDetail{
+// 	return attendance.AttendanceDetail{
+// 		Name : pd.Name,
+// 		PersonalDataID: at.PersonalDataID,
+// 		ScheduleIn   : sc.ScheduleIn,
+// 		ScheduleOut  : sc.ScheduleOut,
+// 		ClockIn     : at.Clock_in,
+// 		ClockOut  : at.Clock_out,
+// 		Date	: at.Date,
+// 	}
+// }
+
+func (at *Attandance) ToCompanyEntity(cm *CompanyData) attendance.CompanyDataEntity {
+	return attendance.CompanyDataEntity{
+		ID : cm.ID,
+		CompanyAddress: cm.CompanyAddress,
 	}
 }
-	
