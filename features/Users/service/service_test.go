@@ -49,7 +49,7 @@ func TestDeleteAccountEmployeeByAdmin(t *testing.T) {
 
 		qry.On("DeleteAccountEmployeeByAdmin", userID).Return(nil).Once()
 
-		err := srv.DeleteAccountEmployeeByAdmin(userID)
+		err := srv.DeleteAccountEmployeeByAdmin(1, userID)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -60,7 +60,7 @@ func TestDeleteAccountEmployeeByAdmin(t *testing.T) {
 
 		qry.On("DeleteAccountEmployeeByAdmin", userID).Return(errors.New("internal server error")).Once()
 
-		err := srv.DeleteAccountEmployeeByAdmin(userID)
+		err := srv.DeleteAccountEmployeeByAdmin(1, userID)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
@@ -620,7 +620,7 @@ func TestGetAllAccount(t *testing.T) {
 
 		qry.On("GetAll", 1, 10).Return(expectedResult, nil).Once()
 
-		result, err := srv.GetAllAccount("", "", 1, 10)
+		result, err := srv.GetAllAccount(1, "", "", 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -635,7 +635,7 @@ func TestGetAllAccount(t *testing.T) {
 
 		qry.On("GetAccountByName", name).Return(expectedResult, nil).Once()
 
-		result, err := srv.GetAllAccount(name, "", 1, 10)
+		result, err := srv.GetAllAccount(1, name, "", 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -650,7 +650,7 @@ func TestGetAllAccount(t *testing.T) {
 
 		qry.On("GetAccountByJobLevel", jobLevel).Return(expectedResult, nil).Once()
 
-		result, err := srv.GetAllAccount("", jobLevel, 1, 10)
+		result, err := srv.GetAllAccount(1, "", jobLevel, 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -660,7 +660,7 @@ func TestGetAllAccount(t *testing.T) {
 	t.Run("Error Get All Account - Database Error", func(t *testing.T) {
 		qry.On("GetAll", 1, 10).Return(nil, errors.New("database error")).Once()
 
-		result, err := srv.GetAllAccount("", "", 1, 10)
+		result, err := srv.GetAllAccount(1, "", "", 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
@@ -672,7 +672,7 @@ func TestGetAllAccount(t *testing.T) {
 		name := "John"
 		qry.On("GetAccountByName", name).Return(nil, errors.New("database error")).Once()
 
-		result, err := srv.GetAllAccount(name, "", 1, 10)
+		result, err := srv.GetAllAccount(1, name, "", 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
@@ -684,7 +684,7 @@ func TestGetAllAccount(t *testing.T) {
 		jobLevel := "Manager"
 		qry.On("GetAccountByJobLevel", jobLevel).Return(nil, errors.New("database error")).Once()
 
-		result, err := srv.GetAllAccount("", jobLevel, 1, 10)
+		result, err := srv.GetAllAccount(1, "", jobLevel, 1, 10)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
