@@ -17,9 +17,9 @@ func NewCompanyServices(q companies.Query) companies.Service {
 };
 
 
-func (cs *CompanyServices) GetCompany() (companies.CompanyDataEntity, error){
+func (cs *CompanyServices) GetCompany(ID uint) (companies.CompanyDataEntity, error){
 
-	result, err := cs.qry.GetCompany();
+	result, err := cs.qry.GetCompanyID(ID);
 
 	if err != nil {
 		log.Print("get company query error", err.Error())

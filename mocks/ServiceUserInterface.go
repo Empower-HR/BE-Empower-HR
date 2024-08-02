@@ -13,17 +13,17 @@ type ServiceUserInterface struct {
 	mock.Mock
 }
 
-// CreateNewEmployee provides a mock function with given fields: addPersonal, addEmployment, addPayroll, addLeaves
-func (_m *ServiceUserInterface) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
-	ret := _m.Called(addPersonal, addEmployment, addPayroll, addLeaves)
+// CreateNewEmployee provides a mock function with given fields: cmID, addPersonal, addEmployment, addPayroll, addLeaves
+func (_m *ServiceUserInterface) CreateNewEmployee(cmID uint, addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
+	ret := _m.Called(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateNewEmployee")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(users.PersonalDataEntity, users.EmploymentDataEntity, users.PayrollDataEntity, users.LeavesDataEntity) error); ok {
-		r0 = rf(addPersonal, addEmployment, addPayroll, addLeaves)
+	if rf, ok := ret.Get(0).(func(uint, users.PersonalDataEntity, users.EmploymentDataEntity, users.PayrollDataEntity, users.LeavesDataEntity) error); ok {
+		r0 = rf(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -79,17 +79,17 @@ func (_m *ServiceUserInterface) DeleteAccountAdmin(userid uint) error {
 	return r0
 }
 
-// DeleteAccountEmployeeByAdmin provides a mock function with given fields: userid
-func (_m *ServiceUserInterface) DeleteAccountEmployeeByAdmin(userid uint) error {
-	ret := _m.Called(userid)
+// DeleteAccountEmployeeByAdmin provides a mock function with given fields: userid, companyID
+func (_m *ServiceUserInterface) DeleteAccountEmployeeByAdmin(userid uint, companyID uint) error {
+	ret := _m.Called(userid, companyID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteAccountEmployeeByAdmin")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(uint) error); ok {
-		r0 = rf(userid)
+	if rf, ok := ret.Get(0).(func(uint, uint) error); ok {
+		r0 = rf(userid, companyID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -97,9 +97,9 @@ func (_m *ServiceUserInterface) DeleteAccountEmployeeByAdmin(userid uint) error 
 	return r0
 }
 
-// GetAllAccount provides a mock function with given fields: name, jobLevel, page, pageSize
-func (_m *ServiceUserInterface) GetAllAccount(name string, jobLevel string, page int, pageSize int) ([]users.PersonalDataEntity, error) {
-	ret := _m.Called(name, jobLevel, page, pageSize)
+// GetAllAccount provides a mock function with given fields: companyID, name, jobLevel, page, pageSize
+func (_m *ServiceUserInterface) GetAllAccount(companyID uint, name string, jobLevel string, page int, pageSize int) ([]users.PersonalDataEntity, error) {
+	ret := _m.Called(companyID, name, jobLevel, page, pageSize)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllAccount")
@@ -107,19 +107,19 @@ func (_m *ServiceUserInterface) GetAllAccount(name string, jobLevel string, page
 
 	var r0 []users.PersonalDataEntity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, int, int) ([]users.PersonalDataEntity, error)); ok {
-		return rf(name, jobLevel, page, pageSize)
+	if rf, ok := ret.Get(0).(func(uint, string, string, int, int) ([]users.PersonalDataEntity, error)); ok {
+		return rf(companyID, name, jobLevel, page, pageSize)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, int, int) []users.PersonalDataEntity); ok {
-		r0 = rf(name, jobLevel, page, pageSize)
+	if rf, ok := ret.Get(0).(func(uint, string, string, int, int) []users.PersonalDataEntity); ok {
+		r0 = rf(companyID, name, jobLevel, page, pageSize)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]users.PersonalDataEntity)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, int, int) error); ok {
-		r1 = rf(name, jobLevel, page, pageSize)
+	if rf, ok := ret.Get(1).(func(uint, string, string, int, int) error); ok {
+		r1 = rf(companyID, name, jobLevel, page, pageSize)
 	} else {
 		r1 = ret.Error(1)
 	}

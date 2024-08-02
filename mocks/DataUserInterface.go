@@ -504,9 +504,9 @@ func (_m *DataUserInterface) GetAccountByName(accountName string) ([]users.Perso
 	return r0, r1
 }
 
-// GetAll provides a mock function with given fields: page, pageSize
-func (_m *DataUserInterface) GetAll(page int, pageSize int) ([]users.PersonalDataEntity, error) {
-	ret := _m.Called(page, pageSize)
+// GetAll provides a mock function with given fields: page, pageSize, companyID
+func (_m *DataUserInterface) GetAll(page int, pageSize int, companyID uint) ([]users.PersonalDataEntity, error) {
+	ret := _m.Called(page, pageSize, companyID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
@@ -514,19 +514,19 @@ func (_m *DataUserInterface) GetAll(page int, pageSize int) ([]users.PersonalDat
 
 	var r0 []users.PersonalDataEntity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int, int) ([]users.PersonalDataEntity, error)); ok {
-		return rf(page, pageSize)
+	if rf, ok := ret.Get(0).(func(int, int, uint) ([]users.PersonalDataEntity, error)); ok {
+		return rf(page, pageSize, companyID)
 	}
-	if rf, ok := ret.Get(0).(func(int, int) []users.PersonalDataEntity); ok {
-		r0 = rf(page, pageSize)
+	if rf, ok := ret.Get(0).(func(int, int, uint) []users.PersonalDataEntity); ok {
+		r0 = rf(page, pageSize, companyID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]users.PersonalDataEntity)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(int, int) error); ok {
-		r1 = rf(page, pageSize)
+	if rf, ok := ret.Get(1).(func(int, int, uint) error); ok {
+		r1 = rf(page, pageSize, companyID)
 	} else {
 		r1 = ret.Error(1)
 	}

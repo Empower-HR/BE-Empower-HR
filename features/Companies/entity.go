@@ -32,6 +32,6 @@ type Query interface {
 }
 
 type Service interface {
-	GetCompany() (CompanyDataEntity, error)
+	GetCompany(ID uint) (CompanyDataEntity, error)
 	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
 }

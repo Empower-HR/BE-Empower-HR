@@ -26,8 +26,11 @@ func NewCompanyHandler(s companies.Service, c cloudinary.CloudinaryUtilityInterf
 
 func (ch *CompanyHandlers) GetCompany() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
-		data, err := ch.srv.GetCompany();
+		companyID, _ := middlewares.NewMiddlewares().ExtractCompanyID(c)
+		if companyID == 0 {
+			return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
+		}
+		data, err := ch.srv.GetCompany(companyID);
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Internal server error: "+err.Error(), nil))
@@ -40,13 +43,13 @@ func (ch *CompanyHandlers) GetCompany() echo.HandlerFunc {
 
 func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		companyID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
+		companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
 		if companyID == 0 {
 			return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
 		}
 
 		input := CompanyInput{};
-		err := c.Bind(&input);
+		err = c.Bind(&input);
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+err.Error(), nil))
@@ -89,7 +92,7 @@ func (ch *CompanyHandlers) UpdateCompany() echo.HandlerFunc {
 			input.Signature = companySignatureURL;
 		};
 
-		err = ch.srv.UpdateCompany(uint(companyID), ToModelCompany(input));
+		err = ch.srv.UpdateCompany(companyID, ToModelCompany(input));
 		if err != nil {
 			log.Print("Error", err.Error())
 			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "Internal server error: "+err.Error(), nil))

@@ -13,9 +13,95 @@ type DataLeavesInterface struct {
 	mock.Mock
 }
 
-// GetLeaveHistory provides a mock function with given fields: personalDataID, page, pageSize
-func (_m *DataLeavesInterface) GetLeaveHistory(personalDataID uint, page int, pageSize int) ([]leaves.LeavesDataEntity, error) {
-	ret := _m.Called(personalDataID, page, pageSize)
+// CountPendingLeaves provides a mock function with given fields: companyID
+func (_m *DataLeavesInterface) CountPendingLeaves(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountPendingLeaves")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountTotalUsers provides a mock function with given fields: companyID
+func (_m *DataLeavesInterface) CountTotalUsers(companyID uint) (int64, error) {
+	ret := _m.Called(companyID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountTotalUsers")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (int64, error)); ok {
+		return rf(companyID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) int64); ok {
+		r0 = rf(companyID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(companyID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DashboardEmployees provides a mock function with given fields: companyID, page, pageSize
+func (_m *DataLeavesInterface) DashboardEmployees(companyID uint, page int, pageSize int) (*leaves.DashboardStats, error) {
+	ret := _m.Called(companyID, page, pageSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DashboardEmployees")
+	}
+
+	var r0 *leaves.DashboardStats
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, int, int) (*leaves.DashboardStats, error)); ok {
+		return rf(companyID, page, pageSize)
+	}
+	if rf, ok := ret.Get(0).(func(uint, int, int) *leaves.DashboardStats); ok {
+		r0 = rf(companyID, page, pageSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*leaves.DashboardStats)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, int, int) error); ok {
+		r1 = rf(companyID, page, pageSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetLeaveHistory provides a mock function with given fields: companyID, personalDataID, page, pageSize
+func (_m *DataLeavesInterface) GetLeaveHistory(companyID uint, personalDataID uint, page int, pageSize int) ([]leaves.LeavesDataEntity, error) {
+	ret := _m.Called(companyID, personalDataID, page, pageSize)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetLeaveHistory")
@@ -23,19 +109,19 @@ func (_m *DataLeavesInterface) GetLeaveHistory(personalDataID uint, page int, pa
 
 	var r0 []leaves.LeavesDataEntity
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, int, int) ([]leaves.LeavesDataEntity, error)); ok {
-		return rf(personalDataID, page, pageSize)
+	if rf, ok := ret.Get(0).(func(uint, uint, int, int) ([]leaves.LeavesDataEntity, error)); ok {
+		return rf(companyID, personalDataID, page, pageSize)
 	}
-	if rf, ok := ret.Get(0).(func(uint, int, int) []leaves.LeavesDataEntity); ok {
-		r0 = rf(personalDataID, page, pageSize)
+	if rf, ok := ret.Get(0).(func(uint, uint, int, int) []leaves.LeavesDataEntity); ok {
+		r0 = rf(companyID, personalDataID, page, pageSize)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]leaves.LeavesDataEntity)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, int, int) error); ok {
-		r1 = rf(personalDataID, page, pageSize)
+	if rf, ok := ret.Get(1).(func(uint, uint, int, int) error); ok {
+		r1 = rf(companyID, personalDataID, page, pageSize)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -133,6 +219,24 @@ func (_m *DataLeavesInterface) GetLeavesByStatus(personalDataID uint, status str
 	return r0, r1
 }
 
+// GetLeavesDataByID provides a mock function with given fields: leaveID, leaveData
+func (_m *DataLeavesInterface) GetLeavesDataByID(leaveID uint, leaveData *leaves.LeavesDataEntity) error {
+	ret := _m.Called(leaveID, leaveData)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLeavesDataByID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(uint, *leaves.LeavesDataEntity) error); ok {
+		r0 = rf(leaveID, leaveData)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetLeavesDetail provides a mock function with given fields: leaveID
 func (_m *DataLeavesInterface) GetLeavesDetail(leaveID uint) (*leaves.LeavesDataEntity, error) {
 	ret := _m.Called(leaveID)
@@ -163,6 +267,24 @@ func (_m *DataLeavesInterface) GetLeavesDetail(leaveID uint) (*leaves.LeavesData
 	return r0, r1
 }
 
+// GetPersonalDataByID provides a mock function with given fields: id, pd
+func (_m *DataLeavesInterface) GetPersonalDataByID(id uint, pd *leaves.PersonalDataEntity) error {
+	ret := _m.Called(id, pd)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPersonalDataByID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(uint, *leaves.PersonalDataEntity) error); ok {
+		r0 = rf(id, pd)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // RequestLeave provides a mock function with given fields: leave
 func (_m *DataLeavesInterface) RequestLeave(leave leaves.LeavesDataEntity) error {
 	ret := _m.Called(leave)
@@ -181,6 +303,24 @@ func (_m *DataLeavesInterface) RequestLeave(leave leaves.LeavesDataEntity) error
 	return r0
 }
 
+// UpdateLeaveData provides a mock function with given fields: leaveData
+func (_m *DataLeavesInterface) UpdateLeaveData(leaveData leaves.LeavesDataEntity) error {
+	ret := _m.Called(leaveData)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateLeaveData")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(leaves.LeavesDataEntity) error); ok {
+		r0 = rf(leaveData)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateLeaveStatus provides a mock function with given fields: leaveID, updatesleaves
 func (_m *DataLeavesInterface) UpdateLeaveStatus(leaveID uint, updatesleaves leaves.LeavesDataEntity) error {
 	ret := _m.Called(leaveID, updatesleaves)
@@ -192,6 +332,24 @@ func (_m *DataLeavesInterface) UpdateLeaveStatus(leaveID uint, updatesleaves lea
 	var r0 error
 	if rf, ok := ret.Get(0).(func(uint, leaves.LeavesDataEntity) error); ok {
 		r0 = rf(leaveID, updatesleaves)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePersonalData provides a mock function with given fields: personalData
+func (_m *DataLeavesInterface) UpdatePersonalData(personalData leaves.PersonalDataEntity) error {
+	ret := _m.Called(personalData)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdatePersonalData")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(leaves.PersonalDataEntity) error); ok {
+		r0 = rf(personalData)
 	} else {
 		r0 = ret.Error(0)
 	}

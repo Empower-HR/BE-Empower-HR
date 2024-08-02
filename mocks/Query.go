@@ -41,6 +41,34 @@ func (_m *Query) GetCompany() (companies.CompanyDataEntity, error) {
 	return r0, r1
 }
 
+// GetCompanyID provides a mock function with given fields: ID
+func (_m *Query) GetCompanyID(ID uint) (companies.CompanyDataEntity, error) {
+	ret := _m.Called(ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCompanyID")
+	}
+
+	var r0 companies.CompanyDataEntity
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint) (companies.CompanyDataEntity, error)); ok {
+		return rf(ID)
+	}
+	if rf, ok := ret.Get(0).(func(uint) companies.CompanyDataEntity); ok {
+		r0 = rf(ID)
+	} else {
+		r0 = ret.Get(0).(companies.CompanyDataEntity)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint) error); ok {
+		r1 = rf(ID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateCompany provides a mock function with given fields: ID, updateCompany
 func (_m *Query) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) error {
 	ret := _m.Called(ID, updateCompany)
