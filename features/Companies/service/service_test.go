@@ -24,10 +24,10 @@ func TestGetCompany(t *testing.T) {
 			CompanyAddress: "jl. indo konohan 1",
 			Signature:      "ttd.png",
 		}
+		ID := uint(1)
+		qry.On("GetCompanyID", ID).Return(expectedResult, nil).Once()
 
-		qry.On("GetCompany").Return(expectedResult, nil).Once()
-
-		result, err := srv.GetCompany()
+		result, err := srv.GetCompany(ID)
 
 		qry.AssertExpectations(t)
 
@@ -36,9 +36,10 @@ func TestGetCompany(t *testing.T) {
 	})
 
 	t.Run("Error Get Company", func(t *testing.T) {
-		qry.On("GetCompany").Return(companies.CompanyDataEntity{}, errors.New("internal server error")).Once()
+		ID := uint(1)
+		qry.On("GetCompanyID", ID).Return(companies.CompanyDataEntity{}, errors.New("internal server error")).Once()
 
-		result, err := srv.GetCompany()
+		result, err := srv.GetCompany(ID)
 
 		qry.AssertExpectations(t)
 
