@@ -8,6 +8,6 @@ type ScheduleRequest struct {
 	ScheduleOut   string `json:"schedule_out"`
 	BreakStart    string `json:"break_start"`
 	BreakEnd      string `json:"break_end"`
-	Days          int    `json:"repeat_until"`
+	Days          string `json:"repeat_until"`
 	Description   string `json:"description"`
 }

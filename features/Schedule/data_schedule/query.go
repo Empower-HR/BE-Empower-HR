@@ -3,6 +3,9 @@ package dataschedule
 import (
 	// companies "be-empower-hr/features/Companies"
 	schedule "be-empower-hr/features/Schedule"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -45,6 +48,15 @@ func (c *companyModels) UpdateCompany(ID uint, updateCompany schedule.CompanyDat
 
 // CreateSchedule implements schedule.DataScheduleInterface.
 func (sc *scheduleQuery) CreateSchedule(schedule schedule.ScheduleDataEntity) (uint, error) {
+	daysStr := schedule.Days
+	parts := strings.Fields(daysStr)
+	if len(parts) < 1 {
+		return 0, nil
+	}
+	days, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, err
+	}
 	newSchedule := ScheduleData{
 		CompanyID:     schedule.CompanyID,
 		Name:          schedule.Name,
@@ -53,7 +65,7 @@ func (sc *scheduleQuery) CreateSchedule(schedule schedule.ScheduleDataEntity) (u
 		ScheduleOut:   schedule.ScheduleOut,
 		BreakStart:    schedule.BreakStart,
 		BreakEnd:      schedule.BreakEnd,
-		Days:          schedule.Days,
+		Days:          days,
 		Description:   schedule.Description,
 	}
 	if err := sc.db.Create(&newSchedule).Error; err != nil {
@@ -87,7 +99,7 @@ func (sc *scheduleQuery) GetAllSchedule() ([]schedule.ScheduleDataEntity, error)
 			ScheduleOut:   s.ScheduleOut,
 			BreakStart:    s.BreakStart,
 			BreakEnd:      s.BreakEnd,
-			Days:          s.Days,
+			Days:          fmt.Sprintf("%d", s.Days),
 			Description:   s.Description,
 		})
 	}
@@ -109,7 +121,7 @@ func (sc *scheduleQuery) GetScheduleById(scheduleid uint) (*schedule.ScheduleDat
 		ScheduleOut:   scheduleData.ScheduleOut,
 		BreakStart:    scheduleData.BreakStart,
 		BreakEnd:      scheduleData.BreakEnd,
-		Days:          scheduleData.Days,
+		Days:          fmt.Sprintf("%d", scheduleData.Days),
 		Description:   scheduleData.Description,
 	}, nil
 }
@@ -120,6 +132,15 @@ func (sc *scheduleQuery) UpdateSchedule(scheduleid uint, account schedule.Schedu
 	if err := sc.db.First(&schedule, scheduleid).Error; err != nil {
 		return err
 	}
+	daysStr := account.Days
+	parts := strings.Fields(daysStr)
+	if len(parts) < 1 {
+		return nil
+	}
+	days, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return err
+	}
 	schedule.CompanyID = account.CompanyID
 	schedule.Name = account.Name
 	schedule.EffectiveDate = account.EffectiveDate
@@ -127,7 +148,7 @@ func (sc *scheduleQuery) UpdateSchedule(scheduleid uint, account schedule.Schedu
 	schedule.ScheduleOut = account.ScheduleOut
 	schedule.BreakStart = account.BreakStart
 	schedule.BreakEnd = account.BreakEnd
-	schedule.Days = account.Days
+	schedule.Days = days
 	schedule.Description = account.Description
 	if err := sc.db.Save(&schedule).Error; err != nil {
 		return err

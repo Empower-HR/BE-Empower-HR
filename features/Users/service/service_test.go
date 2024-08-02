@@ -372,7 +372,7 @@ func TestRegistrasiAccountAdmin(t *testing.T) {
 		assert.Equal(t, uint(0), personalID)
 		assert.Equal(t, uint(0), companyID)
 	})
-	
+
 	t.Run("Error Registrasi Account Admin - PhoneNumber Validation Error", func(t *testing.T) {
 		accounts := users.PersonalDataEntity{
 			Name:        "John Doe",

@@ -64,8 +64,8 @@ func (sh *ScheduleHandler) GetAllSchedule(c echo.Context) error {
 	}
 	var responseDetail []ScheduleDataResponse
 	for _, detail := range schedules {
-		days := strconv.Itoa(detail.Days)
-		responseDetail = append(responseDetail, ToGetAllSchedule(detail,days))
+		days := detail.Days
+		responseDetail = append(responseDetail, ToGetAllSchedule(detail, days))
 	}
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Schedules retrieved successfully", responseDetail))
@@ -83,9 +83,9 @@ func (sh *ScheduleHandler) GetScheduleById(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, responses.JSONWebResponse(http.StatusNotFound, "error", "Schedule not found", nil))
 	}
 	var responseDetail []ScheduleDataResponse
-	
-	days := strconv.Itoa(schedule.Days)
-	responseDetail = append(responseDetail, ToGetAllSchedule(*schedule,days))
+
+	days := schedule.Days
+	responseDetail = append(responseDetail, ToGetAllSchedule(*schedule, days))
 
 	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Schedule retrieved successfully", responseDetail))
 }

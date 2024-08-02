@@ -11,7 +11,7 @@ var (
 	CLOUDINARY_URL string
 	EMAIL_PASSWORD string
 	EMAIL_SENDER   string
-	API_KEYS string
+	API_KEYS       string
 )
 
 type AppConfig struct {
