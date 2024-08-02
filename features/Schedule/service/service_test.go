@@ -22,7 +22,7 @@ func TestCreateSchedule(t *testing.T) {
 		ScheduleOut:   "16:00",
 		BreakStart:    "12:00",
 		BreakEnd:      "13:00",
-		Days:          29,
+		Days:          "29 days",
 		Description:   "test description",
 	}
 
@@ -35,7 +35,7 @@ func TestCreateSchedule(t *testing.T) {
 			ScheduleOut:   "16:00",
 			BreakStart:    "12:00",
 			BreakEnd:      "13:00",
-			Days:          0,
+			Days:          "",
 			Description:   "test description",
 		}
 		_, err := srv.CreateSchedule(data)
@@ -55,7 +55,7 @@ func TestCreateSchedule(t *testing.T) {
 			ScheduleOut:   "16:00",
 			BreakStart:    "12:00",
 			BreakEnd:      "13:00",
-			Days:          29,
+			Days:          "29 days",
 			Description:   "test description",
 		}
 		_, err := srv.CreateSchedule(data)
@@ -106,7 +106,7 @@ func TestGetAllSchedule(t *testing.T) {
 			ScheduleOut:   "16:00",
 			BreakStart:    "12:00",
 			BreakEnd:      "13:00",
-			Days:          29,
+			Days:          "29 days",
 			Description:   "test description",
 		},
 	}
@@ -136,7 +136,7 @@ func TestGetScheduleById(t *testing.T) {
 		ScheduleOut:   "16:00",
 		BreakStart:    "12:00",
 		BreakEnd:      "13:00",
-		Days:          29,
+		Days:          "29 days",
 		Description:   "test description",
 	}
 
@@ -164,7 +164,7 @@ func TestUpdateSchedule(t *testing.T) {
 		ScheduleOut:   "16:00",
 		BreakStart:    "12:00",
 		BreakEnd:      "13:00",
-		Days:          29,
+		Days:          "29 days",
 		Description:   "test description",
 	}
 
@@ -177,7 +177,7 @@ func TestUpdateSchedule(t *testing.T) {
 			ScheduleOut:   "16:00",
 			BreakStart:    "12:00",
 			BreakEnd:      "13:00",
-			Days:          0,
+			Days:          "",
 			Description:   "test description",
 		}
 		err := srv.UpdateSchedule(scheduleId, data)
