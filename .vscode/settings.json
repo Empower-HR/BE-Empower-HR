@@ -1,5 +1,8 @@
 {
     "yaml.schemas": {
-        "https://json.schemastore.org/yamllint.json": "file:///c%3A/Users/riand/Downloads/BE-Empower-HR/.github/workflows/deploy.yaml"
+        "https://json.schemastore.org/yamllint.json": [
+            "file:///c%3A/Users/riand/Downloads/BE-Empower-HR/.github/workflows/deploy.yaml",
+            "file:///c%3A/Users/riand/Downloads/BE-Empower-HR-5/.github/workflows/deploy.yaml"
+        ]
     }
 }

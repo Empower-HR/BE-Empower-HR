@@ -8,7 +8,7 @@ import (
 )
 
 type CompanyDataEntity struct {
-	ID          	uint 
+	ID             uint
 	CompanyPicture string
 	CompanyName    string
 	Email          string
@@ -18,18 +18,18 @@ type CompanyDataEntity struct {
 	Signature      string
 	Schedules      []dataschedule.ScheduleData
 	PersonalData   []datausers.PersonalData
-};
-
+}
 
 type Handler interface {
 	GetCompany() echo.HandlerFunc
 	UpdateCompany() echo.HandlerFunc
-};
+}
 
 type Query interface {
 	GetCompany() (CompanyDataEntity, error)
 	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
-};
+	GetCompanyID(ID uint) (CompanyDataEntity, error)
+}
 
 type Service interface {
 	GetCompany() (CompanyDataEntity, error)
