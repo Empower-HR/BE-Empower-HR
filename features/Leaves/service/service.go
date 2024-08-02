@@ -177,18 +177,18 @@ func (s *leavesService) Dashboard(companyID uint) (*leaves.DashboardLeavesStats,
 }
 
 var bulanMap = map[string]string{
-	"Januari":   "January",
-	"Februari":  "February",
-	"Maret":     "March",
-	"April":     "April",
-	"Mei":       "May",
-	"Juni":      "June",
-	"Juli":      "July",
-	"Agustus":   "August",
-	"September": "September",
-	"Oktober":   "October",
-	"November":  "November",
-	"Desember":  "December",
+	"januari":   "january",
+	"februari":  "february",
+	"maret":     "march",
+	"april":     "april",
+	"mei":       "may",
+	"juni":      "june",
+	"juli":      "july",
+	"agustus":   "august",
+	"september": "september",
+	"oktober":   "october",
+	"november":  "november",
+	"desember":  "december",
 }
 
 func ConvertIndonesiaMonthToEnglish(dateStr string) (string, error) {
@@ -209,7 +209,7 @@ func ConvertIndonesiaMonthToEnglish(dateStr string) (string, error) {
 }
 
 func CalculateLeaveDays(startDate, endDate string) (int, error) {
-	layout := "02 January 2006"
+	layout := "02 january 2006"
 
 	startDateEng, err := ConvertIndonesiaMonthToEnglish(startDate)
 	if err != nil {
