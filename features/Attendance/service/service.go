@@ -21,9 +21,7 @@ type attendanceService struct {
 	mapsUtility       maps.MapsUtilityInterface
 }
 
-
-
-
+// CountAllAtt implements attendance.AServices.
 
 func New(ad att.AQuery, hash encrypts.HashInterface, mi middlewares.MiddlewaresInterface, au utils.AccountUtilityInterface, pu pdf.PdfUtilityInterface, mu maps.MapsUtilityInterface) att.AServices {
 	return &attendanceService{
@@ -95,8 +93,7 @@ func (as *attendanceService) UpdateAtt(id uint, updateAtt att.Attandance) error 
 	if err != nil {
 		return err
 	}
-	
-	
+
 	// Ambil alamat perusahaan dan lakukan geocoding untuk mendapatkan latitude dan longitude
 	companyLat, companyLng, err := as.mapsUtility.GeoCode(company[0].CompanyAddress)
 	if err != nil {
@@ -136,22 +133,40 @@ func (as *attendanceService) DeleteAttByID(attID uint) error {
 	return nil
 }
 
-func (as *attendanceService) GetAttByPersonalID(personalID uint, searchBox string, limit int, offset int) ([]att.AttendanceDetail, error) {
+func (as *attendanceService) GetAttByPersonalID(personalID uint, searchBox string, limit int, offset int) ([]att.AttendanceDetail, int64, error) {
+	var count int64
+	var err error
+	if searchBox != "" {
+		count, err = as.qry.CountAttByIdPersonAndSearch(personalID, searchBox)
+		if err != nil {
+			return nil, 0, errors.New("error counting attendance records with search")
+		}
+	} else {
+		count, err = as.qry.GetTotalAttendancesCountbyPerson(personalID)
+		if err != nil {
+			return nil, 0, errors.New("error counting total attendance records")
+		}
+	}
 	attendances, err := as.qry.GetAttByPersonalID(personalID, searchBox, limit, offset)
 	if err != nil {
-		return nil, errors.New("error retrieving attendance records")
+		return nil, 0, errors.New("error retrieving attendance records")
 	}
-	return attendances, nil
+	return attendances, count, nil
 }
 
-func (as *attendanceService) GetAllAtt(search string, limit int, offset int) ([]att.AttendanceDetail, error) {
-
+func (as *attendanceService) GetAllAtt(search string, limit int, offset int) ([]att.AttendanceDetail, int64, error) {
+	var count int64
+	if search != "" {
+		count, _ = as.qry.CountAttBySearch(search)
+	} else {
+		count, _ = as.qry.GetTotalAttendancesCount()
+	}
 	// attendance, err := as.qry.GetAllAtt(limit, offset)
 	attendance, err := as.qry.GetAttendanceDetails(search, limit, offset)
 	if err != nil {
-		return nil, errors.New("error retrieving attendance records")
+		return nil, 0, errors.New("error retrieving attendance records")
 	}
-	return attendance, nil
+	return attendance, count, nil
 }
 func (as *attendanceService) GetAttByIdAtt(idAtt uint) ([]att.AttendanceDetail, error) {
 
@@ -163,7 +178,7 @@ func (as *attendanceService) GetAttByIdAtt(idAtt uint) ([]att.AttendanceDetail, 
 	return attendance, nil
 }
 func (as *attendanceService) GetAllAttbyDate(date int, limit int, offset int) ([]att.AttendanceDetail, error) {
-	
+
 	attendance, err := as.qry.GetAllAttbyDate(date, limit, offset)
 	if err != nil {
 		return nil, err
@@ -191,14 +206,6 @@ func (as *attendanceService) GetAttByPersonalIDandStatus(id uint, status string,
 		return nil, err
 	}
 	return attendance, nil
-}
-
-func (as *attendanceService) CountAllAtt() (int64, error) {
-	count, err := as.qry.GetTotalAttendancesCount()
-	if err != nil {
-		return 0, errors.New("terjadi kesalahan pada server saat menghitung total product")
-	}
-	return count, nil
 }
 func (as *attendanceService) CountAllAttbyDate(date int) (int64, error) {
 	count, err := as.qry.GetTotalAttendancesCountbyDate(date)
@@ -257,7 +264,6 @@ func (as *attendanceService) CountAllAttbyStatusandPerson(status string, personI
 	return count, nil
 }
 
-
 // CountAllAttbyPerson implements attendance.AServices.
 func (as *attendanceService) CountAllAttbyPerson(personID uint) (int64, error) {
 	count, err := as.qry.GetTotalAttendancesCountbyPerson(personID)
@@ -266,7 +272,7 @@ func (as *attendanceService) CountAllAttbyPerson(personID uint) (int64, error) {
 	}
 	return count, nil
 }
-func (as *attendanceService) CheckingTheValueOfDate(date int) (error) {
+func (as *attendanceService) CheckingTheValueOfDate(date int) error {
 	if date <= 0 {
 		return errors.New("masukkan bulan yang benar")
 	}

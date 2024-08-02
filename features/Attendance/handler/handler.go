@@ -194,7 +194,7 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 	} else{
-		attDetail, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
+		attDetail, totalItems, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -285,7 +285,7 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 	}else{
-		attDetail, err = ah.srv.GetAllAtt(searchBox, limit, offset)
+		attDetail, totalItems, err = ah.srv.GetAllAtt(searchBox, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -293,10 +293,6 @@ func (ah *AttHandler) GetAllAttendancesHandler(c echo.Context) error {
 			responseDetail = append(responseDetail, ToGetAttendanceResponse(detail))
 		}
 		result = responseDetail
-		totalItems, err = ah.srv.CountAllAtt()
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		}
 	}
 	totalPages := int(math.Ceil(float64(totalItems) / float64(limit)))
 
