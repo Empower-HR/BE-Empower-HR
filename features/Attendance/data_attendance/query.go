@@ -160,7 +160,7 @@ func (am *AttandanceModel) GetAllAttbyDate(date int, limit int, offset int) ([]a
     WHERE 
        EXTRACT(MONTH FROM date) = ?
     LIMIT ? OFFSET ?`
-    
+
 	err := am.db.Raw(query, date, limit, offset).Scan(&results).Error
 	if err != nil {
 		return nil, err
