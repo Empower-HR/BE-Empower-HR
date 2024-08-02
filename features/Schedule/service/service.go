@@ -20,7 +20,7 @@ func New(sc schedule.DataScheduleInterface, au utils.AccountUtilityInterface) sc
 
 // CreateSchedule implements schedule.ServiceScheduleInterface.
 func (ss *scheduleService) CreateSchedule(schedule schedule.ScheduleDataEntity) (uint, error) {
-	if schedule.Days <= 0 {
+	if schedule.Days == "" {
 		return 0, errors.New("days must be greater than 0")
 	}
 
@@ -47,7 +47,7 @@ func (ss *scheduleService) GetScheduleById(scheduleid uint) (*schedule.ScheduleD
 
 // UpdateSchedule implements schedule.ServiceScheduleInterface.
 func (ss *scheduleService) UpdateSchedule(scheduleid uint, account schedule.ScheduleDataEntity) error {
-	if account.Days <= 0 {
+	if account.Days == "" {
 		return errors.New("days must be greater than 0")
 	}
 

@@ -5,16 +5,16 @@ import (
 )
 
 type ScheduleDataEntity struct {
-	ScheduleId    uint `json:"id"`
-	CompanyID     uint `json:"company_id"`
-	Name          string `json:"name"`
+	ScheduleId    uint      `json:"id"`
+	CompanyID     uint      `json:"company_id"`
+	Name          string    `json:"name"`
 	EffectiveDate time.Time `json:"effective_date"`
-	ScheduleIn    string `json:"schedule_in"`
-	ScheduleOut   string `json:"schedule_out"`
-	BreakStart    string `json:"break_start"`
-	BreakEnd      string `json:"break_end"`
-	Days          int    `json:"repeat_until"`
-	Description   string `json:"description"`
+	ScheduleIn    string    `json:"schedule_in"`
+	ScheduleOut   string    `json:"schedule_out"`
+	BreakStart    string    `json:"break_start"`
+	BreakEnd      string    `json:"break_end"`
+	Days          string    `json:"repeat_until"`
+	Description   string    `json:"description"`
 }
 
 type CompanyDataEntity struct {
