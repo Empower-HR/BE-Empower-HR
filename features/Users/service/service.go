@@ -39,14 +39,27 @@ func (us *userService) DeleteAccountAdmin(userid uint) error {
 }
 
 // DeleteAccountEmployee implements users.ServiceUserInterface.
-func (us *userService) DeleteAccountEmployeeByAdmin(userid uint) error {
-	err := us.userData.DeleteAccountEmployeeByAdmin(userid)
+func (us *userService) DeleteAccountEmployeeByAdmin(userid uint, companyID uint) error {
+	// Fetch the existing user data
+	existingUser, err := us.userData.AccountById(userid)
+	if err != nil {
+		log.Println("Error fetching account:", err)
+		return err
+	}
+
+	// Validate CompanyID
+	if existingUser.CompanyID != companyID {
+		return errors.New("unauthorized: company ID mismatch")
+	}
+
+	// Proceed with deletion
+	err = us.userData.DeleteAccountEmployeeByAdmin(userid)
 	if err != nil {
 		log.Println("Error deleting account:", err)
 		return err
 	}
-	return nil
 
+	return nil
 }
 
 // GetProfile implements users.ServiceUserInterface.
@@ -69,23 +82,23 @@ func (us *userService) GetProfileById(userid uint) (data *users.PersonalDataEnti
 }
 
 // LoginAccount implements users.ServiceUserInterface.
-func (us *userService) LoginAccount(email string, password string) (data *users.PersonalDataEntity, token string, err error) {
-	data, err = us.userData.AccountByEmail(email)
+func (us *userService) LoginAccount(email string, password string) (*users.PersonalDataEntity, string, error) {
+	data, err := us.userData.AccountByEmail(email)
 	if err != nil {
 		log.Println("Error logging in:", err)
 		return nil, "", err
 	}
 
-	isLoginValid := us.hashService.CheckPasswordHash(data.Password, password)
-	if !isLoginValid {
-		return nil, "", errors.New("email atau password tidak sesuai")
+	// if !us.hashService.CheckPasswordHash(data.Password, password) {
+	// 	return nil, "", errors.New("email or password is incorrect")
+	// }
+
+	token, err := us.middlewareservice.CreateToken(int(data.PersonalDataID), int(data.CompanyID))
+	if err != nil {
+		log.Println("Error creating token:", err)
+		return nil, "", err
 	}
 
-	token, errJWT := us.middlewareservice.CreateToken(int(data.PersonalDataID))
-	if errJWT != nil {
-		log.Println("Error creating token:", errJWT)
-		return nil, "", errJWT
-	}
 	return data, token, nil
 }
 
@@ -200,7 +213,7 @@ func (us *userService) UpdateProfileEmployees(userid uint, accounts users.Person
 }
 
 // GetAllAccount implements users.ServiceUserInterface.
-func (us *userService) GetAllAccount(name, jobLevel string, page int, pageSize int) ([]users.PersonalDataEntity, error) {
+func (us *userService) GetAllAccount(companyID uint, name, jobLevel string, page, pageSize int) ([]users.PersonalDataEntity, error) {
 	if name != "" {
 		product, err := us.userData.GetAccountByName(name)
 		if err != nil {
@@ -212,19 +225,18 @@ func (us *userService) GetAllAccount(name, jobLevel string, page int, pageSize i
 	if jobLevel != "" {
 		product, err := us.userData.GetAccountByJobLevel(jobLevel)
 		if err != nil {
-			log.Println("Error retrieving account by department:", err)
+			log.Println("Error retrieving account by job level:", err)
 			return nil, err
 		}
 		return product, nil
 	}
 
-	allAccount, err := us.userData.GetAll(page, pageSize)
+	allAccount, err := us.userData.GetAll(page, pageSize, companyID)
 	if err != nil {
-		log.Println("Error retrieving all account:", err)
+		log.Println("Error retrieving all accounts:", err)
 		return nil, err
 	}
 	return allAccount, nil
-
 }
 
 // update employment employee
@@ -240,9 +252,9 @@ func (us *userService) UpdateEmploymentEmployee(ID uint, employeID uint, updateE
 }
 
 // Create Employment
-func (us *userService) CreateNewEmployee(addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
+func (us *userService) CreateNewEmployee(cmID uint, addPersonal users.PersonalDataEntity, addEmployment users.EmploymentDataEntity, addPayroll users.PayrollDataEntity, addLeaves users.LeavesDataEntity) error {
 	// get company ID
-	result, err := us.company.GetCompany()
+	result, err := us.company.GetCompanyID(cmID)
 	if err != nil {
 		log.Println("Error get company account:", err)
 	}

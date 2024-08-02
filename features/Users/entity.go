@@ -29,7 +29,6 @@ type EmploymentDataEntity struct {
 	JobLevel         string
 	Schedule         string
 	ApprovalLine     string
-	Manager          string
 	Payrolls         []PayrollDataEntity
 }
 
@@ -82,7 +81,7 @@ type DashboardStats struct {
 
 type DataUserInterface interface {
 	CreateAccountAdmin(account PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error)
-	GetAll(page, pageSize int) ([]PersonalDataEntity, error)
+	GetAll(page, pageSize int, companyID uint) ([]PersonalDataEntity, error)
 	GetAccountByName(accountName string) ([]PersonalDataEntity, error)
 	GetAccountByJobLevel(jobLevel string) ([]PersonalDataEntity, error)
 	AccountByEmail(email string) (*PersonalDataEntity, error)
@@ -109,7 +108,7 @@ type DataUserInterface interface {
 
 type ServiceUserInterface interface {
 	RegistrasiAccountAdmin(accounts PersonalDataEntity, companyName, department, jobPosition string) (uint, uint, error)
-	GetAllAccount(name, jobLevel string, page, pageSize int) ([]PersonalDataEntity, error)
+	GetAllAccount(companyID uint, name, jobLevel string, page, pageSize int) ([]PersonalDataEntity, error)
 	LoginAccount(email string, password string) (data *PersonalDataEntity, token string, err error)
 	GetProfile(userid uint) (data *PersonalDataEntity, err error)
 	GetProfileById(userid uint) (data *PersonalDataEntity, err error)
@@ -117,8 +116,8 @@ type ServiceUserInterface interface {
 	UpdateProfileAdmins(userid uint, accounts PersonalDataEntity) error
 	UpdateProfileEmployments(userid uint, accounts EmploymentDataEntity) error
 	DeleteAccountAdmin(userid uint) error
-	DeleteAccountEmployeeByAdmin(userid uint) error
+	DeleteAccountEmployeeByAdmin(userid uint, companyID uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
-	CreateNewEmployee(addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
+	CreateNewEmployee(cmID uint, addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
 	Dashboard(companyID uint) (*DashboardStats, error)
 }

@@ -1,7 +1,7 @@
 package handler
 
-import(
-	"be-empower-hr/features/Attendance"
+import (
+	attendance "be-empower-hr/features/Attendance"
 )
 
 type AttAllResponse struct {
@@ -39,7 +39,7 @@ type AttDetailResponse struct {
 	PersonalDataID 	uint	`json:"personal_id"`
     ClockIn      string `json:"clock_in"`
     ClockOut     string `json:"clock_out"`
-	Date		 string `json: "date"`
+	Date		 string `json:"date"`
 }
 
 
@@ -79,13 +79,15 @@ func ToGetAttendanceDetailResponse(attendance attendance.AttendanceDetail) AttDe
 	}
 }
 func ToGetAllAttendance(attendance attendance.Attandance) AttAllResponse {
+	format := "02-01-2006"
+	date := attendance.Date.Format(format)
 	return AttAllResponse{
 		ID:       attendance.ID,
 		PersonalDataID: attendance.PersonalDataID,
 		ClockIn:  attendance.Clock_in,
 		ClockOut: attendance.Clock_out,
 		Status:   attendance.Status,
-		Date:     attendance.Date,
+		Date:     date,
 		Long:     attendance.Long,
 		Lat:      attendance.Lat,
 		Notes:    attendance.Notes,

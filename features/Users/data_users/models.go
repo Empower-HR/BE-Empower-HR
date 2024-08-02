@@ -40,7 +40,6 @@ type EmploymentData struct {
 	JobLevel         string
 	Schedule         string
 	ApprovalLine     string
-	Manager          string
 	Payrolls         []datapayroll.PayrollData `gorm:"foreignKey:EmploymentDataID"`
 }
 
@@ -113,7 +112,6 @@ func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData 
 		JobLevel:         input.JobLevel,
 		Schedule:         input.Schedule,
 		ApprovalLine:     input.ApprovalLine,
-		Manager:          input.Manager,
 	}
 }
 
@@ -146,7 +144,6 @@ func ToEmploymentQuery(input users.EmploymentDataEntity) EmploymentData {
 		JobLevel:         input.JobLevel,
 		Schedule:         input.Schedule,
 		ApprovalLine:     input.ApprovalLine,
-		Manager:          input.Manager,
 	}
 }
 
