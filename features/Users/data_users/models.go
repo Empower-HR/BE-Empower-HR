@@ -49,7 +49,6 @@ type CompanyData struct {
 	CompanyName    string
 	Email          string
 	PhoneNumber    string
-	Address        string
 	Npwp           int
 	CompanyAddress string
 	Signature      string
