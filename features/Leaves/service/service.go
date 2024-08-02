@@ -237,3 +237,17 @@ func CalculateLeaveDays(startDate, endDate string) (int, error) {
 	duration := end.Sub(start)
 	return int(duration.Hours()/24) + 1, nil
 }
+
+// DashboardEmployees implements leaves.ServiceLeavesInterface.
+func (s *leavesService) DashboardEmployees(companyID uint, page, pageSize int) (*leaves.DashboardStats, error) {
+	stats, err := s.leavesData.DashboardEmployees(companyID, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	if stats == nil {
+		return nil, errors.New("failed to retrieve dashboard statistics")
+	}
+
+	return stats, nil
+}

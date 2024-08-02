@@ -16,6 +16,15 @@ type LeaveHistoryResponse struct {
 	Status         string         `json:"status"`
 	Message        string         `json:"message"`
 	Data           []LeaveHistory `json:"data"`
-	TotalEmployees int            `json:"total_employees"`
+	TotalEmployees int            `json:"total_employe"`
 	TotalLeaves    int            `json:"total_leaves"`
+}
+
+type LeaveHistoryEmployeeResponse struct {
+	Code     int            `json:"code"`
+	Status   string         `json:"status"`
+	Message  string         `json:"message"`
+	Names    string         `json:"names"`
+	Data     []LeaveHistory `json:"data"`
+	UsedCuti int            `json:"used"`
 }

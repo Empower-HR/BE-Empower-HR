@@ -127,7 +127,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.PUT("/leaves/:id", leavesHandlerAPI.UpdateLeaveStatus, middlewares.JWTMiddleware())
 	e.GET("/leaves", leavesHandlerAPI.ViewLeaveHistory, middlewares.JWTMiddleware())
 	e.GET("/leaves/:id", leavesHandlerAPI.GetLeavesByID, middlewares.JWTMiddleware())
-	e.GET("leaves/employees", leavesHandlerAPI.ViewLeaveHistoryEmployee, middlewares.JWTMiddleware())
+	e.GET("leaves/employee", leavesHandlerAPI.ViewLeaveHistoryEmployee, middlewares.JWTMiddleware())
 
 	// handler announcement
 	e.POST("/announcement", annoHandler.AddAnnouncement, middlewares.JWTMiddleware())

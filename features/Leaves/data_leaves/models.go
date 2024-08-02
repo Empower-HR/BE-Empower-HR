@@ -48,3 +48,9 @@ type DashboardLeavesStats struct {
 	LeavesPending     int64
 	PersonalDataNames string
 }
+
+type DashboardStats struct {
+	Quota             int
+	Used              int
+	PersonalDataNames string
+}

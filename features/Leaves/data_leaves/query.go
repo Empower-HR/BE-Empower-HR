@@ -235,3 +235,53 @@ func (q *leavesQuery) UpdateLeaveData(leaveData leaves.LeavesDataEntity) error {
 
 	return q.db.Save(&data).Error
 }
+
+func (uq *leavesQuery) DashboardEmployees(companyID uint, page, pageSize int) (*leaves.DashboardStats, error) {
+	var stats leaves.DashboardStats
+	pagination := utils.NewPagination(page, pageSize)
+
+	// Fetch a single employee name
+	var name string
+	if err := uq.db.Model(&PersonalData{}).
+		Where("company_id = ? AND deleted_at IS NULL", companyID).
+		Select("name").
+		Limit(1).
+		Pluck("name", &name).Error; err != nil {
+		log.Printf("Error fetching employee name: %v", err)
+		return nil, err
+	}
+	stats.PersonalDataNames = name
+
+	// Fetch total leave records
+	var leaveEntities []leaves.LeavesDataEntity
+	if err := uq.db.Model(&LeavesData{}).
+		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
+		Where("personal_data.company_id = ?", companyID).
+		Offset(pagination.Offset()).
+		Limit(pagination.PageSize).
+		Find(&leaveEntities).Error; err != nil {
+		log.Printf("Error fetching leave records: %v", err)
+		return nil, err
+	}
+
+	// Calculate total leave from fetched records
+	var totalLeave int
+	for _, leave := range leaveEntities {
+		totalLeave += leave.TotalLeave
+	}
+	stats.Quota = totalLeave
+
+	// Calculate total approved leave
+	var totalApprovedLeave int
+	if err := uq.db.Model(&LeavesData{}).
+		Joins("JOIN personal_data ON leaves_data.personal_data_id = personal_data.id").
+		Where("personal_data.company_id = ? AND leaves_data.status = ?", companyID, "approved").
+		Select("SUM(total_leave)").
+		Scan(&totalApprovedLeave).Error; err != nil {
+		log.Printf("Error calculating approved leave: %v", err)
+		return nil, err
+	}
+	stats.Used = totalApprovedLeave
+
+	return &stats, nil
+}

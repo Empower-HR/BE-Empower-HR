@@ -188,7 +188,12 @@ func (lh *LeavesHandler) ViewLeaveHistoryEmployee(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to fetch leave history for employee", nil))
 	}
+	var name string
+	if len(leaveEntities) > 0 {
+		name = leaveEntities[0].Name
+	}
 
+	// Map leave entities to leave histories
 	var leaveHistories []LeaveHistory
 	for _, leave := range leaveEntities {
 		leaveHistories = append(leaveHistories, LeaveHistory{
@@ -202,5 +207,15 @@ func (lh *LeavesHandler) ViewLeaveHistoryEmployee(c echo.Context) error {
 			Status:       leave.Status,
 		})
 	}
-	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Leave history for employee retrieved successfully", leaveHistories))
+
+	totalLeaves := len(leaveHistories) // Update this if you have total leaves count from the service
+
+	return c.JSON(http.StatusOK, LeaveHistoryEmployeeResponse{
+		Code:     http.StatusOK,
+		Status:   "success",
+		Message:  "Leave history for employee retrieved successfully",
+		Names:    name,
+		Data:     leaveHistories,
+		UsedCuti: totalLeaves,
+	})
 }

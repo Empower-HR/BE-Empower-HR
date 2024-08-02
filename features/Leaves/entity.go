@@ -47,6 +47,12 @@ type DashboardLeavesStats struct {
 	PersonalDataNames string
 }
 
+type DashboardStats struct {
+	Quota             int
+	Used              int
+	PersonalDataNames string
+}
+
 type DataLeavesInterface interface {
 	RequestLeave(leave LeavesDataEntity) error
 	UpdateLeaveStatus(leaveID uint, updatesleaves LeavesDataEntity) error
@@ -61,6 +67,7 @@ type DataLeavesInterface interface {
 	UpdatePersonalData(personalData PersonalDataEntity) error
 	GetLeavesDataByID(leaveID uint, leaveData *LeavesDataEntity) error
 	UpdateLeaveData(leaveData LeavesDataEntity) error
+	DashboardEmployees(companyID uint, page, pageSize int) (*DashboardStats, error)
 }
 
 type ServiceLeavesInterface interface {
@@ -70,4 +77,5 @@ type ServiceLeavesInterface interface {
 	GetLeavesByID(leaveID uint) (leaves *LeavesDataEntity, err error)
 	ViewLeaveHistoryEmployee(personalDataID uint, page, pageSize int, status string, startDate, endDate string) ([]LeavesDataEntity, error)
 	Dashboard(companyID uint) (*DashboardLeavesStats, error)
+	DashboardEmployees(companyID uint, page, pageSize int) (*DashboardStats, error)
 }

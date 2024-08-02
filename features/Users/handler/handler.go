@@ -501,10 +501,7 @@ func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 
 	companyID, err := middlewares.NewMiddlewares().ExtractCompanyID(c)
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]any{
-			"status":  "failed",
-			"message": "unauthorized: " + err.Error(),
-		})
+		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized: "+err.Error(), nil))
 	}
 
 	dashboardData, err := uh.userService.Dashboard(companyID)
@@ -526,7 +523,7 @@ func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 		CurrentDate:              dashboardData.CurrentDate,
 	}
 
-	return c.JSON(http.StatusOK, responseData)
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Dashboard data retrieved successfully", responseData))
 }
 
 func getCompanyIDFromUserID(userID int) (uint, error) {
@@ -561,5 +558,5 @@ func (uh *UserHandler) DashboardEmployees(c echo.Context) error {
 		CurrentDate:              dashboardData.CurrentDate,
 	}
 
-	return c.JSON(http.StatusOK, responseData)
+	return c.JSON(http.StatusOK, responses.JSONWebResponse(http.StatusOK, "success", "Dashboard data retrieved successfully", responseData))
 }
