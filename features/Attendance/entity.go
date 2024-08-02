@@ -65,9 +65,8 @@ type AServices interface {
 	AddAtt(newAtt Attandance) error
 	UpdateAtt(id uint, updateAtt Attandance) error
 	DeleteAttByID(attID uint) error
-	GetAttByPersonalID(personalID uint,searchBox string, limit int, offset int) ([]AttendanceDetail, error)
-	GetAllAtt(search string, limit int, offset int) ([]AttendanceDetail, error)
-	CountAllAtt() (int64, error)
+	GetAttByPersonalID(personalID uint,searchBox string, limit int, offset int) ([]AttendanceDetail, int64, error)
+	GetAllAtt(search string, limit int, offset int) ([]AttendanceDetail, int64, error)
 	CountAllAttbyPerson(personID uint) (int64, error)
 	CountAllAttbyDate(date int) (int64, error)
 	CountAllAttbyDateandPerson(date int, personID uint) (int64, error)
@@ -102,4 +101,6 @@ type AQuery interface {
 	GetAllAttbyStatus(status string, limit int, offset int) ([]AttendanceDetail, error)
 	GetAllAttbyIdPersonAndStatus(id uint, status string, limit int, offset int) ([]AttendanceDetail, error)
 	GetCompany(idPerson uint) ([]CompanyDataEntity, error)
+	CountAttBySearch(search string) (int64, error)
+	CountAttByIdPersonAndSearch(personID uint,search string) (int64, error)
 }
