@@ -84,7 +84,7 @@ func (s *leavesService) UpdateLeaveStatus(userID uint, leaveID uint, updatesleav
 func (s *leavesService) RequestLeave(userID uint, leave leaves.LeavesDataEntity) error {
 	err := s.leavesData.RequestLeave(leave)
 	if err != nil {
-		log.Println("Error requesting leave:", err)
+		// log.Println("Error requesting leave:", err)
 		return err
 	}
 
