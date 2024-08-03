@@ -49,34 +49,6 @@ func (_m *AServices) CheckingTheValueOfDate(date int) error {
 	return r0
 }
 
-// CountAllAtt provides a mock function with given fields:
-func (_m *AServices) CountAllAtt() (int64, error) {
-	ret := _m.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for CountAllAtt")
-	}
-
-	var r0 int64
-	var r1 error
-	if rf, ok := ret.Get(0).(func() (int64, error)); ok {
-		return rf()
-	}
-	if rf, ok := ret.Get(0).(func() int64); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CountAllAttbyDate provides a mock function with given fields: date
 func (_m *AServices) CountAllAttbyDate(date int) (int64, error) {
 	ret := _m.Called(date)
@@ -254,7 +226,7 @@ func (_m *AServices) DownloadAllAtt() error {
 }
 
 // GetAllAtt provides a mock function with given fields: search, limit, offset
-func (_m *AServices) GetAllAtt(search string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+func (_m *AServices) GetAllAtt(search string, limit int, offset int) ([]attendance.AttendanceDetail, int64, error) {
 	ret := _m.Called(search, limit, offset)
 
 	if len(ret) == 0 {
@@ -262,8 +234,9 @@ func (_m *AServices) GetAllAtt(search string, limit int, offset int) ([]attendan
 	}
 
 	var r0 []attendance.AttendanceDetail
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(string, int, int) ([]attendance.AttendanceDetail, int64, error)); ok {
 		return rf(search, limit, offset)
 	}
 	if rf, ok := ret.Get(0).(func(string, int, int) []attendance.AttendanceDetail); ok {
@@ -274,13 +247,19 @@ func (_m *AServices) GetAllAtt(search string, limit int, offset int) ([]attendan
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, int, int) error); ok {
+	if rf, ok := ret.Get(1).(func(string, int, int) int64); ok {
 		r1 = rf(search, limit, offset)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(int64)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(string, int, int) error); ok {
+		r2 = rf(search, limit, offset)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // GetAllAttbyDate provides a mock function with given fields: date, limit, offset
@@ -404,7 +383,7 @@ func (_m *AServices) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDetail, e
 }
 
 // GetAttByPersonalID provides a mock function with given fields: personalID, searchBox, limit, offset
-func (_m *AServices) GetAttByPersonalID(personalID uint, searchBox string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+func (_m *AServices) GetAttByPersonalID(personalID uint, searchBox string, limit int, offset int) ([]attendance.AttendanceDetail, int64, error) {
 	ret := _m.Called(personalID, searchBox, limit, offset)
 
 	if len(ret) == 0 {
@@ -412,8 +391,9 @@ func (_m *AServices) GetAttByPersonalID(personalID uint, searchBox string, limit
 	}
 
 	var r0 []attendance.AttendanceDetail
-	var r1 error
-	if rf, ok := ret.Get(0).(func(uint, string, int, int) ([]attendance.AttendanceDetail, error)); ok {
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(uint, string, int, int) ([]attendance.AttendanceDetail, int64, error)); ok {
 		return rf(personalID, searchBox, limit, offset)
 	}
 	if rf, ok := ret.Get(0).(func(uint, string, int, int) []attendance.AttendanceDetail); ok {
@@ -424,13 +404,19 @@ func (_m *AServices) GetAttByPersonalID(personalID uint, searchBox string, limit
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint, string, int, int) error); ok {
+	if rf, ok := ret.Get(1).(func(uint, string, int, int) int64); ok {
 		r1 = rf(personalID, searchBox, limit, offset)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(int64)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(uint, string, int, int) error); ok {
+		r2 = rf(personalID, searchBox, limit, offset)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // GetAttByPersonalIDandStatus provides a mock function with given fields: id, status, limit, offset
