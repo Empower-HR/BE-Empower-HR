@@ -15,6 +15,62 @@ type AQuery struct {
 	mock.Mock
 }
 
+// CountAttByIdPersonAndSearch provides a mock function with given fields: personID, search
+func (_m *AQuery) CountAttByIdPersonAndSearch(personID uint, search string) (int64, error) {
+	ret := _m.Called(personID, search)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountAttByIdPersonAndSearch")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(uint, string) (int64, error)); ok {
+		return rf(personID, search)
+	}
+	if rf, ok := ret.Get(0).(func(uint, string) int64); ok {
+		r0 = rf(personID, search)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(uint, string) error); ok {
+		r1 = rf(personID, search)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CountAttBySearch provides a mock function with given fields: search
+func (_m *AQuery) CountAttBySearch(search string) (int64, error) {
+	ret := _m.Called(search)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountAttBySearch")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (int64, error)); ok {
+		return rf(search)
+	}
+	if rf, ok := ret.Get(0).(func(string) int64); ok {
+		r0 = rf(search)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(search)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: newAtt
 func (_m *AQuery) Create(newAtt attendance.Attandance) error {
 	ret := _m.Called(newAtt)

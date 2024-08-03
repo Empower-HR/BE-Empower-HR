@@ -502,14 +502,14 @@ func (uq *userQuery) CountPendingLeaves(companyID uint) (int64, error) {
 }
 
 func (uq *userQuery) CountAttendanceHadir(companyID uint) (int64, error) {
-	var count int64
-	if err := uq.db.Model(&Attandance{}).
-		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
-		Where("status = ?", "hadir").
-		Count(&count).Error; err != nil {
-		return 0, err
-	}
-	return count, nil
+    var count int64
+    if err := uq.db.Model(&Attandance{}).
+        Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+        Where("clock_in IS NOT NULL").
+        Count(&count).Error; err != nil {
+        return 0, err
+    }
+    return count, nil
 }
 
 func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
