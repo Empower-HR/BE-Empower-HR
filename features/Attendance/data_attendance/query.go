@@ -67,17 +67,14 @@ func (am *AttandanceModel) GetAttByPersonalID(personalID uint, term string, limi
         at.lat,
         at.status,
         at.notes, 
-        sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
         at.date,
         at.id
     FROM
-        personal_data AS pd
+		attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
         at.deleted_at IS NULL AND at.personal_data_id = ?` 
 	
@@ -128,11 +125,9 @@ func (am *AttandanceModel) GetAllAttbyIdPersonAndStatus(id uint, status string, 
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+		attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS ON at.personal_data_id = pd.id
     WHERE 
        at.personal_data_id = ? AND at.status = ? AND at.deleted_at IS NULL 
     LIMIT ? OFFSET ?`
@@ -156,17 +151,14 @@ func (am *AttandanceModel) GetAllAttbyDate(date int, limit int, offset int) ([]a
 		at.lat,
 		at.status,
 		at.notes, 
-        sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
-    JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+    	attandances AS at
+    JOIN  
+       personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
        EXTRACT(MONTH FROM date) = ?
     LIMIT ? OFFSET ?`
@@ -189,18 +181,15 @@ func (am *AttandanceModel) GetAllAttbyStatus(status string, limit int, offset in
         at.long,
 		at.lat,
 		at.status,
-		at.notes, 
-        sc.schedule_out, 
+		at.notes,  
         at.clock_in, 
         at.clock_out,
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+       attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id AND at.status = ?
+		personal_data AS pd ON at.personal_data_id = pd.id AND at.status = ?
     WHERE 
         at.deleted_at IS NULL
     LIMIT ? OFFSET ?`
@@ -265,17 +254,14 @@ func (am *AttandanceModel) GetAttendanceDetails(searchTerm string, limit int, of
         at.lat,
         at.status,
         at.notes, 
-        sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
         at.date,
         at.id
     FROM
-        personal_data AS pd
+	   attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+       personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
         at.deleted_at IS NULL`
 	
@@ -327,11 +313,9 @@ func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDet
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+        attandances AS at
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
        at.id = ? AND at.deleted_at IS NULL`
 
@@ -391,18 +375,15 @@ func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date int, li
         at.long,
 		at.lat,
 		at.status,
-		at.notes, 
-        sc.schedule_out, 
+		at.notes,  
         at.clock_in, 
         at.clock_out,
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+		attandances AS at
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+         personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
         at.personal_data_id = ? AND EXTRACT(MONTH FROM date) = ?
     LIMIT ? OFFSET ?`
@@ -461,11 +442,9 @@ func (am *AttandanceModel) CountAttBySearch(search string) (int64, error) {
 	query := `
     SELECT COUNT(*)
     FROM
-        personal_data AS pd
+		attandances AS at
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
         at.deleted_at IS NULL`
 
@@ -498,11 +477,9 @@ func (am *AttandanceModel) CountAttByIdPersonAndSearch(personID uint, search str
 	query := `
     SELECT COUNT(*)
     FROM
-        personal_data AS pd
+       attandances AS at
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
         at.personal_data_id = ? 
         AND at.deleted_at IS NULL`
