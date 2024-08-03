@@ -30,6 +30,7 @@ func (_m *ServiceUserInterface) CreateNewEmployee(cmID uint, addPersonal users.P
 
 	return r0
 }
+// Assuming the CreateToken function in your actual implementation expects only one argument:
 
 // Dashboard provides a mock function with given fields: companyID
 func (_m *ServiceUserInterface) Dashboard(companyID uint) (*users.DashboardStats, error) {
