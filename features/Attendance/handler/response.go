@@ -26,7 +26,7 @@ type AttResponse struct {
 	Long     string `json:"long"`
 	Lat      string `json:"lat"`
 	Notes    string `json:"notes"`
-	EmploymentData []EmployeDataResponse
+	EmploymentData []EmployeDataResponse `json:"employementData"`
 }
 
 type EmployeDataResponse struct {
