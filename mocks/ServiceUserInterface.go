@@ -31,9 +31,9 @@ func (_m *ServiceUserInterface) CreateNewEmployee(cmID uint, addPersonal users.P
 	return r0
 }
 
-// Dashboard provides a mock function with given fields: companyID
-func (_m *ServiceUserInterface) Dashboard(companyID uint) (*users.DashboardStats, error) {
-	ret := _m.Called(companyID)
+// Dashboard provides a mock function with given fields: userID, companyID
+func (_m *ServiceUserInterface) Dashboard(userID uint, companyID uint) (*users.DashboardStats, error) {
+	ret := _m.Called(userID, companyID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Dashboard")
@@ -41,19 +41,19 @@ func (_m *ServiceUserInterface) Dashboard(companyID uint) (*users.DashboardStats
 
 	var r0 *users.DashboardStats
 	var r1 error
-	if rf, ok := ret.Get(0).(func(uint) (*users.DashboardStats, error)); ok {
-		return rf(companyID)
+	if rf, ok := ret.Get(0).(func(uint, uint) (*users.DashboardStats, error)); ok {
+		return rf(userID, companyID)
 	}
-	if rf, ok := ret.Get(0).(func(uint) *users.DashboardStats); ok {
-		r0 = rf(companyID)
+	if rf, ok := ret.Get(0).(func(uint, uint) *users.DashboardStats); ok {
+		r0 = rf(userID, companyID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*users.DashboardStats)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(uint) error); ok {
-		r1 = rf(companyID)
+	if rf, ok := ret.Get(1).(func(uint, uint) error); ok {
+		r1 = rf(userID, companyID)
 	} else {
 		r1 = ret.Error(1)
 	}

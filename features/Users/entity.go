@@ -102,7 +102,7 @@ type DataUserInterface interface {
 	CountPermanentUsers(companyID uint) (int64, error)
 	CountPayrollUsers(companyID uint) (int64, error)
 	GetCompanyIDByName(companyName string) (uint, error)
-	Dashboard(companyID uint) (*DashboardStats, error)
+	Dashboard(userID uint, companyID uint) (*DashboardStats, error)
 	CreateLeaves(PersonalID uint, addLeaves LeavesDataEntity) (uint, error)
 }
 
@@ -119,5 +119,5 @@ type ServiceUserInterface interface {
 	DeleteAccountEmployeeByAdmin(userid uint, companyID uint) error
 	UpdateEmploymentEmployee(ID, employeID uint, updateEmploymentEmployee EmploymentDataEntity) error
 	CreateNewEmployee(cmID uint, addPersonal PersonalDataEntity, addEmployment EmploymentDataEntity, addPayroll PayrollDataEntity, addLeaves LeavesDataEntity) error
-	Dashboard(companyID uint) (*DashboardStats, error)
+	Dashboard(userID uint, companyID uint) (*DashboardStats, error)
 }

@@ -502,17 +502,17 @@ func (uq *userQuery) CountPendingLeaves(companyID uint) (int64, error) {
 }
 
 func (uq *userQuery) CountAttendanceHadir(companyID uint) (int64, error) {
-    var count int64
-    if err := uq.db.Model(&Attandance{}).
-        Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
-        Where("clock_in IS NOT NULL").
-        Count(&count).Error; err != nil {
-        return 0, err
-    }
-    return count, nil
+	var count int64
+	if err := uq.db.Model(&Attandance{}).
+		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
+		Where("clock_in IS NOT NULL").
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
-func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
+func (uq *userQuery) Dashboard(userID uint, companyID uint) (*users.DashboardStats, error) {
 	var stats users.DashboardStats
 
 	// Fetch statistics
@@ -582,9 +582,7 @@ func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 
 	var name string
 	if err := uq.db.Model(&PersonalData{}).
-		Where("company_id = ? AND deleted_at IS NULL", companyID).
-		Select("name").
-		Limit(1).
+		Where("id = ? AND company_id = ? AND deleted_at IS NULL", userID, companyID).
 		Pluck("name", &name).Error; err != nil {
 		log.Printf("Error fetching user name: %v", err)
 		return nil, err

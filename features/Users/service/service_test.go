@@ -372,7 +372,7 @@ func TestRegistrasiAccountAdmin(t *testing.T) {
 		assert.Equal(t, uint(0), personalID)
 		assert.Equal(t, uint(0), companyID)
 	})
-	
+
 	t.Run("Error Registrasi Account Admin - PhoneNumber Validation Error", func(t *testing.T) {
 		accounts := users.PersonalDataEntity{
 			Name:        "John Doe",
@@ -729,13 +729,14 @@ func TestDashboard(t *testing.T) {
 
 	t.Run("Success Dashboard", func(t *testing.T) {
 		companyID := uint(1)
+		userID := uint(2)
 		expectedResult := &users.DashboardStats{
 			TotalUsers: 100,
 		}
 
-		qry.On("Dashboard", companyID).Return(expectedResult, nil).Once()
+		qry.On("Dashboard", userID, companyID).Return(expectedResult, nil).Once()
 
-		result, err := srv.Dashboard(companyID)
+		result, err := srv.Dashboard(userID, companyID)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -744,10 +745,11 @@ func TestDashboard(t *testing.T) {
 
 	t.Run("Error Dashboard - Database Error", func(t *testing.T) {
 		companyID := uint(1)
+		userID := uint(2)
 
-		qry.On("Dashboard", companyID).Return(nil, errors.New("database error")).Once()
+		qry.On("Dashboard", userID, companyID).Return(nil, errors.New("database error")).Once()
 
-		result, err := srv.Dashboard(companyID)
+		result, err := srv.Dashboard(userID, companyID)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)

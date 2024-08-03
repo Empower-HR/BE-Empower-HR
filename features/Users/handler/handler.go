@@ -312,55 +312,55 @@ func (uh *UserHandler) UpdateProfileEmployees(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil || id <= 0 {
-	return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "invalid ID", nil))
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "invalid ID", nil))
 	}
-	
+
 	updatedUser := UpdateAdminRequest{}
 	if errBind := c.Bind(&updatedUser); errBind != nil {
-	log.Printf("update profile employees: Error binding data: %v", errBind)
-	return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
+		log.Printf("update profile employees: Error binding data: %v", errBind)
+		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error binding data: "+errBind.Error(), nil))
 	}
-	
+
 	// Handle profile picture upload to Cloudinary
 	profilePictureFile, err := c.FormFile("profile_picture")
 	if err == nil {
-	src, err := profilePictureFile.Open()
-	if err != nil {
-	log.Printf("update profile employees: Error opening file: %v", err)
-	return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
+		src, err := profilePictureFile.Open()
+		if err != nil {
+			log.Printf("update profile employees: Error opening file: %v", err)
+			return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "error", "error opening file: "+err.Error(), nil))
+		}
+		defer src.Close()
+
+		profilePictureURL, err := uh.cloudinaryUtility.UploadCloudinary(src, profilePictureFile.Filename)
+		if err != nil {
+			log.Printf("update profile employees: Error uploading to Cloudinary: %v", err)
+			return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
+		}
+		updatedUser.ProfilePicture = profilePictureURL
 	}
-	defer src.Close()
-	
-	profilePictureURL, err := uh.cloudinaryUtility.UploadCloudinary(src, profilePictureFile.Filename)
-	if err != nil {
-	log.Printf("update profile employees: Error uploading to Cloudinary: %v", err)
-	return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error uploading to Cloudinary: "+err.Error(), nil))
-	}
-	updatedUser.ProfilePicture = profilePictureURL
-	}
-	
+
 	dataUser := users.PersonalDataEntity{
-	ProfilePicture: updatedUser.ProfilePicture,
-	Name:           updatedUser.Name,
-	Email:          updatedUser.Email,
-	Password:       updatedUser.Password,
-	PhoneNumber:    updatedUser.PhoneNumber,
-	PlaceBirth:     updatedUser.PlaceBirth,
-	BirthDate:      updatedUser.BirthDate,
-	Gender:         updatedUser.Gender,
-	Religion:       updatedUser.Religion,
-	NIK:            updatedUser.NIK,
-	Address:        updatedUser.Address,
+		ProfilePicture: updatedUser.ProfilePicture,
+		Name:           updatedUser.Name,
+		Email:          updatedUser.Email,
+		Password:       updatedUser.Password,
+		PhoneNumber:    updatedUser.PhoneNumber,
+		PlaceBirth:     updatedUser.PlaceBirth,
+		BirthDate:      updatedUser.BirthDate,
+		Gender:         updatedUser.Gender,
+		Religion:       updatedUser.Religion,
+		NIK:            updatedUser.NIK,
+		Address:        updatedUser.Address,
 	}
-	
+
 	err = uh.userService.UpdateProfileEmployees(uint(id), dataUser)
 	if err != nil {
-	log.Printf("update profile employees: Error updating profile: %v", err)
-	return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
+		log.Printf("update profile employees: Error updating profile: %v", err)
+		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "failed", "error updating profile: "+err.Error(), nil))
 	}
-	
+
 	return c.JSON(http.StatusCreated, responses.JSONWebResponse(http.StatusCreated, "success", "profile updated successfully", nil))
-	}
+}
 
 func (uh *UserHandler) DeleteAccountEmployees(c echo.Context) error {
 	id := c.Param("id")
@@ -496,7 +496,7 @@ func (uh *UserHandler) CreateNewEmployee(c echo.Context) error {
 func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 	userID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if userID == 0 {
-		log.Println("invalid user ID from token")
+		log.Println("Invalid user ID from token")
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "invalid token", nil))
 	}
 
@@ -505,9 +505,9 @@ func (uh *UserHandler) DasboardAdmin(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized: "+err.Error(), nil))
 	}
 
-	dashboardData, err := uh.userService.Dashboard(companyID)
+	dashboardData, err := uh.userService.Dashboard(uint(userID), companyID)
 	if err != nil {
-		log.Printf("error fetching dashboard data: %v", err)
+		log.Printf("Error fetching dashboard data: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "failed to fetch dashboard data", nil))
 	}
 
@@ -544,7 +544,7 @@ func (uh *UserHandler) DashboardEmployees(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "Failed to retrieve company ID", nil))
 	}
 
-	dashboardData, err := uh.userService.Dashboard(companyID)
+	dashboardData, err := uh.userService.Dashboard(uint(userID), companyID)
 	if err != nil {
 		log.Printf("error fetching dashboard data: %v", err)
 		return c.JSON(http.StatusInternalServerError, responses.JSONWebResponse(http.StatusInternalServerError, "error", "failed to fetch dashboard data", nil))
