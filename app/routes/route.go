@@ -106,7 +106,7 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	e.GET("/attendance/download", attHandler.DownloadPdf)
 
 	e.GET("/attendance/download", attHandler.DownloadPdf, middlewares.JWTMiddleware())
-	e.GET("/attendance/user/:employee_id", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
+	e.GET("/attendance/user", attHandler.GetAttendancesHandler, middlewares.JWTMiddleware())
 	e.GET("/attendance/:attendance_id", attHandler.GetAttendancesbyID, middlewares.JWTMiddleware())
 
 	// handler company
