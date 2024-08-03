@@ -290,20 +290,8 @@ func (us *userService) CreateNewEmployee(cmID uint, addPersonal users.PersonalDa
 		return err
 	}
 
-	// Generate and hash password
-	var errHash error
-	password, err := us.accountUtility.GeneratePassword(8)
-	if err != nil {
-		log.Println("Generate password gagal:", err)
-		return err
-	}
-	if addPersonal.Password, errHash = us.hashService.HashPassword(password); errHash != nil {
-		log.Println("Hash password gagal:", errHash)
-		return errHash
-	}
-
 	// Print generated password (optional)
-	log.Printf("Generated password for %s: %s", addPersonal.Email, password)
+	log.Printf("Generated password for %s: %s", addPersonal.Email, addPersonal.BirthDate)
 
 	addPersonal.Role = "employees"
 	personalID, err := us.userData.CreatePersonal(result.ID, addPersonal)
@@ -335,7 +323,7 @@ func (us *userService) CreateNewEmployee(cmID uint, addPersonal users.PersonalDa
 		"Selamat datang di EmpowerHR, tempat di mana kami menyambut Anda ke dalam tim kami dengan hangat! 🎉\n\n" +
 		"Berikut adalah kredensial login Anda:\n" +
 		"Email: " + addPersonal.Email + "\n" +
-		"Password: " + password + "\n\n" +
+		"Password: " + addPersonal.BirthDate + "\n\n" +
 		"EmpowerHR adalah startup yang inovatif di bidang penyedia software SDM, dan kami sangat senang memiliki Anda sebagai bagian dari tim kami.\n\n" +
 		"Untuk memulai, silakan login ke sistem kami menggunakan kredensial di atas. Kami percaya Anda akan membawa banyak kontribusi berharga untuk perusahaan kami. Jika Anda memiliki pertanyaan atau membutuhkan bantuan, jangan ragu untuk menghubungi tim kami.\n\n" +
 		"Selamat bergabung, dan semoga perjalanan Anda bersama EmpowerHR penuh dengan pengalaman yang menyenangkan dan sukses!\n\n" +
