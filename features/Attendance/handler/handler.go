@@ -119,12 +119,6 @@ func (ah *AttHandler) DeleteAttendance(c echo.Context) error {
 
 // Get by personal ID
 func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
-	attID := c.Param("employee_id")
-
-	attId, err := strconv.ParseUint(attID, 10, 64)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, responses.JSONWebResponse(http.StatusBadRequest, "failed", "Invalid Emplpyee ID", nil))
-	}
 	personalID := middlewares.NewMiddlewares().ExtractTokenUserId(c)
 	if personalID == 0 {
 		return c.JSON(http.StatusUnauthorized, responses.JSONWebResponse(http.StatusUnauthorized, "failed", "unauthorized", nil))
@@ -160,14 +154,14 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 	var totalItems int64
 
 	if status != "" { 
-		attDetail, err = ah.srv.GetAttByPersonalIDandStatus(uint(attId), status, limit, offset)
+		attDetail, err = ah.srv.GetAttByPersonalIDandStatus(uint(personalID), status, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 		for _, att := range attDetail {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
-		totalItems, err = ah.srv.CountAllAttbyStatusandPerson(status, uint(attId))
+		totalItems, err = ah.srv.CountAllAttbyStatusandPerson(status, uint(personalID))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -181,7 +175,7 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		}
-		attDetail, err = ah.srv.GetAllAttbyDateandPerson(int(date), limit, offset, uint(attId))
+		attDetail, err = ah.srv.GetAllAttbyDateandPerson(int(date), limit, offset, uint(personalID))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
@@ -189,12 +183,12 @@ func (ah *AttHandler) GetAttendancesHandler(c echo.Context) error {
             responseDetail = append(responseDetail, ToGetAttendanceResponse(att))
         }
 		result = responseDetail
-		totalItems, err = ah.srv.CountAllAttbyDateandPerson(int(date), uint(attId))
+		totalItems, err = ah.srv.CountAllAttbyDateandPerson(int(date), uint(personalID))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
 	} else{
-		attDetail, totalItems, err = ah.srv.GetAttByPersonalID(uint(attId), searchBox, limit, offset)
+		attDetail, totalItems, err = ah.srv.GetAttByPersonalID(uint(personalID), searchBox, limit, offset)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}
