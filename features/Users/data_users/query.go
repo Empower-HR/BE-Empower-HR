@@ -371,7 +371,7 @@ func (uq *userQuery) GetAccountByJobLevel(jobLevel string) ([]users.PersonalData
 
 // Add Employe
 func (uq *userQuery) CreatePersonal(CompanyID uint, addPersonal users.PersonalDataEntity) (uint, error) {
-	cnvQuery := ToPersonalDataQuery(addPersonal)
+	cnvQuery := ToPersonalDataQuery(addPersonal.BirthDate, addPersonal)
 	cnvQuery.CompanyID = CompanyID
 	err := uq.db.Create(&cnvQuery).Error
 

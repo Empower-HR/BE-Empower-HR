@@ -114,13 +114,13 @@ func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData 
 	}
 }
 
-func ToPersonalDataQuery(input users.PersonalDataEntity) PersonalData {
+func ToPersonalDataQuery(password string, input users.PersonalDataEntity) PersonalData {
 	return PersonalData{
 		CompanyID:      input.CompanyID,
 		ProfilePicture: input.ProfilePicture,
 		Name:           input.Name,
 		Email:          input.Email,
-		Password:       input.Password,
+		Password:       password,
 		PhoneNumber:    input.PhoneNumber,
 		PlaceBirth:     input.PlaceBirth,
 		BirthDate:      input.BirthDate,
