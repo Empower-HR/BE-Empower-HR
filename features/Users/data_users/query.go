@@ -298,9 +298,9 @@ func (uq *userQuery) GetAll(page int, pageSize int, companyID uint) ([]users.Per
 	var personalDataList []PersonalData
 	pagination := utils.NewPagination(page, pageSize)
 
-	// Fetch data filtered by companyID
 	tx := uq.db.Where("company_id = ?", companyID).
 		Preload("EmploymentData").
+		Order("id DESC").
 		Limit(pagination.PageSize).
 		Offset(pagination.Offset()).
 		Find(&personalDataList)
