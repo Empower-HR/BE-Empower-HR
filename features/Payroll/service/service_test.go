@@ -4,6 +4,7 @@ import (
 	payroll "be-empower-hr/features/Payroll"
 	service "be-empower-hr/features/Payroll/service"
 	"be-empower-hr/mocks"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -74,8 +75,8 @@ func TestGetAllPayroll(t *testing.T) {
 }
 
 func TestGetPayrollDownload(t *testing.T) {
-	qry := mocks.NewDataPayrollInterface(t)
-	pui := mocks.NewPdfUtilityInterface(t)
+	qry := new(mocks.DataPayrollInterface)
+	pui := new(mocks.PdfUtilityInterface)
 	srv := service.New(qry, pui)
 
 	t.Run("Success Get Payroll Download", func(t *testing.T) {
@@ -94,14 +95,25 @@ func TestGetPayrollDownload(t *testing.T) {
 		pui.On("DownloadPdfPayroll", payrollResult, "PayslipJohnDoe.pdf").Return(nil).Once()
 
 		err := srv.GetPayrollDownload(id)
+		assert.NoError(t, err)
 
 		qry.AssertExpectations(t)
 		pui.AssertExpectations(t)
-
-		assert.NoError(t, err)
 	})
 
-	t.Run("Success Download Payroll", func(t *testing.T) {
+	t.Run("Error retrieving payroll records", func(t *testing.T) {
+		id := uint(1)
+		qry.On("GetPayrollDownload", id).Return(payroll.PayrollResponsePDF{}, errors.New("error retrieving payroll records")).Once()
+
+		err := srv.GetPayrollDownload(id)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "error retrieving payroll records")
+
+		qry.AssertExpectations(t)
+	})
+
+	t.Run("Error downloading PDF", func(t *testing.T) {
+		id := uint(1)
 		payrollResult := payroll.PayrollResponsePDF{
 			ID:             uint(1),
 			EmploymentName: "JohnDoe",
@@ -111,12 +123,15 @@ func TestGetPayrollDownload(t *testing.T) {
 			BankName:       "BCA",
 			AccountNumber:  63762999,
 		}
-		pui.On("DownloadPdfPayroll", payrollResult, "PayslipJohnDoe.pdf").Return(nil).Once()
-		err := pui.DownloadPdfPayroll(payrollResult, "PayslipJohnDoe.pdf")
+
+		qry.On("GetPayrollDownload", id).Return(payrollResult, nil).Once()
+		pui.On("DownloadPdfPayroll", payrollResult, "PayslipJohnDoe.pdf").Return(errors.New("error downloading pdf")).Once()
+
+		err := srv.GetPayrollDownload(id)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "error download pdf")
 
 		qry.AssertExpectations(t)
 		pui.AssertExpectations(t)
-
-		assert.NoError(t, err)
 	})
 }
