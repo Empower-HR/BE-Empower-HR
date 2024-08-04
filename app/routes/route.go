@@ -70,10 +70,10 @@ func InitRouter(e *echo.Echo, db *gorm.DB) {
 	leavesHandlerAPI := _leavesHandler.New(leavesDataService)
 
 	// api company
-	cm := _datacompanies.NewCompanyModels(db)
-	cs := _companyService.NewCompanyServices(cm)
 	cl := cloudinary.NewCloudinaryUtility()
-	ch := _companyHandler.NewCompanyHandler(cs, cl)
+	cm := _datacompanies.NewCompanyModels(db)
+	cs := _companyService.NewCompanyServices(cm, cl)
+	ch := _companyHandler.NewCompanyHandler(cs)
 
 	payrollData := _payrollData.New(db)
 	payrollService := _payrollService.New(payrollData, pdfUtility)

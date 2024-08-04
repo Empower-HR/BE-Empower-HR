@@ -3,6 +3,7 @@ package companies
 import (
 	dataschedule "be-empower-hr/features/Schedule/data_schedule"
 	datausers "be-empower-hr/features/Users/data_users"
+	"mime/multipart"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,5 +34,5 @@ type Query interface {
 
 type Service interface {
 	GetCompany(ID uint) (CompanyDataEntity, error)
-	UpdateCompany(ID uint, updateCompany CompanyDataEntity) error
+	UpdateCompany(ID uint,companyPicture, companySignature *multipart.FileHeader, updateCompany CompanyDataEntity) error
 }
