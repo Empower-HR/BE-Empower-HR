@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	companies "be-empower-hr/features/Companies"
 	users "be-empower-hr/features/Users"
 	"be-empower-hr/features/Users/service"
 	"be-empower-hr/mocks"
@@ -46,25 +47,54 @@ func TestDeleteAccountEmployeeByAdmin(t *testing.T) {
 
 	t.Run("Success Delete Account Employee By Admin", func(t *testing.T) {
 		userID := uint(1)
+		companyID := uint(1)
+		existingUser := &users.PersonalDataEntity{
+			CompanyID: companyID,
+		}
 
+		// Set up expectations
+		qry.On("AccountById", userID).Return(existingUser, nil).Once()
 		qry.On("DeleteAccountEmployeeByAdmin", userID).Return(nil).Once()
 
-		err := srv.DeleteAccountEmployeeByAdmin(1, userID)
+		err := srv.DeleteAccountEmployeeByAdmin(userID, companyID)
 
+		// Assert expectations
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
 	})
 
-	t.Run("Error Delete Account Employee By Admin", func(t *testing.T) {
+	t.Run("Error Fetching User Data", func(t *testing.T) {
 		userID := uint(1)
+		companyID := uint(1)
 
-		qry.On("DeleteAccountEmployeeByAdmin", userID).Return(errors.New("internal server error")).Once()
+		// Set up expectation for AccountById to return an error
+		qry.On("AccountById", userID).Return(nil, errors.New("fetch error")).Once()
 
-		err := srv.DeleteAccountEmployeeByAdmin(1, userID)
+		err := srv.DeleteAccountEmployeeByAdmin(userID, companyID)
 
+		// Assert expectations
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
-		assert.ErrorContains(t, err, "internal server error")
+		assert.ErrorContains(t, err, "fetch error")
+	})
+
+	t.Run("Error Deleting Account", func(t *testing.T) {
+		userID := uint(1)
+		companyID := uint(1)
+		existingUser := &users.PersonalDataEntity{
+			CompanyID: companyID,
+		}
+
+		// Set up expectations
+		qry.On("AccountById", userID).Return(existingUser, nil).Once()
+		qry.On("DeleteAccountEmployeeByAdmin", userID).Return(errors.New("delete error")).Once()
+
+		err := srv.DeleteAccountEmployeeByAdmin(userID, companyID)
+
+		// Assert expectations
+		qry.AssertExpectations(t)
+		assert.Error(t, err)
+		assert.ErrorContains(t, err, "delete error")
 	})
 }
 
@@ -137,98 +167,78 @@ func TestGetProfileById(t *testing.T) {
 }
 
 func TestLoginAccount(t *testing.T) {
-	qry := mocks.NewDataUserInterface(t)
-	hash := mocks.NewHashInterface(t)
-	mw := mocks.NewMiddlewaresInterface(t)
-	srv := service.New(qry, hash, mw, nil, nil)
+	mockUserData := new(mocks.DataUserInterface)
+	mockMiddleware := new(mocks.MiddlewaresInterface)
+	userService := service.New(mockUserData, nil, mockMiddleware, nil, nil)
 
-	t.Run("Success Login Account", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		email := "johndoe@example.com"
 		password := "password123"
-		expectedResult := &users.PersonalDataEntity{
+		user := &users.PersonalDataEntity{
 			PersonalDataID: 1,
 			Email:          email,
 			Password:       "hashedpassword",
+			CompanyID:      1,
 		}
-		token := "valid.token.here"
+		token := "sometoken"
 
-		qry.On("AccountByEmail", email).Return(expectedResult, nil).Once()
-		hash.On("CheckPasswordHash", "hashedpassword", password).Return(true).Once()
-		mw.On("CreateToken", 1).Return(token, nil).Once()
+		// Set up mocks
+		mockUserData.On("AccountByEmail", email).Return(user, nil).Once()
+		mockMiddleware.On("CreateToken", int(user.PersonalDataID), int(user.CompanyID)).Return(token, nil).Once()
 
-		result, tokenResult, err := srv.LoginAccount(email, password)
+		// Call the function
+		returnedUser, returnedToken, err := userService.LoginAccount(email, password)
 
-		qry.AssertExpectations(t)
-		hash.AssertExpectations(t)
-		mw.AssertExpectations(t)
-
-		assert.Nil(t, err)
-		assert.Equal(t, expectedResult, result)
-		assert.Equal(t, token, tokenResult)
+		// Assert results
+		assert.NoError(t, err)
+		assert.Equal(t, user, returnedUser)
+		assert.Equal(t, token, returnedToken)
+		mockUserData.AssertExpectations(t)
+		mockMiddleware.AssertExpectations(t)
 	})
 
-	t.Run("Error Login Account - Invalid Password", func(t *testing.T) {
+	t.Run("account not found", func(t *testing.T) {
 		email := "johndoe@example.com"
-		password := "wrongpassword"
-		expectedResult := &users.PersonalDataEntity{
-			PersonalDataID: 1,
-			Email:          email,
-			Password:       "hashedpassword",
-		}
+		password := "password123"
 
-		qry.On("AccountByEmail", email).Return(expectedResult, nil).Once()
-		hash.On("CheckPasswordHash", "hashedpassword", password).Return(false).Once()
+		// Set up mocks
+		mockUserData.On("AccountByEmail", email).Return(nil, errors.New("account not found")).Once()
 
-		result, tokenResult, err := srv.LoginAccount(email, password)
+		// Call the function
+		returnedUser, returnedToken, err := userService.LoginAccount(email, password)
 
-		qry.AssertExpectations(t)
-		hash.AssertExpectations(t)
-
+		// Assert results
 		assert.Error(t, err)
-		assert.Equal(t, "email atau password tidak sesuai", err.Error())
-		assert.Nil(t, result)
-		assert.Empty(t, tokenResult)
+		assert.Equal(t, "account not found", err.Error())
+		assert.Nil(t, returnedUser)
+		assert.Empty(t, returnedToken)
+		mockUserData.AssertExpectations(t)
 	})
 
-	t.Run("Error Login Account - User Not Found", func(t *testing.T) {
-		email := "notfound@example.com"
-		password := "password123"
-
-		qry.On("AccountByEmail", email).Return(nil, errors.New("user not found")).Once()
-
-		result, tokenResult, err := srv.LoginAccount(email, password)
-
-		qry.AssertExpectations(t)
-
-		assert.Error(t, err)
-		assert.Equal(t, "user not found", err.Error())
-		assert.Nil(t, result)
-		assert.Empty(t, tokenResult)
-	})
-
-	t.Run("Error Login Account - JWT Creation Error", func(t *testing.T) {
+	t.Run("jwt authentication error", func(t *testing.T) {
 		email := "johndoe@example.com"
 		password := "password123"
-		expectedResult := &users.PersonalDataEntity{
+		user := &users.PersonalDataEntity{
 			PersonalDataID: 1,
 			Email:          email,
 			Password:       "hashedpassword",
+			CompanyID:      1,
 		}
 
-		qry.On("AccountByEmail", email).Return(expectedResult, nil).Once()
-		hash.On("CheckPasswordHash", "hashedpassword", password).Return(true).Once()
-		mw.On("CreateToken", 1).Return("", errors.New("jwt error")).Once()
+		// Set up mocks
+		mockUserData.On("AccountByEmail", email).Return(user, nil).Once()
+		mockMiddleware.On("CreateToken", int(user.PersonalDataID), int(user.CompanyID)).Return("", errors.New("jwt error")).Once()
 
-		result, tokenResult, err := srv.LoginAccount(email, password)
+		// Call the function
+		returnedUser, returnedToken, err := userService.LoginAccount(email, password)
 
-		qry.AssertExpectations(t)
-		hash.AssertExpectations(t)
-		mw.AssertExpectations(t)
-
+		// Assert results
 		assert.Error(t, err)
 		assert.Equal(t, "jwt error", err.Error())
-		assert.Nil(t, result)
-		assert.Empty(t, tokenResult)
+		assert.Nil(t, returnedUser)
+		assert.Empty(t, returnedToken)
+		mockUserData.AssertExpectations(t)
+		mockMiddleware.AssertExpectations(t)
 	})
 }
 
@@ -372,7 +382,7 @@ func TestRegistrasiAccountAdmin(t *testing.T) {
 		assert.Equal(t, uint(0), personalID)
 		assert.Equal(t, uint(0), companyID)
 	})
-	
+
 	t.Run("Error Registrasi Account Admin - PhoneNumber Validation Error", func(t *testing.T) {
 		accounts := users.PersonalDataEntity{
 			Name:        "John Doe",
@@ -618,7 +628,7 @@ func TestGetAllAccount(t *testing.T) {
 			{Name: "John Doe", Email: "johndoe@example.com"},
 		}
 
-		qry.On("GetAll", 1, 10).Return(expectedResult, nil).Once()
+		qry.On("GetAll", 1, 10, uint(1)).Return(expectedResult, nil).Once()
 
 		result, err := srv.GetAllAccount(1, "", "", 1, 10)
 
@@ -658,7 +668,7 @@ func TestGetAllAccount(t *testing.T) {
 	})
 
 	t.Run("Error Get All Account - Database Error", func(t *testing.T) {
-		qry.On("GetAll", 1, 10).Return(nil, errors.New("database error")).Once()
+		qry.On("GetAll", 1, 10, uint(1)).Return(nil, errors.New("database error")).Once()
 
 		result, err := srv.GetAllAccount(1, "", "", 1, 10)
 
@@ -729,13 +739,14 @@ func TestDashboard(t *testing.T) {
 
 	t.Run("Success Dashboard", func(t *testing.T) {
 		companyID := uint(1)
+		userID := uint(2)
 		expectedResult := &users.DashboardStats{
 			TotalUsers: 100,
 		}
 
-		qry.On("Dashboard", companyID).Return(expectedResult, nil).Once()
+		qry.On("Dashboard", userID, companyID).Return(expectedResult, nil).Once()
 
-		result, err := srv.Dashboard(companyID)
+		result, err := srv.Dashboard(userID, companyID)
 
 		qry.AssertExpectations(t)
 		assert.Nil(t, err)
@@ -744,14 +755,275 @@ func TestDashboard(t *testing.T) {
 
 	t.Run("Error Dashboard - Database Error", func(t *testing.T) {
 		companyID := uint(1)
+		userID := uint(2)
 
-		qry.On("Dashboard", companyID).Return(nil, errors.New("database error")).Once()
+		qry.On("Dashboard", userID, companyID).Return(nil, errors.New("database error")).Once()
 
-		result, err := srv.Dashboard(companyID)
+		result, err := srv.Dashboard(userID, companyID)
 
 		qry.AssertExpectations(t)
 		assert.Error(t, err)
 		assert.Equal(t, "database error", err.Error())
 		assert.Nil(t, result)
+	})
+}
+
+func TestCreateNewEmployee(t *testing.T) {
+	mockDataUser := new(mocks.DataUserInterface)
+	mockHash := new(mocks.HashInterface)
+	mockMiddleware := new(mocks.MiddlewaresInterface)
+	mockAccountUtility := new(mocks.AccountUtilityInterface)
+	mockCompany := new(mocks.Query)
+
+	// Create service instance with mocked dependencies
+	userService := service.New(mockDataUser, mockHash, mockMiddleware, mockAccountUtility, mockCompany)
+
+	cmID := uint(1)
+	addPersonal := users.PersonalDataEntity{
+		Name:        "John Doe",
+		Email:       "riandarmawan44@gmail.com",
+		PhoneNumber: "1234567890",
+		Gender:      "male",
+		Religion:    "islam",
+	}
+	addEmployment := users.EmploymentDataEntity{
+		EmploymentStatus: "permanent",
+		JobLevel:         "staff",
+	}
+	addPayroll := users.PayrollDataEntity{}
+	addLeaves := users.LeavesDataEntity{}
+
+	companyData := companies.CompanyDataEntity{ID: 1}
+
+	t.Run("success", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(1), nil)
+
+		mockDataUser.On("CreateEmployment", uint(1), addEmployment).Return(uint(2), nil)
+		mockDataUser.On("CreatePayroll", uint(2), addPayroll).Return(nil)
+
+		addLeaves.TotalLeave = 12 // Set the expected total leave value
+		mockDataUser.On("CreateLeaves", uint(1), addLeaves).Return(uint(3), nil)
+
+		mockAccountUtility.On("SendEmail", addPersonal.Email, mock.Anything, mock.Anything).Return(nil)
+
+		// Call the function
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		// Assert results
+		assert.NoError(t, err)
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
+	})
+
+	t.Run("empty name or email", func(t *testing.T) {
+		// Test for empty name or email
+		addPersonalEmpty := users.PersonalDataEntity{
+			Name:  "",
+			Email: "",
+		}
+		err := userService.CreateNewEmployee(cmID, addPersonalEmpty, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+	})
+
+	t.Run("email validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(errors.New("invalid email"))
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid email")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertCalled(t, "EmailValidator", addPersonal.Email)
+	})
+
+	t.Run("phone number validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(errors.New("invalid phone number"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid phone number")
+		mockAccountUtility.AssertCalled(t, "PhoneNumberValidator", addPersonal.PhoneNumber)
+	})
+
+	t.Run("gender validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(errors.New("invalid gender"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid gender")
+		mockAccountUtility.AssertCalled(t, "GenderValidator", addPersonal.Gender)
+	})
+
+	t.Run("religion validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(errors.New("invalid religion"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid religion")
+		mockAccountUtility.AssertCalled(t, "ReligionValidator", addPersonal.Religion)
+	})
+
+	t.Run("employment status validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(errors.New("invalid employment status"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid employment status")
+		mockAccountUtility.AssertCalled(t, "EmploymentStatusValidator", addEmployment.EmploymentStatus)
+	})
+
+	t.Run("job level validation failed", func(t *testing.T) {
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(errors.New("invalid job level"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "invalid job level")
+		mockAccountUtility.AssertCalled(t, "JobLevelValidator", addEmployment.JobLevel)
+	})
+
+	t.Run("fail to create personal data", func(t *testing.T) {
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(0), errors.New("failed to create personal data"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "failed to create personal data")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
+	})
+
+	t.Run("fail to create employment data", func(t *testing.T) {
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(1), nil)
+		mockDataUser.On("CreateEmployment", uint(1), addEmployment).Return(uint(0), errors.New("failed to create employment data"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "failed to create employment data")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
+	})
+
+	t.Run("fail to create payroll data", func(t *testing.T) {
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(1), nil)
+		mockDataUser.On("CreateEmployment", uint(1), addEmployment).Return(uint(2), nil)
+		mockDataUser.On("CreatePayroll", uint(2), addPayroll).Return(errors.New("failed to create payroll data"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "failed to create payroll data")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
+	})
+
+	t.Run("fail to create leaves data", func(t *testing.T) {
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(1), nil)
+		mockDataUser.On("CreateEmployment", uint(1), addEmployment).Return(uint(2), nil)
+		mockDataUser.On("CreatePayroll", uint(2), addPayroll).Return(nil)
+		addLeaves.TotalLeave = 12 // Set the expected total leave value
+		mockDataUser.On("CreateLeaves", uint(1), addLeaves).Return(uint(0), errors.New("failed to create leaves data"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "failed to create leaves data")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
+	})
+
+	t.Run("fail to send email", func(t *testing.T) {
+		mockAccountUtility.On("EmailValidator", addPersonal.Email).Return(nil)
+		mockAccountUtility.On("PhoneNumberValidator", addPersonal.PhoneNumber).Return(nil)
+		mockAccountUtility.On("GenderValidator", addPersonal.Gender).Return(nil)
+		mockAccountUtility.On("ReligionValidator", addPersonal.Religion).Return(nil)
+		mockAccountUtility.On("EmploymentStatusValidator", addEmployment.EmploymentStatus).Return(nil)
+		mockAccountUtility.On("JobLevelValidator", addEmployment.JobLevel).Return(nil)
+		mockCompany.On("GetCompanyID", cmID).Return(companyData, nil)
+
+		addPersonal.Role = "employees" // Set the expected role value
+		mockDataUser.On("CreatePersonal", companyData.ID, addPersonal).Return(uint(1), nil)
+		mockDataUser.On("CreateEmployment", uint(1), addEmployment).Return(uint(2), nil)
+		mockDataUser.On("CreatePayroll", uint(2), addPayroll).Return(nil)
+		addLeaves.TotalLeave = 12 // Set the expected total leave value
+		mockDataUser.On("CreateLeaves", uint(1), addLeaves).Return(uint(3), nil)
+		mockAccountUtility.On("SendEmail", addPersonal.Email, mock.Anything, mock.Anything).Return(errors.New("failed to send email"))
+
+		err := userService.CreateNewEmployee(cmID, addPersonal, addEmployment, addPayroll, addLeaves)
+
+		assert.Error(t, err)
+		assert.EqualError(t, err, "failed to send email")
+		mockCompany.AssertCalled(t, "GetCompanyID", cmID)
+		mockAccountUtility.AssertExpectations(t)
+		mockDataUser.AssertExpectations(t)
 	})
 }
