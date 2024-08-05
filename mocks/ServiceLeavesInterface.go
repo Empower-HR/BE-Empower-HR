@@ -199,6 +199,9 @@ func (_m *ServiceLeavesInterface) ViewLeaveHistoryEmployee(personalDataID uint, 
 	return r0, r1
 }
 
+// ViewLeaveHistoryEmployee provides a mock function with given fields: personalDataID, page, pageSize, status, startDate, endDate
+
+
 // NewServiceLeavesInterface creates a new instance of ServiceLeavesInterface. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewServiceLeavesInterface(t interface {

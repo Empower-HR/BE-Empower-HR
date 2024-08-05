@@ -159,6 +159,7 @@ func (_m *DataLeavesInterface) GetLeaveHistoryEmployee(personalDataID uint, page
 	return r0, r1
 }
 
+
 // GetLeavesByDateRange provides a mock function with given fields: personalDataID, startDate, endDate
 func (_m *DataLeavesInterface) GetLeavesByDateRange(personalDataID uint, startDate string, endDate string) ([]leaves.LeavesDataEntity, error) {
 	ret := _m.Called(personalDataID, startDate, endDate)
