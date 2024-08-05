@@ -2,6 +2,7 @@ package dataattendance
 
 import (
 	attendance "be-empower-hr/features/Attendance"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,11 +20,12 @@ func NewAttandancesModel(connection *gorm.DB) attendance.AQuery {
 
 // Create Att
 func (am *AttandanceModel) Create(newAtt attendance.Attandance) error {
+
 	cnv := AttandanceInput(newAtt)
 	return am.db.Create(&cnv).Error
 }
 
-func (am *AttandanceModel) IsDateExists(personalID uint, date string) (bool, error) {
+func (am *AttandanceModel) IsDateExists(personalID uint, date time.Time) (bool, error) {
 	var count int64
 	err := am.db.Model(&attendance.Attandance{}).
 		Where("personal_data_id = ? AND date = ? AND deleted_at IS NULL", personalID, date).
@@ -54,10 +56,10 @@ func (am *AttandanceModel) Update(id uint, updatedAtt attendance.Attandance) err
 
 // Get Att
 func (am *AttandanceModel) GetAttByPersonalID(personalID uint, term string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
-    var results []attendance.AttendanceDetail
+	var results []attendance.AttendanceDetail
 
-    // Menyiapkan query dengan pencarian
-    query := `
+	// Menyusun query dinamis
+	query := `
     SELECT 
         pd.name,
         at.personal_data_id, 
@@ -65,36 +67,44 @@ func (am *AttandanceModel) GetAttByPersonalID(personalID uint, term string, limi
         at.lat,
         at.status,
         at.notes, 
-        sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
         at.date,
         at.id
     FROM
-        personal_data AS pd
+		attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
-        at.personal_data_id = ? 
-        AND at.deleted_at IS NULL
+        at.deleted_at IS NULL AND at.personal_data_id = ?` 
+	
+	// Menambahkan kondisi pencarian jika searchTerm tidak kosong
+	if term != "" {
+		query += `
         AND (
-            pd.name LIKE ? OR
+            pd.name LIKE ? OR 
             at.status LIKE ? OR
-            at.notes LIKE ? -- Pencarian juga dilakukan di kolom notes
-        )
+            at.notes LIKE ?
+        )`
+	}
+
+	query += `
     LIMIT ? OFFSET ?`
 
-    // Menyiapkan parameter pencarian dengan wildcard
-    searchPattern := "%" + term + "%"
+	args := []interface{}{personalID}
+	if term != "" {
+		searchPattern := "%" + term + "%"
+		args = append(args, searchPattern, searchPattern, searchPattern)
+	}
+	args = append(args, limit, offset)
 
-    err := am.db.Raw(query, personalID, searchPattern, searchPattern, searchPattern, limit, offset).Scan(&results).Error
-    if err != nil {
-        return nil, err
-    }
+	// Menjalankan query
+	err := am.db.Raw(query, args...).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
 
-    return results, nil
+	return results, nil
 }
 
 
@@ -115,16 +125,14 @@ func (am *AttandanceModel) GetAllAttbyIdPersonAndStatus(id uint, status string, 
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+		attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS ON at.personal_data_id = pd.id
     WHERE 
        at.personal_data_id = ? AND at.status = ? AND at.deleted_at IS NULL 
     LIMIT ? OFFSET ?`
 
-	err := am.db.Raw(query, id,status, limit, offset).Scan(&results).Error
+	err := am.db.Raw(query, id, status, limit, offset).Scan(&results).Error
 	if err != nil {
 		return nil, err
 	}
@@ -132,33 +140,28 @@ func (am *AttandanceModel) GetAllAttbyIdPersonAndStatus(id uint, status string, 
 	return results, nil
 }
 
-func (am *AttandanceModel) GetAllAttbyDate(date string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+func (am *AttandanceModel) GetAllAttbyDate(date int, limit int, offset int) ([]attendance.AttendanceDetail, error) {
 	var results []attendance.AttendanceDetail
 
 	query := `
-        SELECT 
-            pd.name,
-            at.personal_data_id, 
-            at.long,
-            at.lat,
-            at.status,
-            at.notes, 
-            sc.schedule_out, 
-            at.clock_in, 
-            at.clock_out,
-            at.date,
-            at.id
-        FROM
-            personal_data AS pd
-        JOIN 
-            schedule_data AS sc ON sc.company_id = pd.company_id
-        LEFT JOIN 
-            attandances AS at ON at.personal_data_id = pd.id 
-        WHERE 
-            EXTRACT(YEAR FROM at.created_at) = ?
-            AND EXTRACT(MONTH FROM at.created_at) = ?
-        LIMIT 100 OFFSET 0`
-
+    SELECT 
+        pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes, 
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+    	attandances AS at
+    JOIN  
+       personal_data AS pd ON at.personal_data_id = pd.id
+    WHERE 
+       EXTRACT(MONTH FROM date) = ?
+    LIMIT ? OFFSET ?`
 
 	err := am.db.Raw(query, date, limit, offset).Scan(&results).Error
 	if err != nil {
@@ -178,18 +181,15 @@ func (am *AttandanceModel) GetAllAttbyStatus(status string, limit int, offset in
         at.long,
 		at.lat,
 		at.status,
-		at.notes, 
-        sc.schedule_out, 
+		at.notes,  
         at.clock_in, 
         at.clock_out,
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+       attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id AND at.status = ?
+		personal_data AS pd ON at.personal_data_id = pd.id AND at.status = ?
     WHERE 
         at.deleted_at IS NULL
     LIMIT ? OFFSET ?`
@@ -198,11 +198,9 @@ func (am *AttandanceModel) GetAllAttbyStatus(status string, limit int, offset in
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return results, nil
 }
-
-
 
 func (am *AttandanceModel) DeleteAttbyId(attId uint) error {
 	var attandances attendance.Attandance
@@ -223,10 +221,10 @@ func (am *AttandanceModel) GetTotalAttendancesCount() (int64, error) {
 	}
 	return count, nil
 }
-func (am *AttandanceModel) GetTotalAttendancesCountbyDate(date string) (int64, error) {
+func (am *AttandanceModel) GetTotalAttendancesCountbyDate(date int) (int64, error) {
 	var count int64
 	err := am.db.Model(&attendance.Attandance{}).
-		Where("deleted_at IS NULL AND date = ?", date).
+		Where("deleted_at IS NULL AND EXTRACT(MONTH FROM date) = ?", date).
 		Count(&count).Error
 	if err != nil {
 		return 0, err
@@ -245,10 +243,10 @@ func (am *AttandanceModel) GetAllAttDownload() ([]attendance.Attandance, error) 
 
 // New Get Test
 func (am *AttandanceModel) GetAttendanceDetails(searchTerm string, limit int, offset int) ([]attendance.AttendanceDetail, error) {
-    var results []attendance.AttendanceDetail
+	var results []attendance.AttendanceDetail
 
-    // Menyiapkan query dengan pencarian
-    query := `
+	// Menyusun query dinamis
+	query := `
     SELECT 
         pd.name,
         at.personal_data_id, 
@@ -256,36 +254,48 @@ func (am *AttandanceModel) GetAttendanceDetails(searchTerm string, limit int, of
         at.lat,
         at.status,
         at.notes, 
-        sc.schedule_out, 
         at.clock_in, 
         at.clock_out,
         at.date,
         at.id
     FROM
-        personal_data AS pd
+	   attandances AS at 
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+       personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
-        at.deleted_at IS NULL
+        at.deleted_at IS NULL`
+	
+	// Menambahkan kondisi pencarian jika searchTerm tidak kosong
+	if searchTerm != "" {
+		query += `
         AND (
             pd.name LIKE ? OR 
             at.status LIKE ? OR
-            at.notes LIKE ? -- Menambahkan pencarian di kolom notes
-        )
+            at.notes LIKE ?
+        )`
+	}
+
+	query += `
     LIMIT ? OFFSET ?`
 
-    // Membuat parameter pencarian dengan wildcard
-    searchPattern := "%" + searchTerm + "%"
+	// Menyusun argumen untuk query
+	args := []interface{}{ "%" + searchTerm + "%", "%" + searchTerm + "%", "%" + searchTerm + "%", limit, offset }
+	if searchTerm == "" {
+		// Hapus argumen pencarian jika searchTerm kosong
+		args = []interface{}{limit, offset}
+	}
 
-    err := am.db.Raw(query, searchPattern, searchPattern, searchPattern, limit, offset).Scan(&results).Error
-    if err != nil {
-        return nil, err
-    }
+	// Menjalankan query
+	err := am.db.Raw(query, args...).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
 
-    return results, nil
+	return results, nil
 }
+
+
+
 
 func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDetail, error) {
 	var results []attendance.AttendanceDetail
@@ -303,11 +313,9 @@ func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDet
 		at.date,
 		at.id
     FROM
-        personal_data AS pd
+        attandances AS at
     JOIN 
-        schedule_data AS sc ON sc.company_id = pd.company_id
-    LEFT JOIN 
-        attandances AS at ON at.personal_data_id = pd.id
+        personal_data AS pd ON at.personal_data_id = pd.id
     WHERE 
        at.id = ? AND at.deleted_at IS NULL`
 
@@ -321,7 +329,7 @@ func (am *AttandanceModel) GetAttByIdAtt(idAtt uint) ([]attendance.AttendanceDet
 }
 
 func (am *AttandanceModel) GetTotalAttendancesCountByStatus(status string) (int64, error) {
-    var count int64
+	var count int64
 	err := am.db.Model(&attendance.Attandance{}).
 		Where("deleted_at IS NULL AND status = ?", status).
 		Count(&count).Error
@@ -332,7 +340,7 @@ func (am *AttandanceModel) GetTotalAttendancesCountByStatus(status string) (int6
 }
 
 func (am *AttandanceModel) GetCompany(idPerson uint) ([]attendance.CompanyDataEntity, error) {
-    var results []attendance.CompanyDataEntity
+	var results []attendance.CompanyDataEntity
 
 	query := `
         SELECT 
@@ -355,3 +363,141 @@ func (am *AttandanceModel) GetCompany(idPerson uint) ([]attendance.CompanyDataEn
 
 	return results, nil
 }
+
+// GetAllAttbyDateandPerson implements attendance.AQuery.
+func (am *AttandanceModel) GetAllAttbyDateandPerson(perseonID uint, date int, limit int, offset int) ([]attendance.AttendanceDetail, error) {
+	var results []attendance.AttendanceDetail
+
+	query := `
+    SELECT 
+        pd.name,
+		at.personal_data_id, 
+        at.long,
+		at.lat,
+		at.status,
+		at.notes,  
+        at.clock_in, 
+        at.clock_out,
+		at.date,
+		at.id
+    FROM
+		attandances AS at
+    JOIN 
+         personal_data AS pd ON at.personal_data_id = pd.id
+    WHERE 
+        at.personal_data_id = ? AND EXTRACT(MONTH FROM date) = ?
+    LIMIT ? OFFSET ?`
+
+	err := am.db.Raw(query, perseonID, date, limit, offset).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// GetTotalAttendancesCountbyDateandPerson implements attendance.AQuery.
+func (am *AttandanceModel) GetTotalAttendancesCountbyDateandPerson(date int, personID uint) (int64, error) {
+	var count int64
+	err := am.db.Model(&attendance.Attandance{}).
+		Where("deleted_at IS NULL AND personal_data_id = ? AND EXTRACT(MONTH FROM date) = ?", personID, date).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetTotalAttendancesCountByStatusandPerson implements attendance.AQuery.
+func (am *AttandanceModel) GetTotalAttendancesCountByStatusandPerson(status string, personID uint) (int64, error) {
+	var count int64
+	err := am.db.Model(&attendance.Attandance{}).
+		Where("deleted_at IS NULL AND personal_data_id = ? AND status = ?", personID, status).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetTotalAttendancesCountbyPerson implements attendance.AQuery.
+func (am *AttandanceModel) GetTotalAttendancesCountbyPerson(personID uint) (int64, error) {
+	var count int64
+	err := am.db.Model(&attendance.Attandance{}).
+		Where("deleted_at IS NULL AND personal_data_id = ?", personID).
+		Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (am *AttandanceModel) CountAttBySearch(search string) (int64, error) {
+	var count int64
+	var searchPattern string
+	if search != "" {
+		searchPattern = "%" + search + "%"
+	}
+
+	// Query untuk menghitung total record
+	query := `
+    SELECT COUNT(*)
+    FROM
+		attandances AS at
+    JOIN 
+        personal_data AS pd ON at.personal_data_id = pd.id
+    WHERE 
+        at.deleted_at IS NULL`
+
+	if search != "" {
+		query += `
+        AND (
+            pd.name LIKE ? OR 
+            at.status LIKE ? OR
+            at.notes LIKE ?
+        )`
+	}
+
+	err := am.db.Raw(query, searchPattern, searchPattern, searchPattern).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+
+func (am *AttandanceModel) CountAttByIdPersonAndSearch(personID uint, search string) (int64, error) {
+	var count int64
+	var searchPattern string
+	if search != "" {
+		searchPattern = "%" + search + "%"
+	}
+
+	// Query untuk menghitung total record
+	query := `
+    SELECT COUNT(*)
+    FROM
+       attandances AS at
+    JOIN 
+        personal_data AS pd ON at.personal_data_id = pd.id
+    WHERE 
+        at.personal_data_id = ? 
+        AND at.deleted_at IS NULL`
+
+	if search != "" {
+		query += `
+        AND (
+            pd.name LIKE ? OR 
+            at.status LIKE ? OR
+            at.notes LIKE ?
+        )`
+	}
+
+	err := am.db.Raw(query, personID, searchPattern, searchPattern, searchPattern).Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+

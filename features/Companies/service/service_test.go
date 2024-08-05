@@ -16,18 +16,18 @@ func TestGetCompany(t *testing.T) {
 
 	t.Run("Success Get Company", func(t *testing.T) {
 		expectedResult := companies.CompanyDataEntity{
-			CompanyPicture: "img.png", 
-			CompanyName: "Pt. Konoho", 
-			Email: "konoha@indo.com", 
-			PhoneNumber: "08345677543",
-			Npwp: 9777868,
+			CompanyPicture: "img.png",
+			CompanyName:    "Pt. Konoho",
+			Email:          "konoha@indo.com",
+			PhoneNumber:    "08345677543",
+			Npwp:           9777868,
 			CompanyAddress: "jl. indo konohan 1",
-			Signature: "ttd.png",
+			Signature:      "ttd.png",
 		}
+		ID := uint(1)
+		qry.On("GetCompanyID", ID).Return(expectedResult, nil).Once()
 
-		qry.On("GetCompany").Return(expectedResult, nil).Once()
-
-		result, err := srv.GetCompany()
+		result, err := srv.GetCompany(ID)
 
 		qry.AssertExpectations(t)
 
@@ -36,9 +36,10 @@ func TestGetCompany(t *testing.T) {
 	})
 
 	t.Run("Error Get Company", func(t *testing.T) {
-		qry.On("GetCompany").Return(companies.CompanyDataEntity{}, errors.New("internal server error")).Once()
+		ID := uint(1)
+		qry.On("GetCompanyID", ID).Return(companies.CompanyDataEntity{}, errors.New("internal server error")).Once()
 
-		result, err := srv.GetCompany()
+		result, err := srv.GetCompany(ID)
 
 		qry.AssertExpectations(t)
 
@@ -54,13 +55,13 @@ func TestUpdateCompany(t *testing.T) {
 
 	ID := uint(1)
 	updateData := companies.CompanyDataEntity{
-		CompanyPicture: "img.png", 
-		CompanyName: "Pt. Konoho", 
-		Email: "konoha@indo.com", 
-		PhoneNumber: "08345677543",
-		Npwp: 9777868,
+		CompanyPicture: "img.png",
+		CompanyName:    "Pt. Konoho",
+		Email:          "konoha@indo.com",
+		PhoneNumber:    "08345677543",
+		Npwp:           9777868,
 		CompanyAddress: "jl. indo konohan 1",
-		Signature: "ttd.png",
+		Signature:      "ttd.png",
 	}
 
 	t.Run("Success Update Company", func(t *testing.T) {

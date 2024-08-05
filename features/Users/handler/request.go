@@ -41,7 +41,6 @@ type EmploymentData struct {
 	JobLevel         string `json:"job_level"`
 	Schedule         string `json:"schedule"`
 	ApprovalLine     string `json:"approval_line"`
-	Manager          string `json:"manager"`
 }
 
 type PersonalData struct {
@@ -81,7 +80,6 @@ func ToModelEmploymentData(ed EmploymentData) users.EmploymentDataEntity {
 		JobLevel:         ed.JobLevel,
 		Schedule:         ed.Schedule,
 		ApprovalLine:     ed.ApprovalLine,
-		Manager:          ed.Manager,
 	}
 }
 
@@ -116,13 +114,13 @@ func ToModelLeaves(pd Leaves) users.LeavesDataEntity {
 		EndDate:    pd.EndDate,
 		Reason:     pd.Reason,
 		Status:     pd.Status,
-		TotalLeave: pd.TotalLeave,
+		TotalLeave: 12,
 	}
 }
 
 type NewEmployeeRequest struct {
-	PersonalData   PersonalData   `json:"personal_data"`
-	EmploymentData EmploymentData `json:"employment_data"`
+	PersonalData   PersonalData   `json:"personal"`
+	EmploymentData EmploymentData `json:"employment"`
 	Payroll        Payroll        `json:"payroll"`
 	Leaves         Leaves         `json:"leaves"`
 }

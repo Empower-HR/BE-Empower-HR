@@ -83,7 +83,6 @@ func (uq *userQuery) AccountById(userid uint) (*users.PersonalDataEntity, error)
 			JobLevel:         employment.JobLevel,
 			Schedule:         employment.Schedule,
 			ApprovalLine:     employment.ApprovalLine,
-			Manager:          employment.Manager,
 		}
 		// Append EmploymentDataEntity to PersonalDataEntity
 		personalDataEntity.EmploymentData = append(personalDataEntity.EmploymentData, employmentEntity)
@@ -239,7 +238,6 @@ func (uq *userQuery) UpdateProfileEmployments(userid uint, accounts users.Employ
 		"JobLevel":         accounts.JobLevel,
 		"Schedule":         accounts.Schedule,
 		"ApprovalLine":     accounts.ApprovalLine,
-		"Manager":          accounts.Manager,
 	}
 
 	// Update the employment data fields
@@ -296,14 +294,17 @@ func (uq *userQuery) GetAccountByName(accountName string) ([]users.PersonalDataE
 }
 
 // GetAll implements users.DataUserInterface.
-func (uq *userQuery) GetAll(page int, pageSize int) ([]users.PersonalDataEntity, error) {
+func (uq *userQuery) GetAll(page int, pageSize int, companyID uint) ([]users.PersonalDataEntity, error) {
 	var personalDataList []PersonalData
-	if err := uq.db.Preload("EmploymentData").Find(&personalDataList).Error; err != nil {
-		return nil, err
-	}
 	pagination := utils.NewPagination(page, pageSize)
 
-	tx := uq.db.Limit(pagination.PageSize).Offset(pagination.Offset()).Preload("EmploymentData").Find(&personalDataList)
+	tx := uq.db.Where("company_id = ?", companyID).
+		Preload("EmploymentData").
+		Order("id DESC").
+		Limit(pagination.PageSize).
+		Offset(pagination.Offset()).
+		Find(&personalDataList)
+
 	if tx.Error != nil {
 		log.Printf("Error fetching all accounts: %v", tx.Error)
 		return nil, tx.Error
@@ -370,7 +371,7 @@ func (uq *userQuery) GetAccountByJobLevel(jobLevel string) ([]users.PersonalData
 
 // Add Employe
 func (uq *userQuery) CreatePersonal(CompanyID uint, addPersonal users.PersonalDataEntity) (uint, error) {
-	cnvQuery := ToPersonalDataQuery(addPersonal)
+	cnvQuery := ToPersonalDataQuery(addPersonal.BirthDate, addPersonal)
 	cnvQuery.CompanyID = CompanyID
 	err := uq.db.Create(&cnvQuery).Error
 
@@ -504,14 +505,14 @@ func (uq *userQuery) CountAttendanceHadir(companyID uint) (int64, error) {
 	var count int64
 	if err := uq.db.Model(&Attandance{}).
 		Where("personal_data_id IN (SELECT id FROM personal_data WHERE company_id = ?)", companyID).
-		Where("status = ?", "hadir").
+		Where("clock_in IS NOT NULL").
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
+func (uq *userQuery) Dashboard(userID uint, companyID uint) (*users.DashboardStats, error) {
 	var stats users.DashboardStats
 
 	// Fetch statistics
@@ -581,9 +582,7 @@ func (uq *userQuery) Dashboard(companyID uint) (*users.DashboardStats, error) {
 
 	var name string
 	if err := uq.db.Model(&PersonalData{}).
-		Where("company_id = ? AND deleted_at IS NULL", companyID).
-		Select("name").
-		Limit(1).
+		Where("id = ? AND company_id = ? AND deleted_at IS NULL", userID, companyID).
 		Pluck("name", &name).Error; err != nil {
 		log.Printf("Error fetching user name: %v", err)
 		return nil, err

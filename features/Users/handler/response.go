@@ -12,17 +12,17 @@ type UserResponse struct {
 }
 
 type ProfileResponse struct {
-	ProfilePicture string `json:"profile_picture"`
-	Name           string `json:"name"`
-	Email          string `json:"email"`
-	PhoneNumber    string `json:"phone_number"`
-	PlaceBirthDate string `json:"place_birth"`
-	BirthDate      string `json:"birth_date"`
-	Gender         string `json:"gender"`
-	Religion       string `json:"religion"`
-	NIK            string `json:"nik"`
-	Address        string `json:"address"`
-	EmploymentData []EmploymentDataResponse
+	ProfilePicture string                   `json:"profile_picture"`
+	Name           string                   `json:"name"`
+	Email          string                   `json:"email"`
+	PhoneNumber    string                   `json:"phone_number"`
+	PlaceBirthDate string                   `json:"place_birth"`
+	BirthDate      string                   `json:"birth_date"`
+	Gender         string                   `json:"gender"`
+	Religion       string                   `json:"religion"`
+	NIK            string                   `json:"nik"`
+	Address        string                   `json:"address"`
+	EmploymentData []EmploymentDataResponse `json:"employmentData"`
 }
 
 type EmploymentDataResponse struct {
@@ -33,7 +33,6 @@ type EmploymentDataResponse struct {
 	JobLevel         string `json:"job_level"`
 	Schedule         string `json:"schedule"`
 	ApprovalLine     string `json:"approval_line"`
-	Manager          string `json:"manager"`
 }
 
 type AllUsersResponse struct {

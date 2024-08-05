@@ -8,7 +8,7 @@ type CompanyInput struct {
 	Email          string `json:"email" form:"email"`
 	PhoneNumber    string `json:"phone" form:"phone"`
 	Npwp           int    `json:"npwp" form:"npwp"`
-	CompanyAddress string `json:"company_address" form:"company_address"`
+	CompanyAddress string `json:"address" form:"address"`
 	Signature      string `json:"signature" form:"signature"`
 }
 

@@ -40,7 +40,6 @@ type EmploymentData struct {
 	JobLevel         string
 	Schedule         string
 	ApprovalLine     string
-	Manager          string
 	Payrolls         []datapayroll.PayrollData `gorm:"foreignKey:EmploymentDataID"`
 }
 
@@ -50,7 +49,6 @@ type CompanyData struct {
 	CompanyName    string
 	Email          string
 	PhoneNumber    string
-	Address        string
 	Npwp           int
 	CompanyAddress string
 	Signature      string
@@ -113,17 +111,16 @@ func ToQueryEmploymentEmployee(input users.EmploymentDataEntity) EmploymentData 
 		JobLevel:         input.JobLevel,
 		Schedule:         input.Schedule,
 		ApprovalLine:     input.ApprovalLine,
-		Manager:          input.Manager,
 	}
 }
 
-func ToPersonalDataQuery(input users.PersonalDataEntity) PersonalData {
+func ToPersonalDataQuery(password string, input users.PersonalDataEntity) PersonalData {
 	return PersonalData{
 		CompanyID:      input.CompanyID,
 		ProfilePicture: input.ProfilePicture,
 		Name:           input.Name,
 		Email:          input.Email,
-		Password:       input.Password,
+		Password:       password,
 		PhoneNumber:    input.PhoneNumber,
 		PlaceBirth:     input.PlaceBirth,
 		BirthDate:      input.BirthDate,
@@ -146,7 +143,6 @@ func ToEmploymentQuery(input users.EmploymentDataEntity) EmploymentData {
 		JobLevel:         input.JobLevel,
 		Schedule:         input.Schedule,
 		ApprovalLine:     input.ApprovalLine,
-		Manager:          input.Manager,
 	}
 }
 

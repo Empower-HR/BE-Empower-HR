@@ -8,17 +8,16 @@ import (
 
 type CompanyModels struct {
 	db *gorm.DB
-};
+}
 
-func NewCompanyModels(connect *gorm.DB) companies.Query{
+func NewCompanyModels(connect *gorm.DB) companies.Query {
 	return &CompanyModels{
 		db: connect,
 	}
-};
+}
 
-
-func (cm *CompanyModels) GetCompany() (companies.CompanyDataEntity, error){
-	var result CompanyData;
+func (cm *CompanyModels) GetCompany() (companies.CompanyDataEntity, error) {
+	var result CompanyData
 
 	err := cm.db.Find(&result).Error
 
@@ -26,21 +25,33 @@ func (cm *CompanyModels) GetCompany() (companies.CompanyDataEntity, error){
 		return companies.CompanyDataEntity{}, err
 	}
 
-	return result.ToCompanyEntity(), nil;
-};
+	return result.ToCompanyEntity(), nil
+}
 
-func (cm *CompanyModels) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) (error){
-	cnvCompany := ToCompanyQuery(updateCompany);
+func (cm *CompanyModels) UpdateCompany(ID uint, updateCompany companies.CompanyDataEntity) error {
+	cnvCompany := ToCompanyQuery(updateCompany)
 
-	qry := cm.db.Where("id = ?", ID).Updates(&cnvCompany);
+	qry := cm.db.Model(CompanyData{}).Where("id = ?", ID).Updates(&cnvCompany)
 
 	if qry.Error != nil {
 		return qry.Error
-	};
+	}
 
 	if qry.RowsAffected < 1 {
 		return gorm.ErrRecordNotFound
-	};
+	}
 
-	return nil;
+	return nil
+}
+
+func (cm *CompanyModels) GetCompanyID(ID uint) (companies.CompanyDataEntity, error) {
+	var result CompanyData
+
+	err := cm.db.Model(CompanyData{}).Where("id = ?", ID).First(&result).Error
+
+	if err != nil {
+		return companies.CompanyDataEntity{}, err
+	}
+
+	return result.ToCompanyEntity(), nil
 }
