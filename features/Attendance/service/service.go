@@ -73,7 +73,7 @@ func (as *attendanceService) AddAtt(newAtt att.Attandance) error {
 	}
 
 	// Hitung jarak antara lokasi absensi dan lokasi perusahaan
-	minDistance := 100.0 // Jarak minimum dalam meter
+	minDistance := 3000.0 // Jarak minimum dalam meter
 	distance := as.mapsUtility.Haversine(attLat, attLng, companyLat, companyLng)
 	if distance > minDistance {
 		return errors.New("absensi ditolak karena lokasi anda terpantau jauh dari kantor")
